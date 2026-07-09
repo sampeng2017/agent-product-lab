@@ -25,6 +25,12 @@ class GitState:
     fingerprint: str | None
 
 
+@dataclass(frozen=True)
+class CheckDefinition:
+    name: str
+    command: tuple[str, ...]
+
+
 def _git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
         ["git", *args],
@@ -143,6 +149,37 @@ def run_check(
     }
     append_receipt(store, receipt)
     return exit_code, receipt
+
+
+def run_suite(
+    checks: Sequence[CheckDefinition],
+    *,
+    cwd: Path,
+    store: Path,
+    fail_fast: bool = False,
+) -> tuple[int, list[dict[str, Any]]]:
+    suite_exit = 0
+    results: list[dict[str, Any]] = []
+    for check in checks:
+        exit_code, receipt = run_check(
+            name=check.name,
+            command=check.command,
+            cwd=cwd,
+            store=store,
+        )
+        results.append(
+            {
+                "name": check.name,
+                "command": list(check.command),
+                "exit_code": exit_code,
+                "receipt": receipt,
+            }
+        )
+        if exit_code != 0 and suite_exit == 0:
+            suite_exit = exit_code
+            if fail_fast:
+                break
+    return suite_exit, results
 
 
 def assess_receipts(

@@ -7,7 +7,8 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from .core import DEFAULT_STORE, assess_receipts, git_state, load_receipts, run_check
+from .core import DEFAULT_STORE, assess_receipts, git_state, load_receipts, run_check, run_suite
+from .manifest import load_manifest, select_checks
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -34,11 +35,25 @@ def build_parser() -> argparse.ArgumentParser:
     history = subparsers.add_parser("history", help="show recent receipts")
     history.add_argument("--limit", type=int, default=10)
     history.add_argument("--json", action="store_true")
+
+    verify = subparsers.add_parser("verify", help="run checks defined in a manifest")
+    verify.add_argument(
+        "--manifest",
+        type=Path,
+        default=Path("proofrun.toml"),
+        help="manifest file (default: proofrun.toml)",
+    )
+    verify.add_argument("--fail-fast", action="store_true")
+    verify.add_argument("names", nargs="*", help="optional check names to run")
     return parser
 
 
 def _resolve_store(cwd: Path, store: Path) -> Path:
     return store if store.is_absolute() else cwd / store
+
+
+def _resolve_path(cwd: Path, path: Path) -> Path:
+    return path if path.is_absolute() else cwd / path
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -60,6 +75,36 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"({receipt['duration_ms']} ms)"
         )
         return exit_code
+
+    if args.action == "verify":
+        manifest_path = _resolve_path(cwd, args.manifest)
+        try:
+            checks = select_checks(load_manifest(manifest_path), args.names)
+        except ValueError as exc:
+            print(f"proofrun: {exc}", file=sys.stderr)
+            return 2
+
+        suite_exit, results = run_suite(
+            checks,
+            cwd=cwd,
+            store=store,
+            fail_fast=args.fail_fast,
+        )
+        passed = 0
+        for item in results:
+            result = "passed" if item["exit_code"] == 0 else f"failed ({item['exit_code']})"
+            print(
+                f"proofrun: {item['name']} {result}; receipt {item['receipt']['id']} "
+                f"({item['receipt']['duration_ms']} ms)"
+            )
+            if item["exit_code"] == 0:
+                passed += 1
+
+        summary = f"{passed}/{len(results)} checks passed"
+        if len(results) != len(checks):
+            summary += f", {len(checks) - len(results)} skipped after failure"
+        print(f"proofrun: suite {'passed' if suite_exit == 0 else 'failed'}; {summary}")
+        return suite_exit
 
     try:
         receipts = load_receipts(store)

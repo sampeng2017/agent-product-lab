@@ -69,6 +69,7 @@ claimed checks still apply to this exact working tree."
 ## MVP shape
 
 - `proofrun run --name NAME -- COMMAND...` executes and records a check.
+- `proofrun verify [NAME...]` runs named checks from `proofrun.toml`.
 - `proofrun status` compares the latest evidence with the current Git state.
 - `proofrun history` exposes the underlying audit trail.
 - Receipts are append-only JSON Lines and remain local by default.
@@ -76,9 +77,9 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Add a declarative check manifest and `proofrun verify` to run a suite.
-2. Explain precisely which files invalidated a receipt.
-3. Add tamper-evident receipt chaining and exportable Markdown summaries.
+1. Explain precisely which files invalidated a receipt.
+2. Add tamper-evident receipt chaining and exportable Markdown summaries.
+3. Support richer manifest options such as per-check environment and cwd.
 4. Explore agent hooks and CI import after the local workflow is proven.
 
 ## Success signals

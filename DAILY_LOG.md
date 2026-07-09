@@ -17,3 +17,23 @@ receipts, plus product and run documentation.
 
 Current state: runnable MVP with all three initial tests passing. The next run
 should add a declarative check manifest and suite execution.
+
+## 2026-07-08 — Manifest-driven verification
+
+Continued ProofRun rather than revisiting product selection. The highest-value
+gap from the previous state was repeatability: checks could be recorded one at
+a time, but there was no standard suite entry point to dogfood inside this
+repository. Implemented `proofrun verify`, which reads `proofrun.toml`, runs
+all or selected checks, records one receipt per check, and can stop on first
+failure with `--fail-fast`.
+
+Added a repository-level `proofrun.toml` containing the unit-test workflow and
+expanded tests to cover manifest loading, check selection, and fail-fast suite
+execution. Updated README and product docs to make `verify` the primary
+development workflow. Validation this run used both
+`PYTHONPATH=src python3 -m unittest discover -s tests -v` and
+`PYTHONPATH=src python3 -m proofrun verify`, both of which passed.
+
+Current state: the project now supports both ad hoc checks and declarative
+suite execution with append-only receipts. The next run should make `status`
+more actionable by showing which files invalidated the last proof.

@@ -13,9 +13,14 @@ inside the repository under `.proofrun/` and are ignored by Git.
 ProofRun requires Python 3.10 or newer.
 
 ```bash
-python3 -m proofrun run --name unit-tests -- python3 -m unittest discover -s tests
-python3 -m proofrun status
-python3 -m proofrun history
+cat > proofrun.toml <<'EOF'
+[checks.unit]
+command = ["/bin/sh", "-c", "PYTHONPATH=src python3 -m unittest discover -s tests -v"]
+EOF
+
+PYTHONPATH=src python3 -m proofrun verify
+PYTHONPATH=src python3 -m proofrun status
+PYTHONPATH=src python3 -m proofrun history
 ```
 
 For development from this checkout, either install it in editable mode or set
@@ -23,8 +28,9 @@ For development from this checkout, either install it in editable mode or set
 
 ```bash
 PYTHONPATH=src python3 -m proofrun run --name unit-tests -- \
-  python3 -m unittest discover -s tests
-PYTHONPATH=src python3 -m proofrun status
+  python3 -m unittest discover -s tests -v
+PYTHONPATH=src python3 -m proofrun verify unit
+PYTHONPATH=src python3 -m proofrun status --json
 ```
 
 `status` marks a successful receipt as `valid` only while all of these remain
@@ -37,6 +43,9 @@ true:
 Use `--max-age-hours 0` to disable the age limit and `--json` for
 machine-readable output.
 
+`verify` runs checks from `proofrun.toml` and records one receipt per check. The
+manifest currently uses `[checks.<name>]` tables with a `command` string array.
+
 ## Why this exists
 
 AI agents can generate code quickly, but a claim like "tests passed" becomes
@@ -48,6 +57,7 @@ small, inspectable receipt tied to a concrete repository state. See
 
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v
+PYTHONPATH=src python3 -m proofrun verify
 ```
 
 The project uses only the Python standard library.
