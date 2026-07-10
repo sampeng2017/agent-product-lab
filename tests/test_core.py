@@ -1,13 +1,25 @@
 from __future__ import annotations
 
+import io
+import json
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from proofrun.core import assess_receipts, git_state, load_receipts, run_check, run_suite
+from proofrun.cli import main
+from proofrun.core import (
+    assess_receipts,
+    audit_receipts,
+    git_state,
+    load_receipts,
+    receipt_digest,
+    run_check,
+    run_suite,
+)
 from proofrun.manifest import load_manifest, select_checks
 
 
@@ -124,6 +136,108 @@ class ProofRunTests(unittest.TestCase):
             assessed[0]["working_tree_paths"],
             {"tracked": [], "untracked": []},
         )
+
+    def test_receipts_are_sealed_and_linked(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        _, first = run_check(
+            name="first",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        _, second = run_check(
+            name="second",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+
+        self.assertEqual(first["schema_version"], 3)
+        self.assertIsNone(first["previous_hash"])
+        self.assertEqual(first["receipt_hash"], receipt_digest(first))
+        self.assertEqual(second["previous_hash"], receipt_digest(first))
+        self.assertEqual(second["receipt_hash"], receipt_digest(second))
+        self.assertEqual(
+            [item["state"] for item in audit_receipts([first, second])],
+            ["valid", "valid"],
+        )
+
+    def test_tampering_breaks_chain_and_invalidates_downstream_proof(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        _, first = run_check(
+            name="first",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        _, second = run_check(
+            name="second",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        first["exit_code"] = 9
+
+        audited = audit_receipts([first, second])
+        assessed = assess_receipts(
+            [first, second], current=git_state(self.root), max_age_hours=24
+        )
+
+        self.assertEqual([item["state"] for item in audited], ["invalid", "invalid"])
+        self.assertIn("receipt hash mismatch", audited[0]["issues"])
+        self.assertIn("previous receipt link mismatch", audited[1]["issues"])
+        self.assertIn("receipt chain invalid", assessed[1]["reasons"])
+
+    def test_new_receipt_seals_the_end_of_a_legacy_store(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        legacy = {
+            "schema_version": 2,
+            "id": "legacy",
+            "name": "old",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "exit_code": 0,
+            "git": {},
+        }
+        store.parent.mkdir(parents=True)
+        store.write_text(f"{json.dumps(legacy)}\n", encoding="utf-8")
+
+        _, receipt = run_check(
+            name="new",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+
+        self.assertEqual(receipt["previous_hash"], receipt_digest(legacy))
+        self.assertEqual(
+            [item["state"] for item in audit_receipts(load_receipts(store))],
+            ["unsealed", "valid"],
+        )
+
+    def test_audit_cli_returns_failure_and_json_for_tampered_store(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        run_check(
+            name="smoke",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        receipts = load_receipts(store)
+        receipts[0]["exit_code"] = 3
+        store.write_text(
+            "".join(f"{json.dumps(receipt)}\n" for receipt in receipts),
+            encoding="utf-8",
+        )
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(["--store", str(store), "audit", "--json"])
+
+        summary = json.loads(output.getvalue())
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(summary["state"], "invalid")
+        self.assertEqual(summary["invalid_count"], 1)
+        self.assertEqual(summary["receipts"][0]["issues"], ["receipt hash mismatch"])
 
     def test_manifest_load_and_selection(self) -> None:
         manifest = self.root / "proofrun.toml"

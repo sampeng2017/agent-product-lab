@@ -20,6 +20,7 @@ EOF
 
 PYTHONPATH=src python3 -m proofrun verify
 PYTHONPATH=src python3 -m proofrun status
+PYTHONPATH=src python3 -m proofrun audit
 PYTHONPATH=src python3 -m proofrun history
 ```
 
@@ -47,6 +48,14 @@ detail is available in the recorded receipt.
 
 `verify` runs checks from `proofrun.toml` and records one receipt per check. The
 manifest currently uses `[checks.<name>]` tables with a `command` string array.
+
+Every new receipt is sealed with a SHA-256 digest and links to the digest of the
+previous entry. `proofrun audit` verifies those hashes and links, reports older
+unsealed receipts without rejecting them, and exits nonzero if it finds a
+broken chain. `status` also marks proof downstream of a chain failure as stale.
+This makes accidental or undisclosed edits evident; it is not a digital
+signature and does not protect against an attacker who can rewrite the entire
+local store.
 
 ## Why this exists
 

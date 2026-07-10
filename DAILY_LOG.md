@@ -57,3 +57,27 @@ Validation this run used `PYTHONPATH=src python3 -m unittest discover -s tests
 -v`, which passed. The next run should add tamper-evident receipt chaining
 and/or a compact export format so proof can be inspected or shared without
 reading raw JSON Lines.
+
+## 2026-07-09 — Tamper-evident receipt chain
+
+Continued ProofRun and addressed the trust gap identified in the prior run:
+the receipt file was append-only by convention, but ProofRun could not detect
+if stored evidence had been edited. Schema-v3 receipts now contain a canonical
+SHA-256 content hash and the digest of the preceding receipt. The new
+`proofrun audit` command checks both each receipt and chain continuity, supports
+human-readable and JSON output, and returns a failure exit code for a broken
+chain. `proofrun status` also refuses to treat proof downstream of a detected
+chain failure as valid.
+
+Backward compatibility remains intentional. Schema-v1/v2 entries are shown as
+legacy unsealed evidence, and the first new receipt links to the current legacy
+tail. Added tests for valid sealing and links, tampering propagation through a
+later receipt, and migration from a legacy store. Documented that a local hash
+chain is tamper-evident rather than a digital signature and bumped the package
+to 0.3.0.
+
+Validation passed with 12 unit tests, the manifest-driven `proofrun verify`
+workflow, human and JSON `proofrun audit`, `proofrun status`, and
+`git diff --check`. Dogfooding reported six historical unsealed receipts and a
+valid sealed chain. The next run should build a deterministic Markdown export
+containing status and audit evidence for review or agent handoff.

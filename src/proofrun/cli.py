@@ -7,7 +7,15 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from .core import DEFAULT_STORE, assess_receipts, git_state, load_receipts, run_check, run_suite
+from .core import (
+    DEFAULT_STORE,
+    assess_receipts,
+    audit_receipts,
+    git_state,
+    load_receipts,
+    run_check,
+    run_suite,
+)
 from .manifest import load_manifest, select_checks
 
 
@@ -35,6 +43,9 @@ def build_parser() -> argparse.ArgumentParser:
     history = subparsers.add_parser("history", help="show recent receipts")
     history.add_argument("--limit", type=int, default=10)
     history.add_argument("--json", action="store_true")
+
+    audit = subparsers.add_parser("audit", help="verify receipt hashes and chain links")
+    audit.add_argument("--json", action="store_true")
 
     verify = subparsers.add_parser("verify", help="run checks defined in a manifest")
     verify.add_argument(
@@ -155,6 +166,40 @@ def main(argv: Sequence[str] | None = None) -> int:
                 details = _format_status_reasons(item)
                 print(f"{item['state'].upper():5}  {item['name']}: {details}")
         return 0
+
+    if args.action == "audit":
+        audited = audit_receipts(receipts)
+        invalid = sum(item["state"] == "invalid" for item in audited)
+        unsealed = sum(item["state"] == "unsealed" for item in audited)
+        summary = {
+            "state": "invalid" if invalid else "valid",
+            "receipt_count": len(audited),
+            "sealed_count": len(audited) - unsealed,
+            "verified_count": len(audited) - invalid - unsealed,
+            "unsealed_count": unsealed,
+            "invalid_count": invalid,
+            "receipts": audited,
+        }
+        if args.json:
+            print(json.dumps(summary, indent=2, sort_keys=True))
+        elif not audited:
+            print("No verification receipts yet.")
+        else:
+            for item in audited:
+                details = "; ".join(item["issues"])
+                if item["state"] == "unsealed":
+                    details = "legacy receipt (not sealed)"
+                elif not details:
+                    details = "hash and link verified"
+                print(
+                    f"{item['state'].upper():8}  #{item['index']} "
+                    f"{item['name']}: {details}"
+                )
+            print(
+                f"proofrun: audit {summary['state']}; {summary['receipt_count']} receipts, "
+                f"{summary['unsealed_count']} legacy unsealed"
+            )
+        return 1 if invalid else 0
 
     limit = max(args.limit, 0)
     recent = receipts[-limit:] if limit else []

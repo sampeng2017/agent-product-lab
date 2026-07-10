@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 DEFAULT_STORE = Path(".proofrun/receipts.jsonl")
 
 
@@ -155,8 +155,26 @@ def ensure_store(store: Path) -> None:
             ignore.write_text("*\n", encoding="utf-8")
 
 
+def receipt_digest(receipt: dict[str, Any]) -> str:
+    """Return the canonical digest used to seal and link a receipt."""
+    payload = dict(receipt)
+    payload.pop("receipt_hash", None)
+    canonical = json.dumps(
+        payload,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
 def append_receipt(store: Path, receipt: dict[str, Any]) -> None:
     ensure_store(store)
+    previous = load_receipts(store)
+    receipt["schema_version"] = SCHEMA_VERSION
+    receipt["previous_hash"] = receipt_digest(previous[-1]) if previous else None
+    receipt.pop("receipt_hash", None)
+    receipt["receipt_hash"] = receipt_digest(receipt)
     with store.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(receipt, sort_keys=True) + "\n")
 
@@ -174,6 +192,61 @@ def load_receipts(store: Path) -> list[dict[str, Any]]:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"invalid receipt at {store}:{line_number}") from exc
     return receipts
+
+
+def audit_receipts(receipts: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Check receipt hashes and links while tolerating legacy unsealed entries."""
+    receipt_list = list(receipts)
+    results: list[dict[str, Any]] = []
+    chain_started = False
+    chain_broken = False
+
+    for index, receipt in enumerate(receipt_list):
+        schema_version = receipt.get("schema_version", 1)
+        sealed = (
+            (isinstance(schema_version, int) and schema_version >= 3)
+            or "receipt_hash" in receipt
+            or "previous_hash" in receipt
+        )
+        issues: list[str] = []
+
+        if not sealed:
+            if chain_started:
+                issues.append("unsealed receipt after chain start")
+                chain_broken = True
+                state = "invalid"
+            else:
+                state = "unsealed"
+        else:
+            chain_started = True
+            expected_hash = receipt_digest(receipt)
+            if receipt.get("receipt_hash") != expected_hash:
+                issues.append("receipt hash mismatch")
+
+            expected_previous = (
+                receipt_digest(receipt_list[index - 1]) if index > 0 else None
+            )
+            if receipt.get("previous_hash") != expected_previous:
+                issues.append("previous receipt link mismatch")
+
+            if chain_broken:
+                issues.append("earlier chain failure")
+            if issues:
+                chain_broken = True
+                state = "invalid"
+            else:
+                state = "valid"
+
+        results.append(
+            {
+                "index": index + 1,
+                "id": receipt.get("id"),
+                "name": receipt.get("name", "unnamed"),
+                "state": state,
+                "issues": issues,
+            }
+        )
+    return results
 
 
 def run_check(
@@ -270,17 +343,26 @@ def assess_receipts(
     max_age_hours: float,
     now: datetime | None = None,
 ) -> list[dict[str, Any]]:
-    latest: dict[str, dict[str, Any]] = {}
-    for receipt in receipts:
+    receipt_list = list(receipts)
+    integrity = audit_receipts(receipt_list)
+    latest: dict[str, tuple[int, dict[str, Any]]] = {}
+    for index, receipt in enumerate(receipt_list):
         name = str(receipt.get("name", "unnamed"))
-        if name not in latest or receipt.get("started_at", "") > latest[name].get("started_at", ""):
-            latest[name] = receipt
+        current_latest = latest.get(name)
+        if (
+            current_latest is None
+            or receipt.get("started_at", "")
+            > current_latest[1].get("started_at", "")
+        ):
+            latest[name] = (index, receipt)
 
     now = now or datetime.now(timezone.utc)
     assessed: list[dict[str, Any]] = []
     for name in sorted(latest):
-        receipt = latest[name]
+        index, receipt = latest[name]
         reasons: list[str] = []
+        if integrity[index]["state"] == "invalid":
+            reasons.append("receipt chain invalid")
         if receipt.get("exit_code") != 0:
             reasons.append("failed")
 

@@ -71,13 +71,16 @@ claimed checks still apply to this exact working tree."
 - `proofrun run --name NAME -- COMMAND...` executes and records a check.
 - `proofrun verify [NAME...]` runs named checks from `proofrun.toml`.
 - `proofrun status` compares the latest evidence with the current Git state.
+- `proofrun audit` verifies receipt hashes and chain continuity.
 - `proofrun history` exposes the underlying audit trail.
 - Receipts are append-only JSON Lines and remain local by default.
+- New receipts form a SHA-256 hash chain; legacy receipts remain readable and
+  are explicitly identified as unsealed.
 - The implementation has no runtime dependencies.
 
 ## Near-term roadmap
 
-1. Add tamper-evident receipt chaining and exportable Markdown summaries.
+1. Add exportable Markdown summaries for review and agent handoff.
 2. Support richer manifest options such as per-check environment and cwd.
 3. Explore agent hooks and CI import after the local workflow is proven.
 4. Add a concise diff summary mode for large invalidation path sets.
@@ -87,4 +90,5 @@ claimed checks still apply to this exact working tree."
 - A developer can answer "do tests still apply?" in under two seconds.
 - The status explanation is trusted without opening the JSON receipt.
 - When a proof goes stale, the responsible files are visible in one command.
+- Local receipt edits are detected before evidence is trusted.
 - ProofRun becomes a natural final command in agent-driven development runs.
