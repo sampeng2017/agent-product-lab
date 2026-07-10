@@ -56,6 +56,34 @@ def _resolve_path(cwd: Path, path: Path) -> Path:
     return path if path.is_absolute() else cwd / path
 
 
+def _format_status_reasons(item: dict[str, object]) -> str:
+    reasons = item.get("reasons")
+    if not isinstance(reasons, list) or not reasons:
+        return "evidence applies"
+
+    working_tree_paths = item.get("working_tree_paths")
+    tracked: list[str] = []
+    untracked: list[str] = []
+    if isinstance(working_tree_paths, dict):
+        raw_tracked = working_tree_paths.get("tracked")
+        raw_untracked = working_tree_paths.get("untracked")
+        if isinstance(raw_tracked, list):
+            tracked = [path for path in raw_tracked if isinstance(path, str)]
+        if isinstance(raw_untracked, list):
+            untracked = [path for path in raw_untracked if isinstance(path, str)]
+
+    details: list[str] = []
+    for reason in reasons:
+        if not isinstance(reason, str):
+            continue
+        if reason == "working tree changed" and (tracked or untracked):
+            changed_paths = tracked + untracked
+            details.append(f"{reason}: {', '.join(changed_paths)}")
+        else:
+            details.append(reason)
+    return ", ".join(details) or "evidence applies"
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cwd = Path.cwd()
@@ -124,7 +152,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print("No verification receipts yet.")
         else:
             for item in assessed:
-                details = ", ".join(item["reasons"]) or "evidence applies"
+                details = _format_status_reasons(item)
                 print(f"{item['state'].upper():5}  {item['name']}: {details}")
         return 0
 

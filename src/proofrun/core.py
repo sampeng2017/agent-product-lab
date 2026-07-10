@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 DEFAULT_STORE = Path(".proofrun/receipts.jsonl")
 
 
@@ -23,6 +23,8 @@ class GitState:
     branch: str | None
     dirty: bool
     fingerprint: str | None
+    tracked_changes: dict[str, str]
+    untracked_files: dict[str, str]
 
 
 @dataclass(frozen=True)
@@ -55,35 +57,92 @@ def _untracked_files(cwd: Path) -> list[Path]:
     return [cwd / os.fsdecode(name) for name in result.stdout.split(b"\0") if name]
 
 
+def _tracked_files(cwd: Path) -> list[str]:
+    paths: set[str] = set()
+    for args in (("diff", "--name-only", "-z"), ("diff", "--cached", "--name-only", "-z")):
+        result = _git(cwd, *args, check=False)
+        if result.returncode != 0:
+            continue
+        for name in result.stdout.split(b"\0"):
+            if name:
+                paths.add(os.fsdecode(name))
+    return sorted(paths)
+
+
+def _file_digest(path: Path, relative: str) -> str:
+    digest = hashlib.sha256()
+    digest.update(relative.encode())
+    try:
+        digest.update(path.read_bytes())
+    except (OSError, IsADirectoryError):
+        digest.update(b"<unreadable>")
+    return digest.hexdigest()
+
+
+def _tracked_change_digests(cwd: Path) -> dict[str, str]:
+    digests: dict[str, str] = {}
+    for relative in _tracked_files(cwd):
+        digest = hashlib.sha256()
+        digest.update(relative.encode())
+        for args in (
+            ("diff", "--binary", "--", relative),
+            ("diff", "--cached", "--binary", "--", relative),
+        ):
+            result = _git(cwd, *args, check=False)
+            if result.returncode == 0:
+                digest.update(result.stdout)
+        digests[relative] = digest.hexdigest()
+    return digests
+
+
+def _untracked_file_digests(cwd: Path) -> dict[str, str]:
+    digests: dict[str, str] = {}
+    for path in sorted(_untracked_files(cwd)):
+        relative = path.relative_to(cwd).as_posix()
+        digests[relative] = _file_digest(path, relative)
+    return digests
+
+
+def _fingerprint_for_state(
+    head: str | None,
+    tracked_changes: dict[str, str],
+    untracked_files: dict[str, str],
+) -> str:
+    digest = hashlib.sha256()
+    digest.update((head or "unborn").encode())
+    for relative, value in sorted(tracked_changes.items()):
+        digest.update(relative.encode())
+        digest.update(value.encode())
+    for relative, value in sorted(untracked_files.items()):
+        digest.update(relative.encode())
+        digest.update(value.encode())
+    return digest.hexdigest()
+
+
 def git_state(cwd: Path) -> GitState:
     cwd = cwd.resolve()
     probe = _git(cwd, "rev-parse", "--is-inside-work-tree", check=False)
     if probe.returncode != 0 or probe.stdout.strip() != b"true":
-        return GitState(False, None, None, False, None)
+        return GitState(False, None, None, False, None, {}, {})
 
     head_result = _git(cwd, "rev-parse", "HEAD", check=False)
     head = head_result.stdout.decode().strip() if head_result.returncode == 0 else None
     branch_result = _git(cwd, "branch", "--show-current", check=False)
     branch = branch_result.stdout.decode().strip() or None
 
-    digest = hashlib.sha256()
-    digest.update((head or "unborn").encode())
-    for args in (("diff", "--binary"), ("diff", "--cached", "--binary")):
-        result = _git(cwd, *args, check=False)
-        digest.update(result.stdout)
-
-    untracked = _untracked_files(cwd)
-    for path in sorted(untracked):
-        relative = path.relative_to(cwd).as_posix()
-        digest.update(relative.encode())
-        try:
-            digest.update(path.read_bytes())
-        except (OSError, IsADirectoryError):
-            digest.update(b"<unreadable>")
-
+    tracked_changes = _tracked_change_digests(cwd)
+    untracked_files = _untracked_file_digests(cwd)
     status = _git(cwd, "status", "--porcelain", "--untracked-files=all", check=False)
     dirty = bool(status.stdout.strip())
-    return GitState(True, head, branch, dirty, digest.hexdigest())
+    return GitState(
+        True,
+        head,
+        branch,
+        dirty,
+        _fingerprint_for_state(head, tracked_changes, untracked_files),
+        tracked_changes,
+        untracked_files,
+    )
 
 
 def ensure_store(store: Path) -> None:
@@ -182,6 +241,28 @@ def run_suite(
     return suite_exit, results
 
 
+def _coerce_path_map(raw: Any) -> dict[str, str] | None:
+    if not isinstance(raw, dict):
+        return None
+    coerced: dict[str, str] = {}
+    for key, value in raw.items():
+        if isinstance(key, str) and isinstance(value, str):
+            coerced[key] = value
+    return coerced
+
+
+def _changed_paths(recorded: Any, current: dict[str, str]) -> list[str]:
+    recorded_map = _coerce_path_map(recorded)
+    if recorded_map is None:
+        return []
+
+    changed: list[str] = []
+    for path in sorted(set(recorded_map) | set(current)):
+        if recorded_map.get(path) != current.get(path):
+            changed.append(path)
+    return changed
+
+
 def assess_receipts(
     receipts: Iterable[dict[str, Any]],
     *,
@@ -213,12 +294,23 @@ def assess_receipts(
             reasons.append("expired")
 
         recorded = receipt.get("git", {})
+        working_tree_paths = {"tracked": [], "untracked": []}
         if recorded.get("available") != current.available:
             reasons.append("repository changed")
         elif current.available:
             if recorded.get("head") != current.head:
                 reasons.append("commit changed")
             if recorded.get("fingerprint") != current.fingerprint:
+                working_tree_paths = {
+                    "tracked": _changed_paths(
+                        recorded.get("tracked_changes"),
+                        current.tracked_changes,
+                    ),
+                    "untracked": _changed_paths(
+                        recorded.get("untracked_files"),
+                        current.untracked_files,
+                    ),
+                }
                 reasons.append("working tree changed")
 
         assessed.append(
@@ -227,6 +319,7 @@ def assess_receipts(
                 "state": "valid" if not reasons else "stale",
                 "reasons": reasons,
                 "age_hours": round(age_hours, 2),
+                "working_tree_paths": working_tree_paths,
                 "receipt": receipt,
             }
         )

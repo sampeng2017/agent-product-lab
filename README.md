@@ -41,7 +41,9 @@ true:
 - tracked changes and untracked file contents are unchanged.
 
 Use `--max-age-hours 0` to disable the age limit and `--json` for
-machine-readable output.
+machine-readable output. When a receipt goes stale because the working tree
+drifted, `status` names the tracked and untracked paths that changed when that
+detail is available in the recorded receipt.
 
 `verify` runs checks from `proofrun.toml` and records one receipt per check. The
 manifest currently uses `[checks.<name>]` tables with a `command` string array.

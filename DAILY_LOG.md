@@ -37,3 +37,23 @@ development workflow. Validation this run used both
 Current state: the project now supports both ad hoc checks and declarative
 suite execution with append-only receipts. The next run should make `status`
 more actionable by showing which files invalidated the last proof.
+
+## 2026-07-09 — File-level invalidation reporting
+
+Continued ProofRun on the same product path. The highest-value gap after the
+manifest workflow was actionability: `proofrun status` could tell me that proof
+went stale, but not which files caused the drift. Implemented a richer Git
+snapshot in each new receipt by storing tracked-change digests and untracked
+file digests alongside the aggregate fingerprint.
+
+Updated `assess_receipts()` so stale working-tree proofs now carry structured
+tracked and untracked path lists, and changed the CLI output to print those
+paths inline when available. Kept backward compatibility for schema-v1 receipts
+by falling back to the original generic message when old receipts only contain
+the coarse fingerprint. Expanded tests to cover tracked edits, untracked-file
+creation, and legacy-receipt reading.
+
+Validation this run used `PYTHONPATH=src python3 -m unittest discover -s tests
+-v`, which passed. The next run should add tamper-evident receipt chaining
+and/or a compact export format so proof can be inspected or shared without
+reading raw JSON Lines.

@@ -16,6 +16,16 @@ class ProofRunTests(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
         subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "proofrun@example.com"],
+            cwd=self.root,
+            check=True,
+        )
+        subprocess.run(
+            ["git", "config", "user.name", "ProofRun Tests"],
+            cwd=self.root,
+            check=True,
+        )
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()
@@ -51,6 +61,31 @@ class ProofRunTests(unittest.TestCase):
         )
         self.assertEqual(assessed[0]["state"], "stale")
         self.assertIn("working tree changed", assessed[0]["reasons"])
+        self.assertEqual(assessed[0]["working_tree_paths"]["tracked"], [])
+        self.assertEqual(assessed[0]["working_tree_paths"]["untracked"], ["new.py"])
+
+    def test_status_reports_changed_tracked_and_untracked_paths(self) -> None:
+        tracked = self.root / "tracked.py"
+        tracked.write_text("print('v1')\n", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.py"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "seed"], cwd=self.root, check=True)
+
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        _, receipt = run_check(
+            name="smoke",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+
+        tracked.write_text("print('v2')\n", encoding="utf-8")
+        (self.root / "scratch.txt").write_text("hello\n", encoding="utf-8")
+
+        assessed = assess_receipts(
+            [receipt], current=git_state(self.root), max_age_hours=24
+        )
+        self.assertEqual(assessed[0]["working_tree_paths"]["tracked"], ["tracked.py"])
+        self.assertEqual(assessed[0]["working_tree_paths"]["untracked"], ["scratch.txt"])
 
     def test_failed_or_expired_receipt_is_stale(self) -> None:
         old = datetime.now(timezone.utc) - timedelta(hours=48)
@@ -69,6 +104,26 @@ class ProofRunTests(unittest.TestCase):
         assessed = assess_receipts([receipt], current=current, max_age_hours=24)
         self.assertEqual(assessed[0]["state"], "stale")
         self.assertEqual(assessed[0]["reasons"], ["failed", "expired"])
+
+    def test_legacy_receipt_without_path_details_stays_readable(self) -> None:
+        current = git_state(self.root)
+        receipt = {
+            "name": "lint",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "exit_code": 0,
+            "git": {
+                "available": current.available,
+                "head": current.head,
+                "fingerprint": "old-fingerprint",
+            },
+        }
+
+        assessed = assess_receipts([receipt], current=current, max_age_hours=24)
+        self.assertEqual(assessed[0]["reasons"], ["working tree changed"])
+        self.assertEqual(
+            assessed[0]["working_tree_paths"],
+            {"tracked": [], "untracked": []},
+        )
 
     def test_manifest_load_and_selection(self) -> None:
         manifest = self.root / "proofrun.toml"

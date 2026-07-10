@@ -77,13 +77,14 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Explain precisely which files invalidated a receipt.
-2. Add tamper-evident receipt chaining and exportable Markdown summaries.
-3. Support richer manifest options such as per-check environment and cwd.
-4. Explore agent hooks and CI import after the local workflow is proven.
+1. Add tamper-evident receipt chaining and exportable Markdown summaries.
+2. Support richer manifest options such as per-check environment and cwd.
+3. Explore agent hooks and CI import after the local workflow is proven.
+4. Add a concise diff summary mode for large invalidation path sets.
 
 ## Success signals
 
 - A developer can answer "do tests still apply?" in under two seconds.
 - The status explanation is trusted without opening the JSON receipt.
+- When a proof goes stale, the responsible files are visible in one command.
 - ProofRun becomes a natural final command in agent-driven development runs.
