@@ -81,3 +81,25 @@ workflow, human and JSON `proofrun audit`, `proofrun status`, and
 `git diff --check`. Dogfooding reported six historical unsealed receipts and a
 valid sealed chain. The next run should build a deterministic Markdown export
 containing status and audit evidence for review or agent handoff.
+
+## 2026-07-10 — Review-ready Markdown reports
+
+Continued ProofRun and completed the shareability step selected in the previous
+run. Added `proofrun report`, which renders repository state, evidence policy,
+receipt-chain audit totals, and the latest result and metadata for every check
+as Markdown. Stale checks include their reasons and, when available, the exact
+tracked and untracked paths that invalidated them. Reports go to stdout or an
+explicit `--output` path.
+
+The renderer has stable ordering and a controllable assessment time for
+deterministic tests. A damaged receipt store is still rendered for diagnosis,
+but `report` exits nonzero so CI or agent workflows cannot mistake that artifact
+for trusted evidence. Added coverage for report contents, changed-path output,
+deterministic rendering, file export, and invalid-chain exit behavior; the suite
+now has 14 tests. Also created the requested `To-Sam/` communication folder and
+bumped ProofRun to 0.4.0.
+
+Validation used the unit suite, `compileall`, `git diff --check`, report help,
+and a live report against this repository's eight stored receipts. The next run
+should add strict per-check `cwd` and `env` manifest options and record the
+effective execution context in each receipt.

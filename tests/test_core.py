@@ -21,6 +21,7 @@ from proofrun.core import (
     run_suite,
 )
 from proofrun.manifest import load_manifest, select_checks
+from proofrun.report import render_markdown_report
 
 
 class ProofRunTests(unittest.TestCase):
@@ -238,6 +239,81 @@ class ProofRunTests(unittest.TestCase):
         self.assertEqual(summary["state"], "invalid")
         self.assertEqual(summary["invalid_count"], 1)
         self.assertEqual(summary["receipts"][0]["issues"], ["receipt hash mismatch"])
+
+    def test_markdown_report_contains_status_metadata_and_changed_paths(self) -> None:
+        tracked = self.root / "tracked.py"
+        tracked.write_text("print('v1')\n", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.py"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "seed"], cwd=self.root, check=True)
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        _, receipt = run_check(
+            name="unit",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        tracked.write_text("print('v2')\n", encoding="utf-8")
+        (self.root / "scratch.md").write_text("notes\n", encoding="utf-8")
+        now = datetime.fromisoformat(receipt["started_at"]) + timedelta(hours=1)
+
+        report = render_markdown_report(
+            [receipt],
+            current=git_state(self.root),
+            max_age_hours=24,
+            now=now,
+        )
+
+        self.assertIn("# ProofRun verification report", report)
+        self.assertIn("- Checks: 0/1 currently valid", report)
+        self.assertIn("- Receipt chain: VALID", report)
+        self.assertIn("### `unit`", report)
+        self.assertIn("- Status: **STALE** — working tree changed", report)
+        self.assertIn(f"- Receipt: `{receipt['id']}`", report)
+        self.assertIn("- Invalidating tracked paths: `tracked.py`", report)
+        self.assertIn("- Invalidating untracked paths: `scratch.md`", report)
+        self.assertEqual(
+            report,
+            render_markdown_report(
+                [receipt],
+                current=git_state(self.root),
+                max_age_hours=24,
+                now=now,
+            ),
+        )
+
+    def test_report_cli_writes_file_and_fails_for_invalid_chain(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        run_check(
+            name="smoke",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        receipts = load_receipts(store)
+        receipts[0]["exit_code"] = 3
+        store.write_text(
+            "".join(f"{json.dumps(receipt)}\n" for receipt in receipts),
+            encoding="utf-8",
+        )
+        output_path = self.root / "proof.md"
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            exit_code = main(
+                [
+                    "--store",
+                    str(store),
+                    "report",
+                    "--output",
+                    str(output_path),
+                ]
+            )
+
+        self.assertEqual(exit_code, 1)
+        self.assertIn("wrote Markdown report", output.getvalue())
+        report = output_path.read_text(encoding="utf-8")
+        self.assertIn("- Receipt chain: INVALID", report)
+        self.assertIn("receipt chain invalid, failed", report)
 
     def test_manifest_load_and_selection(self) -> None:
         manifest = self.root / "proofrun.toml"

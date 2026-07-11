@@ -21,6 +21,7 @@ EOF
 PYTHONPATH=src python3 -m proofrun verify
 PYTHONPATH=src python3 -m proofrun status
 PYTHONPATH=src python3 -m proofrun audit
+PYTHONPATH=src python3 -m proofrun report --output proofrun-report.md
 PYTHONPATH=src python3 -m proofrun history
 ```
 
@@ -56,6 +57,15 @@ broken chain. `status` also marks proof downstream of a chain failure as stale.
 This makes accidental or undisclosed edits evident; it is not a digital
 signature and does not protect against an attacker who can rewrite the entire
 local store.
+
+`proofrun report` exports the current assessment as Markdown for a code review
+or agent handoff. It includes the repository state, evidence-age policy,
+receipt-chain audit counts, and each check's latest result, command, receipt,
+covered commit, and invalidating paths. The report is printed to standard
+output by default; use `--output PATH` to write it to a file and
+`--max-age-hours 0` to disable expiry. A damaged receipt chain is still
+rendered, but the command exits nonzero so automation cannot silently publish
+it as trusted evidence.
 
 ## Why this exists
 

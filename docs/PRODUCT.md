@@ -72,6 +72,8 @@ claimed checks still apply to this exact working tree."
 - `proofrun verify [NAME...]` runs named checks from `proofrun.toml`.
 - `proofrun status` compares the latest evidence with the current Git state.
 - `proofrun audit` verifies receipt hashes and chain continuity.
+- `proofrun report` exports current proof and audit state as review-ready
+  Markdown.
 - `proofrun history` exposes the underlying audit trail.
 - Receipts are append-only JSON Lines and remain local by default.
 - New receipts form a SHA-256 hash chain; legacy receipts remain readable and
@@ -80,10 +82,11 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Add exportable Markdown summaries for review and agent handoff.
-2. Support richer manifest options such as per-check environment and cwd.
+1. Support richer manifest options such as per-check environment and cwd.
+2. Add a concise diff summary mode for large invalidation path sets.
 3. Explore agent hooks and CI import after the local workflow is proven.
-4. Add a concise diff summary mode for large invalidation path sets.
+4. Consider authenticated or externally checkpointed receipt chains after
+   validating demand for shareable reports.
 
 ## Success signals
 

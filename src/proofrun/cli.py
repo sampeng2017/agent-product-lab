@@ -17,6 +17,7 @@ from .core import (
     run_suite,
 )
 from .manifest import load_manifest, select_checks
+from .report import render_markdown_report
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -46,6 +47,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     audit = subparsers.add_parser("audit", help="verify receipt hashes and chain links")
     audit.add_argument("--json", action="store_true")
+
+    report = subparsers.add_parser("report", help="export current proof as Markdown")
+    report.add_argument("--max-age-hours", type=float, default=24.0)
+    report.add_argument(
+        "--output",
+        type=Path,
+        help="write the report to a file instead of standard output",
+    )
 
     verify = subparsers.add_parser("verify", help="run checks defined in a manifest")
     verify.add_argument(
@@ -199,6 +208,25 @@ def main(argv: Sequence[str] | None = None) -> int:
                 f"proofrun: audit {summary['state']}; {summary['receipt_count']} receipts, "
                 f"{summary['unsealed_count']} legacy unsealed"
             )
+        return 1 if invalid else 0
+
+    if args.action == "report":
+        report = render_markdown_report(
+            receipts,
+            current=git_state(cwd),
+            max_age_hours=args.max_age_hours,
+        )
+        if args.output:
+            output = _resolve_path(cwd, args.output)
+            try:
+                output.write_text(report, encoding="utf-8")
+            except OSError as exc:
+                print(f"proofrun: could not write report: {exc}", file=sys.stderr)
+                return 2
+            print(f"proofrun: wrote Markdown report to {output}")
+        else:
+            print(report, end="")
+        invalid = any(item["state"] == "invalid" for item in audit_receipts(receipts))
         return 1 if invalid else 0
 
     limit = max(args.limit, 0)
