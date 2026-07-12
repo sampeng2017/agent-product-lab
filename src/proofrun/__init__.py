@@ -1,3 +1,3 @@
 """ProofRun: local verification receipts tied to repository state."""
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"

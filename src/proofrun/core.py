@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 DEFAULT_STORE = Path(".proofrun/receipts.jsonl")
 
 
@@ -31,6 +31,8 @@ class GitState:
 class CheckDefinition:
     name: str
     command: tuple[str, ...]
+    cwd: str = "."
+    env: tuple[tuple[str, str], ...] = ()
 
 
 def _git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[bytes]:
@@ -255,25 +257,42 @@ def run_check(
     command: Sequence[str],
     cwd: Path,
     store: Path,
+    execution_cwd: Path | None = None,
+    env: dict[str, str] | None = None,
 ) -> tuple[int, dict[str, Any]]:
     if not command:
         raise ValueError("a command is required")
 
     ensure_store(store)
+    repository_cwd = cwd.resolve()
+    effective_cwd = (execution_cwd or repository_cwd).resolve()
+    env_overrides = dict(sorted((env or {}).items()))
+    process_env = os.environ.copy()
+    process_env.update(env_overrides)
     started_at = datetime.now(timezone.utc)
     start = time.monotonic()
     try:
-        completed = subprocess.run(list(command), cwd=cwd, check=False)
+        completed = subprocess.run(
+            list(command),
+            cwd=effective_cwd,
+            env=process_env,
+            check=False,
+        )
         exit_code = completed.returncode
     except FileNotFoundError:
         exit_code = 127
     duration_ms = round((time.monotonic() - start) * 1000)
-    state = git_state(cwd)
+    state = git_state(repository_cwd)
+    try:
+        receipt_cwd = effective_cwd.relative_to(repository_cwd).as_posix() or "."
+    except ValueError:
+        receipt_cwd = str(effective_cwd)
     receipt: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "id": uuid.uuid4().hex[:12],
         "name": name,
         "command": list(command),
+        "context": {"cwd": receipt_cwd, "env": env_overrides},
         "started_at": started_at.isoformat(),
         "duration_ms": duration_ms,
         "exit_code": exit_code,
@@ -290,14 +309,32 @@ def run_suite(
     store: Path,
     fail_fast: bool = False,
 ) -> tuple[int, list[dict[str, Any]]]:
+    repository_cwd = cwd.resolve()
+    execution_contexts: list[tuple[CheckDefinition, Path, dict[str, str]]] = []
+    for check in checks:
+        execution_cwd = (repository_cwd / check.cwd).resolve()
+        try:
+            execution_cwd.relative_to(repository_cwd)
+        except ValueError as exc:
+            raise ValueError(
+                f"check {check.name!r} cwd escapes the repository: {check.cwd}"
+            ) from exc
+        if not execution_cwd.is_dir():
+            raise ValueError(
+                f"check {check.name!r} cwd is not a directory: {check.cwd}"
+            )
+        execution_contexts.append((check, execution_cwd, dict(check.env)))
+
     suite_exit = 0
     results: list[dict[str, Any]] = []
-    for check in checks:
+    for check, execution_cwd, env in execution_contexts:
         exit_code, receipt = run_check(
             name=check.name,
             command=check.command,
             cwd=cwd,
             store=store,
+            execution_cwd=execution_cwd,
+            env=env,
         )
         results.append(
             {

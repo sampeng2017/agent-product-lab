@@ -132,12 +132,16 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(f"proofrun: {exc}", file=sys.stderr)
             return 2
 
-        suite_exit, results = run_suite(
-            checks,
-            cwd=cwd,
-            store=store,
-            fail_fast=args.fail_fast,
-        )
+        try:
+            suite_exit, results = run_suite(
+                checks,
+                cwd=cwd,
+                store=store,
+                fail_fast=args.fail_fast,
+            )
+        except ValueError as exc:
+            print(f"proofrun: {exc}", file=sys.stderr)
+            return 2
         passed = 0
         for item in results:
             result = "passed" if item["exit_code"] == 0 else f"failed ({item['exit_code']})"

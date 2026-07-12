@@ -91,6 +91,9 @@ def render_markdown_report(
         paths = item.get("working_tree_paths", {})
         tracked = paths.get("tracked", []) if isinstance(paths, dict) else []
         untracked = paths.get("untracked", []) if isinstance(paths, dict) else []
+        context = receipt.get("context", {})
+        context_cwd = context.get("cwd", ".") if isinstance(context, dict) else "."
+        context_env = context.get("env", {}) if isinstance(context, dict) else {}
 
         lines.extend(
             [
@@ -103,10 +106,19 @@ def render_markdown_report(
                 f"- Age: {item['age_hours']:g} hours",
                 f"- Duration: {receipt.get('duration_ms', 'unknown')} ms",
                 f"- Command: {_inline_code(command_text)}",
+                f"- Working directory: {_display(context_cwd)}",
                 f"- Receipt: {_display(receipt.get('id'))}",
                 f"- Covered commit: {_display(recorded_git.get('head'))}",
             ]
         )
+        if isinstance(context_env, dict) and context_env:
+            lines.append(
+                "- Environment: "
+                + ", ".join(
+                    _inline_code(f"{key}={value}")
+                    for key, value in sorted(context_env.items())
+                )
+            )
         if tracked:
             lines.append(
                 "- Invalidating tracked paths: "

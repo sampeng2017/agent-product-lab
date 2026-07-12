@@ -70,6 +70,8 @@ claimed checks still apply to this exact working tree."
 
 - `proofrun run --name NAME -- COMMAND...` executes and records a check.
 - `proofrun verify [NAME...]` runs named checks from `proofrun.toml`.
+- Manifest checks can declare repository-contained working directories and
+  environment overrides; receipts preserve that execution context.
 - `proofrun status` compares the latest evidence with the current Git state.
 - `proofrun audit` verifies receipt hashes and chain continuity.
 - `proofrun report` exports current proof and audit state as review-ready
@@ -82,8 +84,8 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Support richer manifest options such as per-check environment and cwd.
-2. Add a concise diff summary mode for large invalidation path sets.
+1. Add a concise diff summary mode for large invalidation path sets.
+2. Serialize concurrent receipt writers to prevent chain forks.
 3. Explore agent hooks and CI import after the local workflow is proven.
 4. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.

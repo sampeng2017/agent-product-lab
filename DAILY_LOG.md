@@ -103,3 +103,26 @@ Validation used the unit suite, `compileall`, `git diff --check`, report help,
 and a live report against this repository's eight stored receipts. The next run
 should add strict per-check `cwd` and `env` manifest options and record the
 effective execution context in each receipt.
+
+## 2026-07-11 — Reproducible per-check execution contexts
+
+Continued ProofRun and implemented the multi-package workflow selected in the
+previous handoff. Manifest checks now accept a repository-relative `cwd` plus a
+`[checks.<name>.env]` string table. Commands inherit the process environment,
+apply those overrides, and execute from the declared directory while their Git
+snapshot continues to cover the full repository invocation root.
+
+Made configuration failures safe and predictable: unsupported fields, invalid
+environment entries, parent traversal, absolute paths, symlink escapes, and
+missing directories are rejected, and every selected context is validated
+before the first check starts. Schema-v4 receipts record the configured working
+directory and environment overrides, and Markdown reports expose both. The
+Python 3.10 dependency-free TOML fallback supports the same nested environment
+tables. Documentation warns that override values are stored verbatim and must
+not contain secrets.
+
+Expanded the suite from 14 to 18 tests, covering actual cwd/env execution,
+receipt and report metadata, strict manifest errors, preflight atomicity, and
+fallback parsing. Validation passed with the full unit suite, `compileall`, and
+`git diff --check`. The next run should add a compact path summary/limit for
+large invalidation sets while retaining full path data in JSON output.

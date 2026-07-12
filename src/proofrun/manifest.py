@@ -16,6 +16,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised on Python 3.10
 
 SECTION_PREFIX = "checks."
 SECTION_PATTERN = re.compile(r"^\[checks\.([A-Za-z0-9_-]+)\]$")
+ENV_SECTION_PATTERN = re.compile(r"^\[checks\.([A-Za-z0-9_-]+)\.env\]$")
 
 
 def load_manifest(path: Path) -> list[CheckDefinition]:
@@ -33,12 +34,41 @@ def load_manifest(path: Path) -> list[CheckDefinition]:
             raise ValueError("check names must be non-empty strings")
         if not isinstance(config, Mapping):
             raise ValueError(f"check {name!r} must be a table")
+        unknown = set(config) - {"command", "cwd", "env"}
+        if unknown:
+            raise ValueError(
+                f"check {name!r} has unsupported keys: {', '.join(sorted(unknown))}"
+            )
         command = config.get("command")
         if not isinstance(command, list) or not command or not all(
             isinstance(part, str) and part for part in command
         ):
             raise ValueError(f"check {name!r} must define a non-empty string array command")
-        definitions.append(CheckDefinition(name=name, command=tuple(command)))
+        cwd = config.get("cwd", ".")
+        if not isinstance(cwd, str) or not cwd or "\0" in cwd:
+            raise ValueError(f"check {name!r} cwd must be a non-empty string")
+        cwd_path = Path(cwd)
+        if cwd_path.is_absolute() or ".." in cwd_path.parts:
+            raise ValueError(f"check {name!r} cwd must stay within the repository")
+
+        raw_env = config.get("env", {})
+        if not isinstance(raw_env, Mapping):
+            raise ValueError(f"check {name!r} env must be a string table")
+        env: list[tuple[str, str]] = []
+        for key, value in raw_env.items():
+            if not isinstance(key, str) or not key or "=" in key or "\0" in key:
+                raise ValueError(f"check {name!r} has an invalid environment variable name")
+            if not isinstance(value, str) or "\0" in value:
+                raise ValueError(f"check {name!r} env values must be strings")
+            env.append((key, value))
+        definitions.append(
+            CheckDefinition(
+                name=name,
+                command=tuple(command),
+                cwd=cwd_path.as_posix(),
+                env=tuple(sorted(env)),
+            )
+        )
     return definitions
 
 
@@ -76,17 +106,26 @@ def _parse_manifest(text: str) -> dict[str, Any]:
 def _parse_manifest_fallback(text: str) -> dict[str, Any]:
     data: dict[str, Any] = {"checks": {}}
     current: dict[str, Any] | None = None
+    current_is_env = False
 
     for line_number, raw_line in enumerate(text.splitlines(), start=1):
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
 
+        env_section_match = ENV_SECTION_PATTERN.match(line)
+        if env_section_match:
+            name = env_section_match.group(1)
+            check = data["checks"].setdefault(name, {})
+            current = check.setdefault("env", {})
+            current_is_env = True
+            continue
+
         section_match = SECTION_PATTERN.match(line)
         if section_match:
             name = section_match.group(1)
-            current = {}
-            data["checks"][name] = current
+            current = data["checks"].setdefault(name, {})
+            current_is_env = False
             continue
 
         if line.startswith("[") and line.endswith("]"):
@@ -104,14 +143,18 @@ def _parse_manifest_fallback(text: str) -> dict[str, Any]:
         if separator != "=":
             raise ValueError(f"invalid manifest assignment on line {line_number}")
         key = key.strip()
-        if key != "command":
+        if not current_is_env and key in {"command", "cwd"}:
+            pass
+        elif current_is_env:
+            pass
+        else:
             raise ValueError(
-                f"unsupported key {key!r} on line {line_number}; only command is allowed"
+                f"unsupported key {key!r} on line {line_number}"
             )
         try:
             parsed = ast.literal_eval(value.strip())
         except (SyntaxError, ValueError) as exc:
-            raise ValueError(f"invalid command array on line {line_number}") from exc
+            raise ValueError(f"invalid value on line {line_number}") from exc
         current[key] = parsed
 
     return data

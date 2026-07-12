@@ -9,6 +9,7 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from unittest.mock import patch
 
 from proofrun.cli import main
 from proofrun.core import (
@@ -153,7 +154,7 @@ class ProofRunTests(unittest.TestCase):
             store=store,
         )
 
-        self.assertEqual(first["schema_version"], 3)
+        self.assertEqual(first["schema_version"], 4)
         self.assertIsNone(first["previous_hash"])
         self.assertEqual(first["receipt_hash"], receipt_digest(first))
         self.assertEqual(second["previous_hash"], receipt_digest(first))
@@ -335,6 +336,101 @@ command = ["python3", "-c", "print('lint')"]
         self.assertEqual([check.name for check in checks], ["unit", "lint"])
         self.assertEqual([check.name for check in selected], ["lint"])
         self.assertEqual(selected[0].command, ("python3", "-c", "print('lint')"))
+
+    def test_manifest_context_runs_from_subdirectory_and_is_recorded(self) -> None:
+        package = self.root / "packages" / "api"
+        package.mkdir(parents=True)
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text(
+            f"""
+[checks.context]
+command = ["{sys.executable}", "-c", "import os, pathlib; assert pathlib.Path.cwd().name == 'api'; assert os.environ['APP_MODE'] == 'test'"]
+cwd = "packages/api"
+
+[checks.context.env]
+APP_MODE = "test"
+Z_FLAG = "last"
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        store = self.root / ".proofrun" / "receipts.jsonl"
+
+        exit_code, results = run_suite(
+            load_manifest(manifest), cwd=self.root, store=store
+        )
+
+        self.assertEqual(exit_code, 0)
+        receipt = results[0]["receipt"]
+        self.assertEqual(receipt["context"]["cwd"], "packages/api")
+        self.assertEqual(
+            receipt["context"]["env"],
+            {"APP_MODE": "test", "Z_FLAG": "last"},
+        )
+        self.assertEqual(receipt["git"]["untracked_files"].keys(), {"proofrun.toml"})
+        report = render_markdown_report(
+            [receipt], current=git_state(self.root), max_age_hours=24
+        )
+        self.assertIn("- Working directory: `packages/api`", report)
+        self.assertIn("- Environment: `APP_MODE=test`, `Z_FLAG=last`", report)
+
+    def test_manifest_context_is_strictly_validated(self) -> None:
+        manifest = self.root / "proofrun.toml"
+        invalid_manifests = [
+            ('cwd = "../outside"', "cwd must stay within"),
+            ('env = ["not", "a", "table"]', "env must be a string table"),
+            ('extra = true', "unsupported keys"),
+        ]
+        for config, message in invalid_manifests:
+            with self.subTest(config=config):
+                manifest.write_text(
+                    f'[checks.unit]\ncommand = ["python3", "-V"]\n{config}\n',
+                    encoding="utf-8",
+                )
+                with self.assertRaisesRegex(ValueError, message):
+                    load_manifest(manifest)
+
+    def test_python_310_fallback_parses_cwd_and_environment_table(self) -> None:
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text(
+            """
+[checks.unit]
+command = ["python3", "-V"]
+cwd = "pkg"
+
+[checks.unit.env]
+PYTHONPATH = "../src"
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+
+        with patch("proofrun.manifest.tomllib", None):
+            check = load_manifest(manifest)[0]
+
+        self.assertEqual(check.cwd, "pkg")
+        self.assertEqual(check.env, (("PYTHONPATH", "../src"),))
+
+    def test_suite_rejects_missing_context_directory_before_running(self) -> None:
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text(
+            f"""
+[checks.first]
+command = ["{sys.executable}", "-c", "print('should not run')"]
+
+[checks.missing]
+command = ["{sys.executable}", "-c", "pass"]
+cwd = "missing"
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        store = self.root / ".proofrun" / "receipts.jsonl"
+
+        with self.assertRaisesRegex(ValueError, "cwd is not a directory"):
+            run_suite(load_manifest(manifest), cwd=self.root, store=store)
+
+        self.assertFalse(store.exists())
 
     def test_run_suite_records_each_check_and_stops_on_fail_fast(self) -> None:
         store = self.root / ".proofrun" / "receipts.jsonl"

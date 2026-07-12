@@ -47,8 +47,27 @@ machine-readable output. When a receipt goes stale because the working tree
 drifted, `status` names the tracked and untracked paths that changed when that
 detail is available in the recorded receipt.
 
-`verify` runs checks from `proofrun.toml` and records one receipt per check. The
-manifest currently uses `[checks.<name>]` tables with a `command` string array.
+`verify` runs checks from `proofrun.toml` and records one receipt per check. A
+check can set a repository-relative working directory and explicit environment
+overrides in addition to its command:
+
+```toml
+[checks.api]
+command = ["python3", "-m", "unittest", "discover", "-s", "tests"]
+cwd = "packages/api"
+
+[checks.api.env]
+APP_MODE = "test"
+PYTHONPATH = "src"
+```
+
+`command` must be a non-empty string array, `cwd` cannot be absolute or escape
+the repository, and every environment value must be a string. ProofRun validates
+all selected check directories before it starts the suite. Commands inherit the
+process environment, then apply these overrides. New receipts and Markdown
+reports record the configured working directory and override values so the
+execution context remains inspectable. Do not put secrets in the manifest: the
+values are stored verbatim in local receipts and reports.
 
 Every new receipt is sealed with a SHA-256 digest and links to the digest of the
 previous entry. `proofrun audit` verifies those hashes and links, reports older
@@ -60,9 +79,9 @@ local store.
 
 `proofrun report` exports the current assessment as Markdown for a code review
 or agent handoff. It includes the repository state, evidence-age policy,
-receipt-chain audit counts, and each check's latest result, command, receipt,
-covered commit, and invalidating paths. The report is printed to standard
-output by default; use `--output PATH` to write it to a file and
+receipt-chain audit counts, and each check's latest result, command, execution
+context, receipt, covered commit, and invalidating paths. The report is printed
+to standard output by default; use `--output PATH` to write it to a file and
 `--max-age-hours 0` to disable expiry. A damaged receipt chain is still
 rendered, but the command exits nonzero so automation cannot silently publish
 it as trusted evidence.
