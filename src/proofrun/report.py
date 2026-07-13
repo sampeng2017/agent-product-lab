@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 from .core import GitState, assess_receipts, audit_receipts
+from .presentation import DEFAULT_PATH_LIMIT, limited_working_tree_paths
 
 
 def _inline_code(value: object) -> str:
@@ -38,6 +39,7 @@ def render_markdown_report(
     current: GitState,
     max_age_hours: float,
     now: datetime | None = None,
+    path_limit: int = DEFAULT_PATH_LIMIT,
 ) -> str:
     """Render current proof and chain state as deterministic Markdown."""
     receipt_list = list(receipts)
@@ -88,9 +90,11 @@ def render_markdown_report(
         result = "passed" if exit_code == 0 else f"failed (exit {exit_code})"
         reasons = item.get("reasons", [])
         evidence = ", ".join(str(reason) for reason in reasons) or "evidence applies"
-        paths = item.get("working_tree_paths", {})
-        tracked = paths.get("tracked", []) if isinstance(paths, dict) else []
-        untracked = paths.get("untracked", []) if isinstance(paths, dict) else []
+        shown_paths, omitted_paths = limited_working_tree_paths(
+            item.get("working_tree_paths"), path_limit
+        )
+        tracked = shown_paths["tracked"]
+        untracked = shown_paths["untracked"]
         context = receipt.get("context", {})
         context_cwd = context.get("cwd", ".") if isinstance(context, dict) else "."
         context_env = context.get("env", {}) if isinstance(context, dict) else {}
@@ -129,5 +133,7 @@ def render_markdown_report(
                 "- Invalidating untracked paths: "
                 + ", ".join(_inline_code(path) for path in untracked)
             )
+        if omitted_paths:
+            lines.append(f"- Additional invalidating paths: {omitted_paths} not shown")
 
     return "\n".join(lines) + "\n"

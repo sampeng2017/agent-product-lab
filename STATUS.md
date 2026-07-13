@@ -14,30 +14,27 @@ repository subdirectories with explicit environment overrides. Schema-v4
 receipts preserve that execution context alongside Git snapshots, file-level
 drift details, canonical SHA-256 hashes, and links to prior receipts. Status
 explains whether evidence still applies, audit detects local receipt-chain
-damage, and report packages both views into a Markdown handoff.
+damage, and report packages both views into a Markdown handoff. Human status
+and reports cap invalidating paths at 10 by default with explicit overflow
+counts; structured JSON remains complete.
 
 ## Completed today
 
-- Added optional `cwd` and `[checks.<name>.env]` manifest settings for
-  multi-package and context-sensitive verification commands.
-- Made commands inherit the host process environment and deterministically
-  apply the configured string overrides.
-- Added strict validation for unsupported keys, invalid environment names and
-  values, absolute or parent-traversing paths, symlink escapes, and missing
-  directories. All selected directories are validated before any check runs.
-- Kept Git coverage anchored to the repository invocation root even when a
-  command executes in a subdirectory.
-- Added schema-v4 receipt context and displayed it in Markdown reports; bumped
-  the package to version 0.5.0.
-- Added coverage for execution behavior, receipt/report metadata, validation,
-  suite atomicity before execution, and the dependency-free Python 3.10 parser.
+- Added a shared, deterministic path-display limiter for terminal status and
+  Markdown reports.
+- Added `--path-limit N` to `status` and `report`, with a concise 10-path
+  default, overflow counts, and a zero-path summary mode.
+- Kept `status --json` lossless: it returns every tracked and untracked path
+  even when `--path-limit` is supplied.
+- Added end-to-end regression coverage across human status, JSON status, and
+  Markdown rendering; the suite now contains 19 tests.
+- Bumped the package to version 0.6.0 and documented the presentation contract.
 
 ## Changed since the previous run
 
-ProofRun manifests no longer need shell wrappers such as `cd packages/api &&`
-or inline environment assignments. Checks now describe execution context as
-structured, validated data, and the resulting evidence shows reviewers exactly
-where and with which overrides a command ran.
+Large working-tree changes no longer flood terminals or review handoffs.
+Reviewers see a representative stable prefix plus an exact omitted-path count,
+while scripts consuming JSON retain the complete invalidation detail.
 
 ## Known issues and incomplete work
 
@@ -51,15 +48,14 @@ where and with which overrides a command ran.
   could compute the same previous hash and create a forked or reordered store.
 - Fingerprinting reads all untracked file contents and may be slow in large
   repositories.
-- Long invalidation lists can make Markdown reports noisy.
 - Environment overrides are intentionally stored verbatim for reproducibility;
   users must not place secrets in manifests or publish reports containing them.
 
 ## Recommended next step
 
-Add a concise invalidation summary with a configurable path display limit and
-overflow count, keeping terminal status and Markdown reports useful in large
-repositories without losing the full structured JSON detail.
+Serialize concurrent receipt writers with a repository-local lock so two
+simultaneous ProofRun commands cannot compute the same previous hash and fork
+or reorder the receipt chain.
 
 ## Important decisions
 
@@ -70,6 +66,8 @@ repositories without losing the full structured JSON detail.
   partial evidence caused by a manifest configuration error.
 - Receipts record only configured environment overrides, not the inherited host
   environment, balancing reproducibility with machine-data exposure.
+- Path limits are presentation-only, apply across tracked paths before
+  untracked paths in stable order, and never truncate receipt or JSON data.
 - Evidence is invalidated by commit or working-tree changes, age, or a broken
   receipt chain.
 - Receipts stay ignored by Git while product decisions and run handoffs are

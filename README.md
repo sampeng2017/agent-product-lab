@@ -33,6 +33,7 @@ PYTHONPATH=src python3 -m proofrun run --name unit-tests -- \
   python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m proofrun verify unit
 PYTHONPATH=src python3 -m proofrun status --json
+PYTHONPATH=src python3 -m proofrun status --path-limit 5
 ```
 
 `status` marks a successful receipt as `valid` only while all of these remain
@@ -44,8 +45,10 @@ true:
 
 Use `--max-age-hours 0` to disable the age limit and `--json` for
 machine-readable output. When a receipt goes stale because the working tree
-drifted, `status` names the tracked and untracked paths that changed when that
-detail is available in the recorded receipt.
+drifted, `status` names up to 10 tracked and untracked paths that changed, then
+reports how many more were omitted. Set `--path-limit N` to change that display
+limit or `--path-limit 0` to show only the overflow count. JSON output always
+contains the complete path lists regardless of the display limit.
 
 `verify` runs checks from `proofrun.toml` and records one receipt per check. A
 check can set a repository-relative working directory and explicit environment
@@ -84,7 +87,9 @@ context, receipt, covered commit, and invalidating paths. The report is printed
 to standard output by default; use `--output PATH` to write it to a file and
 `--max-age-hours 0` to disable expiry. A damaged receipt chain is still
 rendered, but the command exits nonzero so automation cannot silently publish
-it as trusted evidence.
+it as trusted evidence. Reports use the same 10-path default per check and
+accept `--path-limit N`; omitted paths are counted explicitly. This limit is
+presentation-only and never changes stored receipts or status JSON.
 
 ## Why this exists
 

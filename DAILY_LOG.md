@@ -126,3 +126,24 @@ receipt and report metadata, strict manifest errors, preflight atomicity, and
 fallback parsing. Validation passed with the full unit suite, `compileall`, and
 `git diff --check`. The next run should add a compact path summary/limit for
 large invalidation sets while retaining full path data in JSON output.
+
+## 2026-07-12 — Compact invalidation path summaries
+
+Continued ProofRun and completed the large-change readability improvement from
+the previous handoff. Human `status` output and Markdown reports now display at
+most 10 invalidating paths per check by default, followed by an exact overflow
+count. Both commands accept `--path-limit N`, including zero for count-only
+summaries. A shared presentation helper keeps ordering and limit behavior
+consistent across both views.
+
+The limit is deliberately presentation-only. `status --json` still returns
+every tracked and untracked invalidating path, even when `--path-limit` is also
+provided, so existing automation remains lossless. Added end-to-end coverage
+for a 12-file drift across terminal status, structured JSON, and Markdown; the
+suite now has 19 tests. Bumped ProofRun to 0.6.0 and updated user and product
+documentation.
+
+Validation passed with the full unit suite, `compileall`, `git diff --check`,
+manifest-driven `verify`, audit, status, and a Markdown report export. The next
+run should serialize concurrent receipt writers with a repository-local lock
+to prevent receipt-chain forks or reordering.

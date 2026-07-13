@@ -101,6 +101,60 @@ class ProofRunTests(unittest.TestCase):
         self.assertEqual(assessed[0]["working_tree_paths"]["tracked"], ["tracked.py"])
         self.assertEqual(assessed[0]["working_tree_paths"]["untracked"], ["scratch.txt"])
 
+    def test_path_limit_compacts_human_output_but_json_keeps_all_paths(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        run_check(
+            name="smoke",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        for index in range(12):
+            (self.root / f"change-{index:02}.txt").write_text(
+                f"{index}\n", encoding="utf-8"
+            )
+
+        output = io.StringIO()
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--store", str(store), "status", "--path-limit", "3"]
+                )
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn(
+            "working tree changed: change-00.txt, change-01.txt, change-02.txt, +9 more",
+            output.getvalue(),
+        )
+
+        output = io.StringIO()
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                main(
+                    [
+                        "--store",
+                        str(store),
+                        "status",
+                        "--path-limit",
+                        "1",
+                        "--json",
+                    ]
+                )
+        status = json.loads(output.getvalue())
+        self.assertEqual(len(status[0]["working_tree_paths"]["untracked"]), 12)
+
+        report = render_markdown_report(
+            load_receipts(store),
+            current=git_state(self.root),
+            max_age_hours=24,
+            path_limit=2,
+        )
+        self.assertIn(
+            "- Invalidating untracked paths: `change-00.txt`, `change-01.txt`",
+            report,
+        )
+        self.assertIn("- Additional invalidating paths: 10 not shown", report)
+
     def test_failed_or_expired_receipt_is_stale(self) -> None:
         old = datetime.now(timezone.utc) - timedelta(hours=48)
         current = git_state(self.root)

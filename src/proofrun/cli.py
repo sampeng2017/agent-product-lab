@@ -17,6 +17,7 @@ from .core import (
     run_suite,
 )
 from .manifest import load_manifest, select_checks
+from .presentation import DEFAULT_PATH_LIMIT, limited_working_tree_paths
 from .report import render_markdown_report
 
 
@@ -39,6 +40,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     status = subparsers.add_parser("status", help="show whether latest receipts still apply")
     status.add_argument("--max-age-hours", type=float, default=24.0)
+    status.add_argument(
+        "--path-limit",
+        type=_nonnegative_int,
+        default=DEFAULT_PATH_LIMIT,
+        help=f"maximum invalidating paths to display (default: {DEFAULT_PATH_LIMIT})",
+    )
     status.add_argument("--json", action="store_true")
 
     history = subparsers.add_parser("history", help="show recent receipts")
@@ -50,6 +57,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     report = subparsers.add_parser("report", help="export current proof as Markdown")
     report.add_argument("--max-age-hours", type=float, default=24.0)
+    report.add_argument(
+        "--path-limit",
+        type=_nonnegative_int,
+        default=DEFAULT_PATH_LIMIT,
+        help=f"maximum invalidating paths per check (default: {DEFAULT_PATH_LIMIT})",
+    )
     report.add_argument(
         "--output",
         type=Path,
@@ -76,29 +89,33 @@ def _resolve_path(cwd: Path, path: Path) -> Path:
     return path if path.is_absolute() else cwd / path
 
 
-def _format_status_reasons(item: dict[str, object]) -> str:
+def _nonnegative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must be zero or greater")
+    return parsed
+
+
+def _format_status_reasons(item: dict[str, object], *, path_limit: int) -> str:
     reasons = item.get("reasons")
     if not isinstance(reasons, list) or not reasons:
         return "evidence applies"
 
-    working_tree_paths = item.get("working_tree_paths")
-    tracked: list[str] = []
-    untracked: list[str] = []
-    if isinstance(working_tree_paths, dict):
-        raw_tracked = working_tree_paths.get("tracked")
-        raw_untracked = working_tree_paths.get("untracked")
-        if isinstance(raw_tracked, list):
-            tracked = [path for path in raw_tracked if isinstance(path, str)]
-        if isinstance(raw_untracked, list):
-            untracked = [path for path in raw_untracked if isinstance(path, str)]
+    shown_paths, omitted = limited_working_tree_paths(
+        item.get("working_tree_paths"), path_limit
+    )
+    changed_paths = shown_paths["tracked"] + shown_paths["untracked"]
 
     details: list[str] = []
     for reason in reasons:
         if not isinstance(reason, str):
             continue
-        if reason == "working tree changed" and (tracked or untracked):
-            changed_paths = tracked + untracked
-            details.append(f"{reason}: {', '.join(changed_paths)}")
+        if reason == "working tree changed" and (changed_paths or omitted):
+            path_details = ", ".join(changed_paths)
+            if omitted:
+                overflow = f"+{omitted} more"
+                path_details = f"{path_details}, {overflow}" if path_details else overflow
+            details.append(f"{reason}: {path_details}")
         else:
             details.append(reason)
     return ", ".join(details) or "evidence applies"
@@ -176,7 +193,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print("No verification receipts yet.")
         else:
             for item in assessed:
-                details = _format_status_reasons(item)
+                details = _format_status_reasons(item, path_limit=args.path_limit)
                 print(f"{item['state'].upper():5}  {item['name']}: {details}")
         return 0
 
@@ -219,6 +236,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             receipts,
             current=git_state(cwd),
             max_age_hours=args.max_age_hours,
+            path_limit=args.path_limit,
         )
         if args.output:
             output = _resolve_path(cwd, args.output)

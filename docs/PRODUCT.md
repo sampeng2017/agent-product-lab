@@ -73,6 +73,8 @@ claimed checks still apply to this exact working tree."
 - Manifest checks can declare repository-contained working directories and
   environment overrides; receipts preserve that execution context.
 - `proofrun status` compares the latest evidence with the current Git state.
+- Human status and Markdown reports compact large invalidation sets while JSON
+  retains every changed path.
 - `proofrun audit` verifies receipt hashes and chain continuity.
 - `proofrun report` exports current proof and audit state as review-ready
   Markdown.
@@ -84,10 +86,9 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Add a concise diff summary mode for large invalidation path sets.
-2. Serialize concurrent receipt writers to prevent chain forks.
-3. Explore agent hooks and CI import after the local workflow is proven.
-4. Consider authenticated or externally checkpointed receipt chains after
+1. Serialize concurrent receipt writers to prevent chain forks.
+2. Explore agent hooks and CI import after the local workflow is proven.
+3. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 
 ## Success signals
