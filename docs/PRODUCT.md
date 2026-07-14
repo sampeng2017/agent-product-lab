@@ -82,11 +82,15 @@ claimed checks still apply to this exact working tree."
 - Receipts are append-only JSON Lines and remain local by default.
 - New receipts form a SHA-256 hash chain; legacy receipts remain readable and
   are explicitly identified as unsealed.
+- OS-managed store locks serialize the short receipt append operation across
+  concurrent ProofRun writers and give readers a consistent snapshot, without
+  serializing check execution.
 - The implementation has no runtime dependencies.
 
 ## Near-term roadmap
 
-1. Serialize concurrent receipt writers to prevent chain forks.
+1. Add bounded parallel manifest execution now that receipt appends are safe
+   across concurrent writers.
 2. Explore agent hooks and CI import after the local workflow is proven.
 3. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.

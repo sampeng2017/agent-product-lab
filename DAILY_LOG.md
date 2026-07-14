@@ -147,3 +147,28 @@ Validation passed with the full unit suite, `compileall`, `git diff --check`,
 manifest-driven `verify`, audit, status, and a Markdown report export. The next
 run should serialize concurrent receipt writers with a repository-local lock
 to prevent receipt-chain forks or reordering.
+
+## 2026-07-13 — Serialized concurrent receipt writers
+
+Continued ProofRun and closed the chain-integrity race identified in the prior
+handoff. Receipt append now acquires an OS-managed sibling lock before reading
+the current tail, computing the previous link, sealing the new receipt, and
+writing it. Readers coordinate through the same lock and cannot observe a
+partial final record. Command execution remains outside this narrow critical
+section, so independent verification work is not unnecessarily serialized.
+The lock uses standard-library primitives on Unix and Windows and is released
+by the operating system when a process exits.
+
+Added a deterministic concurrency regression that releases eight writers at
+once and deliberately slows receipt hashing to widen the historical race. The
+test verifies that all eight records survive and every link audits as valid. A
+second regression holds a writer mid-append and proves a reader waits for the
+complete receipt; the full suite now contains 21 tests. Bumped ProofRun to 0.7.0
+and documented the lock path, lifecycle, portability, and threat boundary.
+
+Validation passed with the full unit suite, `compileall`, `git diff --check`,
+and the manifest-driven ProofRun workflow. A separate live stress check started
+eight CLI processes against one temporary store; all eight receipts were
+retained and the entire chain audited as valid. The next run should use the
+now-safe writer path to add bounded parallel manifest execution such as
+`proofrun verify --jobs N`.

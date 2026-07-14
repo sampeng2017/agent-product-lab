@@ -80,6 +80,14 @@ This makes accidental or undisclosed edits evident; it is not a digital
 signature and does not protect against an attacker who can rewrite the entire
 local store.
 
+Receipt writers are serialized with an OS-managed sibling lock file (for the
+default store, `.proofrun/receipts.jsonl.lock`). The lock covers only the short
+load, link, and append operation—not command execution—so simultaneous ProofRun
+processes cannot fork or reorder the hash chain. The operating system releases
+the lock if a writer exits unexpectedly; the persistent lock file is ignored
+alongside the local receipt store. Readers coordinate through the same lock so
+they never parse a partially appended final record.
+
 `proofrun report` exports the current assessment as Markdown for a code review
 or agent handoff. It includes the repository state, evidence-age policy,
 receipt-chain audit counts, and each check's latest result, command, execution

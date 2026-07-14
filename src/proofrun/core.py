@@ -6,10 +6,16 @@ import os
 import subprocess
 import time
 import uuid
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, BinaryIO, Iterable, Iterator, Sequence
+
+if os.name == "nt":  # pragma: no cover - exercised on Windows
+    import msvcrt
+else:  # pragma: no cover - platform branch, locking behavior tested below
+    import fcntl
 
 
 SCHEMA_VERSION = 4
@@ -170,18 +176,61 @@ def receipt_digest(receipt: dict[str, Any]) -> str:
     return hashlib.sha256(canonical).hexdigest()
 
 
-def append_receipt(store: Path, receipt: dict[str, Any]) -> None:
+def _lock_file(handle: BinaryIO, *, shared: bool) -> None:
+    if os.name == "nt":  # pragma: no cover - exercised on Windows
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"\0")
+            handle.flush()
+        handle.seek(0)
+        # msvcrt has no shared lock mode, so readers take the same short
+        # exclusive lock on Windows.
+        msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+    else:
+        mode = fcntl.LOCK_SH if shared else fcntl.LOCK_EX
+        fcntl.flock(handle.fileno(), mode)
+
+
+def _unlock_file(handle: BinaryIO) -> None:
+    if os.name == "nt":  # pragma: no cover - exercised on Windows
+        handle.seek(0)
+        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def receipt_store_lock(store: Path, *, shared: bool = False) -> Iterator[None]:
+    """Coordinate receipt access using a sibling OS-managed lock file."""
     ensure_store(store)
-    previous = load_receipts(store)
-    receipt["schema_version"] = SCHEMA_VERSION
-    receipt["previous_hash"] = receipt_digest(previous[-1]) if previous else None
-    receipt.pop("receipt_hash", None)
-    receipt["receipt_hash"] = receipt_digest(receipt)
-    with store.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(receipt, sort_keys=True) + "\n")
+    lock_path = store.with_name(f"{store.name}.lock")
+    with lock_path.open("a+b") as handle:
+        _lock_file(handle, shared=shared)
+        try:
+            yield
+        finally:
+            _unlock_file(handle)
+
+
+def append_receipt(store: Path, receipt: dict[str, Any]) -> None:
+    with receipt_store_lock(store):
+        previous = _load_receipts_unlocked(store)
+        receipt["schema_version"] = SCHEMA_VERSION
+        receipt["previous_hash"] = receipt_digest(previous[-1]) if previous else None
+        receipt.pop("receipt_hash", None)
+        receipt["receipt_hash"] = receipt_digest(receipt)
+        with store.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(receipt, sort_keys=True) + "\n")
 
 
 def load_receipts(store: Path) -> list[dict[str, Any]]:
+    if not store.parent.exists():
+        return []
+    with receipt_store_lock(store, shared=True):
+        return _load_receipts_unlocked(store)
+
+
+def _load_receipts_unlocked(store: Path) -> list[dict[str, Any]]:
     if not store.exists():
         return []
     receipts: list[dict[str, Any]] = []

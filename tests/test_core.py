@@ -5,7 +5,10 @@ import json
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -13,6 +16,7 @@ from unittest.mock import patch
 
 from proofrun.cli import main
 from proofrun.core import (
+    append_receipt,
     assess_receipts,
     audit_receipts,
     git_state,
@@ -217,6 +221,67 @@ class ProofRunTests(unittest.TestCase):
             [item["state"] for item in audit_receipts([first, second])],
             ["valid", "valid"],
         )
+
+    def test_concurrent_receipt_writers_preserve_one_valid_chain(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        writer_count = 8
+        ready = threading.Barrier(writer_count)
+        original_digest = receipt_digest
+
+        def slow_digest(receipt: dict[str, object]) -> str:
+            time.sleep(0.01)
+            return original_digest(receipt)
+
+        def write_receipt(index: int) -> None:
+            receipt = {
+                "id": f"concurrent-{index}",
+                "name": f"check-{index}",
+                "started_at": datetime.now(timezone.utc).isoformat(),
+                "exit_code": 0,
+                "git": {},
+            }
+            ready.wait()
+            append_receipt(store, receipt)
+
+        with patch("proofrun.core.receipt_digest", side_effect=slow_digest):
+            with ThreadPoolExecutor(max_workers=writer_count) as executor:
+                list(executor.map(write_receipt, range(writer_count)))
+
+        receipts = load_receipts(store)
+        self.assertEqual(len(receipts), writer_count)
+        self.assertEqual(
+            [item["state"] for item in audit_receipts(receipts)],
+            ["valid"] * writer_count,
+        )
+
+    def test_receipt_reader_waits_for_in_progress_append(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        digest_started = threading.Event()
+        allow_append = threading.Event()
+        original_digest = receipt_digest
+        receipt = {
+            "id": "blocked-writer",
+            "name": "smoke",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "exit_code": 0,
+            "git": {},
+        }
+
+        def blocking_digest(value: dict[str, object]) -> str:
+            digest_started.set()
+            allow_append.wait(timeout=2)
+            return original_digest(value)
+
+        with patch("proofrun.core.receipt_digest", side_effect=blocking_digest):
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                writer = executor.submit(append_receipt, store, receipt)
+                self.assertTrue(digest_started.wait(timeout=2))
+                reader = executor.submit(load_receipts, store)
+                time.sleep(0.02)
+                self.assertFalse(reader.done())
+                allow_append.set()
+                writer.result(timeout=2)
+                self.assertEqual(reader.result(timeout=2), [receipt])
 
     def test_tampering_breaks_chain_and_invalidates_downstream_proof(self) -> None:
         store = self.root / ".proofrun" / "receipts.jsonl"
