@@ -6,6 +6,7 @@ import os
 import subprocess
 import time
 import uuid
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -357,7 +358,11 @@ def run_suite(
     cwd: Path,
     store: Path,
     fail_fast: bool = False,
+    jobs: int = 1,
 ) -> tuple[int, list[dict[str, Any]]]:
+    if jobs < 1:
+        raise ValueError("jobs must be one or greater")
+
     repository_cwd = cwd.resolve()
     execution_contexts: list[tuple[CheckDefinition, Path, dict[str, str]]] = []
     for check in checks:
@@ -374,9 +379,10 @@ def run_suite(
             )
         execution_contexts.append((check, execution_cwd, dict(check.env)))
 
-    suite_exit = 0
-    results: list[dict[str, Any]] = []
-    for check, execution_cwd, env in execution_contexts:
+    def run_context(
+        context: tuple[CheckDefinition, Path, dict[str, str]],
+    ) -> dict[str, Any]:
+        check, execution_cwd, env = context
         exit_code, receipt = run_check(
             name=check.name,
             command=check.command,
@@ -385,18 +391,48 @@ def run_suite(
             execution_cwd=execution_cwd,
             env=env,
         )
-        results.append(
-            {
-                "name": check.name,
-                "command": list(check.command),
-                "exit_code": exit_code,
-                "receipt": receipt,
-            }
-        )
-        if exit_code != 0 and suite_exit == 0:
-            suite_exit = exit_code
-            if fail_fast:
-                break
+        return {
+            "name": check.name,
+            "command": list(check.command),
+            "exit_code": exit_code,
+            "receipt": receipt,
+        }
+
+    completed: dict[int, dict[str, Any]] = {}
+    next_index = 0
+    stop_scheduling = False
+    with ThreadPoolExecutor(max_workers=jobs) as executor:
+        pending: dict[Future[dict[str, Any]], int] = {}
+
+        def fill_workers() -> None:
+            nonlocal next_index
+            while (
+                not stop_scheduling
+                and len(pending) < jobs
+                and next_index < len(execution_contexts)
+            ):
+                future = executor.submit(run_context, execution_contexts[next_index])
+                pending[future] = next_index
+                next_index += 1
+
+        fill_workers()
+        while pending:
+            done, _ = wait(pending, return_when=FIRST_COMPLETED)
+            batch_failed = False
+            for future in done:
+                index = pending.pop(future)
+                result = future.result()
+                completed[index] = result
+                batch_failed = batch_failed or result["exit_code"] != 0
+            if fail_fast and batch_failed:
+                stop_scheduling = True
+            fill_workers()
+
+    results = [completed[index] for index in sorted(completed)]
+    suite_exit = next(
+        (item["exit_code"] for item in results if item["exit_code"] != 0),
+        0,
+    )
     return suite_exit, results
 
 

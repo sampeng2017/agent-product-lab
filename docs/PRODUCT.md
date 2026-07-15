@@ -69,7 +69,8 @@ claimed checks still apply to this exact working tree."
 ## MVP shape
 
 - `proofrun run --name NAME -- COMMAND...` executes and records a check.
-- `proofrun verify [NAME...]` runs named checks from `proofrun.toml`.
+- `proofrun verify [NAME...]` runs named checks from `proofrun.toml`, with
+  optional bounded concurrency via `--jobs N`.
 - Manifest checks can declare repository-contained working directories and
   environment overrides; receipts preserve that execution context.
 - `proofrun status` compares the latest evidence with the current Git state.
@@ -85,12 +86,13 @@ claimed checks still apply to this exact working tree."
 - OS-managed store locks serialize the short receipt append operation across
   concurrent ProofRun writers and give readers a consistent snapshot, without
   serializing check execution.
+- Parallel suite output stays in manifest order; fail-fast stops new launches
+  after an observed failure but preserves receipts from work already running.
 - The implementation has no runtime dependencies.
 
 ## Near-term roadmap
 
-1. Add bounded parallel manifest execution now that receipt appends are safe
-   across concurrent writers.
+1. Add machine-readable suite output for reliable agent and CI consumption.
 2. Explore agent hooks and CI import after the local workflow is proven.
 3. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.

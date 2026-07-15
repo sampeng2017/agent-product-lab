@@ -32,6 +32,7 @@ For development from this checkout, either install it in editable mode or set
 PYTHONPATH=src python3 -m proofrun run --name unit-tests -- \
   python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m proofrun verify unit
+PYTHONPATH=src python3 -m proofrun verify --jobs 4
 PYTHONPATH=src python3 -m proofrun status --json
 PYTHONPATH=src python3 -m proofrun status --path-limit 5
 ```
@@ -50,9 +51,14 @@ reports how many more were omitted. Set `--path-limit N` to change that display
 limit or `--path-limit 0` to show only the overflow count. JSON output always
 contains the complete path lists regardless of the display limit.
 
-`verify` runs checks from `proofrun.toml` and records one receipt per check. A
-check can set a repository-relative working directory and explicit environment
-overrides in addition to its command:
+`verify` runs checks from `proofrun.toml` and records one receipt per check. It
+runs sequentially by default; use `--jobs N` to run at most `N` checks at once.
+Results are summarized in manifest order even when checks finish in a different
+order, while receipts are appended in their actual completion order. With
+`--fail-fast`, ProofRun stops launching checks after it observes a failure;
+checks already running finish and still record receipts. A check can set a
+repository-relative working directory and explicit environment overrides in
+addition to its command:
 
 ```toml
 [checks.api]
@@ -83,10 +89,10 @@ local store.
 Receipt writers are serialized with an OS-managed sibling lock file (for the
 default store, `.proofrun/receipts.jsonl.lock`). The lock covers only the short
 load, link, and append operation—not command execution—so simultaneous ProofRun
-processes cannot fork or reorder the hash chain. The operating system releases
-the lock if a writer exits unexpectedly; the persistent lock file is ignored
-alongside the local receipt store. Readers coordinate through the same lock so
-they never parse a partially appended final record.
+writers cannot fork the chain or interleave final-record writes. The operating
+system releases the lock if a writer exits unexpectedly; the persistent lock
+file is ignored alongside the local receipt store. Readers coordinate through
+the same lock so they never parse a partially appended final record.
 
 `proofrun report` exports the current assessment as Markdown for a code review
 or agent handoff. It includes the repository state, evidence-age policy,

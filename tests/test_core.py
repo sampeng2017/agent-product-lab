@@ -8,7 +8,7 @@ import tempfile
 import threading
 import time
 import unittest
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait as wait_for_futures
 from contextlib import redirect_stdout
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -16,6 +16,7 @@ from unittest.mock import patch
 
 from proofrun.cli import main
 from proofrun.core import (
+    CheckDefinition,
     append_receipt,
     assess_receipts,
     audit_receipts,
@@ -576,6 +577,136 @@ command = ["{sys.executable}", "-c", "print('ok')"]
         self.assertEqual(exit_code, 5)
         self.assertEqual([item["name"] for item in results], ["fail"])
         self.assertEqual(load_receipts(store)[0]["name"], "fail")
+
+    def test_run_suite_bounds_parallel_jobs_and_preserves_manifest_order(self) -> None:
+        checks = [
+            CheckDefinition(name=f"check-{index}", command=("unused",))
+            for index in range(5)
+        ]
+        active = 0
+        maximum_active = 0
+        lock = threading.Lock()
+        two_started = threading.Event()
+        release = threading.Event()
+
+        def controlled_run_check(**kwargs: object) -> tuple[int, dict[str, object]]:
+            nonlocal active, maximum_active
+            name = str(kwargs["name"])
+            with lock:
+                active += 1
+                maximum_active = max(maximum_active, active)
+                if active == 2:
+                    two_started.set()
+            release.wait(timeout=2)
+            with lock:
+                active -= 1
+            return 0, {"id": f"receipt-{name}"}
+
+        with patch("proofrun.core.run_check", side_effect=controlled_run_check):
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                suite = executor.submit(
+                    run_suite,
+                    checks,
+                    cwd=self.root,
+                    store=self.root / ".proofrun" / "receipts.jsonl",
+                    jobs=2,
+                )
+                self.assertTrue(two_started.wait(timeout=2))
+                self.assertEqual(maximum_active, 2)
+                release.set()
+                exit_code, results = suite.result(timeout=2)
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            [item["name"] for item in results],
+            [check.name for check in checks],
+        )
+        self.assertLessEqual(maximum_active, 2)
+
+    def test_parallel_fail_fast_finishes_running_checks_without_starting_more(self) -> None:
+        checks = [
+            CheckDefinition(name=name, command=("unused",))
+            for name in ("fail", "in-flight", "later")
+        ]
+        started: list[str] = []
+        lock = threading.Lock()
+        two_started = threading.Event()
+        failure_observed = threading.Event()
+        release_in_flight = threading.Event()
+
+        def controlled_run_check(**kwargs: object) -> tuple[int, dict[str, object]]:
+            name = str(kwargs["name"])
+            with lock:
+                started.append(name)
+                if len(started) == 2:
+                    two_started.set()
+            self.assertTrue(two_started.wait(timeout=2))
+            if name == "fail":
+                return 9, {"id": "receipt-fail"}
+            release_in_flight.wait(timeout=2)
+            return 0, {"id": f"receipt-{name}"}
+
+        def observed_wait(*args: object, **kwargs: object) -> object:
+            done, pending = wait_for_futures(*args, **kwargs)
+            if any(future.result()["exit_code"] != 0 for future in done):
+                failure_observed.set()
+            return done, pending
+
+        with patch("proofrun.core.run_check", side_effect=controlled_run_check):
+            with patch("proofrun.core.wait", side_effect=observed_wait):
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    suite = executor.submit(
+                        run_suite,
+                        checks,
+                        cwd=self.root,
+                        store=self.root / ".proofrun" / "receipts.jsonl",
+                        fail_fast=True,
+                        jobs=2,
+                    )
+                    self.assertTrue(failure_observed.wait(timeout=2))
+                    release_in_flight.set()
+                    exit_code, results = suite.result(timeout=2)
+
+        self.assertEqual(exit_code, 9)
+        self.assertEqual(set(started), {"fail", "in-flight"})
+        self.assertEqual([item["name"] for item in results], ["fail", "in-flight"])
+
+    def test_run_suite_rejects_nonpositive_job_count_before_execution(self) -> None:
+        check = CheckDefinition(name="unit", command=("unused",))
+
+        with self.assertRaisesRegex(ValueError, "jobs must be one or greater"):
+            run_suite(
+                [check],
+                cwd=self.root,
+                store=self.root / ".proofrun" / "receipts.jsonl",
+                jobs=0,
+            )
+
+    def test_verify_cli_passes_parallel_job_count_to_suite(self) -> None:
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text(
+            '[checks.unit]\ncommand = ["python3", "-V"]\n',
+            encoding="utf-8",
+        )
+        store = self.root / ".proofrun" / "receipts.jsonl"
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with patch("proofrun.cli.run_suite", return_value=(0, [])) as run:
+                with redirect_stdout(io.StringIO()):
+                    exit_code = main(
+                        [
+                            "--store",
+                            str(store),
+                            "verify",
+                            "--manifest",
+                            str(manifest),
+                            "--jobs",
+                            "3",
+                        ]
+                    )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(run.call_args.kwargs["jobs"], 3)
 
     def test_select_checks_rejects_unknown_names(self) -> None:
         manifest = self.root / "proofrun.toml"

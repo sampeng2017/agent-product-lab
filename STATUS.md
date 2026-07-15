@@ -10,36 +10,38 @@ development commands and binds them to the exact Git working state they covered.
 The dependency-free Python CLI has six commands: `run`, `verify`, `status`,
 `audit`, `report`, and `history`. Receipts stay in append-only JSON Lines under
 the ignored `.proofrun/` directory. Manifest checks can run from distinct
-repository subdirectories with explicit environment overrides. Schema-v4
-receipts preserve that execution context alongside Git snapshots, file-level
-drift details, canonical SHA-256 hashes, and links to prior receipts. A
-repository-local OS lock serializes the load-link-append critical section so
-concurrent writers preserve one ordered chain without serializing command
-execution; readers coordinate with the lock for consistent snapshots. Status
-explains whether evidence still applies, audit detects local receipt-chain
-damage, and report packages both views into a Markdown handoff.
+repository subdirectories with explicit environment overrides, sequentially or
+with bounded `--jobs N` concurrency. Parallel suites report results in manifest
+order and append receipts in completion order. Schema-v4 receipts preserve the
+execution context alongside Git snapshots, file-level drift details, canonical
+SHA-256 hashes, and links to prior receipts. A repository-local OS lock
+serializes the load-link-append critical section so concurrent writers preserve
+one ordered chain without serializing command execution; readers coordinate
+with the lock for consistent snapshots. Status explains whether evidence still
+applies, audit detects local receipt-chain damage, and report packages both
+views into a Markdown handoff.
 Human status and reports cap invalidating paths at 10 by default with explicit
 overflow counts; structured JSON remains complete.
 
 ## Completed today
 
-- Added a cross-process receipt-store lock using standard-library OS primitives
-  on Unix and Windows.
-- Restricted locking to receipt loading, hash linking, and append, leaving slow
-  verification commands outside the critical section.
-- Added a widened eight-writer concurrency regression proving every append is
-  retained and the resulting chain audits as fully valid.
-- Coordinated readers through the same lock so status, audit, history, and
-  report cannot observe a partially written final receipt.
-- Expanded the suite to 21 tests, bumped the package to version 0.7.0, and
-  documented lock behavior and lifecycle.
+- Added `proofrun verify --jobs N` with a strict positive worker count and a
+  sequential default for backward compatibility.
+- Implemented bounded scheduling with deterministic manifest-order results,
+  while the existing store lock safely records receipts in completion order.
+- Defined parallel fail-fast behavior: stop launching checks after observing a
+  failure, let already-running checks finish, and preserve all their receipts.
+- Added concurrency, fail-fast, invalid-worker-count, and CLI-wiring
+  regressions; expanded the suite to 25 tests.
+- Bumped the package to version 0.8.0 and documented parallel execution and
+  ordering semantics.
 
 ## Changed since the previous run
 
-Simultaneous ProofRun processes can no longer read the same chain tail and
-append competing successors. Writers queue only for the brief persistence
-operation, and operating-system lock ownership prevents a crashed process from
-leaving an owned stale lock behind.
+Manifest suites can now use multiple cores without starting an unbounded number
+of child processes or sacrificing receipt integrity. Existing invocations still
+run one check at a time, and parallel completion timing no longer makes the
+human summary order nondeterministic.
 
 ## Known issues and incomplete work
 
@@ -53,11 +55,15 @@ leaving an owned stale lock behind.
   repositories.
 - Environment overrides are intentionally stored verbatim for reproducibility;
   users must not place secrets in manifests or publish reports containing them.
+- Output written directly by parallel child commands can interleave on the
+  terminal; ProofRun's own per-check summaries remain ordered.
+- Checks that mutate shared files may race when run in parallel. `--jobs 1`
+  remains the safe choice for suites whose commands are not independent.
 
 ## Recommended next step
 
-Add bounded parallel manifest execution (for example, `verify --jobs N`) now
-that concurrent check completions can safely append to one receipt chain.
+Add structured `verify --json` output so agents and CI can consume suite and
+per-check results without parsing terminal prose.
 
 ## Important decisions
 
@@ -73,6 +79,12 @@ that concurrent check completions can safely append to one receipt chain.
   automatically released when the process closes or exits.
 - Check execution stays outside the receipt lock to preserve concurrency; only
   chain-tail reading, sealing, and append are serialized.
+- `verify --jobs N` accepts positive integers and defaults to one; at most `N`
+  checks are submitted at a time.
+- Parallel result summaries follow manifest order for stable output, while the
+  hash chain follows actual receipt completion order.
+- Parallel fail-fast is observation-based: no new work is launched after a
+  failure is seen, but already-started checks complete and retain their proof.
 - Unix readers use shared locks for concurrent snapshots; Windows readers use
   the platform's short exclusive file lock because its standard library does
   not expose a shared mode.

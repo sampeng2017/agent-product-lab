@@ -172,3 +172,25 @@ eight CLI processes against one temporary store; all eight receipts were
 retained and the entire chain audited as valid. The next run should use the
 now-safe writer path to add bounded parallel manifest execution such as
 `proofrun verify --jobs N`.
+
+## 2026-07-14 — Bounded parallel manifest verification
+
+Continued ProofRun with no pivot and no active message from Sam. Added
+`proofrun verify --jobs N`, which defaults to the existing sequential behavior
+and runs no more than the requested positive number of checks concurrently.
+The scheduler keeps user-facing results in manifest order while the locked
+receipt store records actual completion order, preserving an accurate and valid
+hash chain.
+
+Defined fail-fast behavior for concurrent suites: once ProofRun observes a
+failure it stops launching new checks, but checks already running are allowed to
+finish and retain their receipts. Added deterministic regressions for the
+worker bound, result ordering, parallel fail-fast, invalid worker counts, and
+CLI argument wiring. Documented the risk of interleaved child output and shared
+file mutation, and bumped the package to 0.8.0. The suite now has 25 tests.
+
+Validation passed with the full unit suite, `compileall`, `git diff --check`,
+CLI help inspection, manifest-driven `verify --jobs 2`, receipt-chain audit,
+status, and Markdown report export. The next run should add structured
+`verify --json` output so agents and CI can consume suite results without
+parsing terminal prose.

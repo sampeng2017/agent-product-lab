@@ -77,6 +77,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="manifest file (default: proofrun.toml)",
     )
     verify.add_argument("--fail-fast", action="store_true")
+    verify.add_argument(
+        "--jobs",
+        type=_positive_int,
+        default=1,
+        help="maximum checks to run concurrently (default: 1)",
+    )
     verify.add_argument("names", nargs="*", help="optional check names to run")
     return parser
 
@@ -93,6 +99,13 @@ def _nonnegative_int(value: str) -> int:
     parsed = int(value)
     if parsed < 0:
         raise argparse.ArgumentTypeError("must be zero or greater")
+    return parsed
+
+
+def _positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError("must be one or greater")
     return parsed
 
 
@@ -155,6 +168,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 cwd=cwd,
                 store=store,
                 fail_fast=args.fail_fast,
+                jobs=args.jobs,
             )
         except ValueError as exc:
             print(f"proofrun: {exc}", file=sys.stderr)
