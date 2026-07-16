@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -707,6 +708,106 @@ command = ["{sys.executable}", "-c", "print('ok')"]
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(run.call_args.kwargs["jobs"], 3)
+
+    def test_verify_json_is_clean_when_check_writes_to_stdout(self) -> None:
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text(
+            f"""
+[checks.noisy]
+command = ["{sys.executable}", "-c", "print('check output')"]
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        env = os.environ.copy()
+        env["PYTHONPATH"] = str(Path(__file__).resolve().parents[1] / "src")
+
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "proofrun",
+                "--store",
+                str(store),
+                "verify",
+                "--manifest",
+                str(manifest),
+                "--json",
+            ],
+            cwd=self.root,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False,
+        )
+
+        summary = json.loads(completed.stdout)
+        self.assertEqual(completed.returncode, 0)
+        self.assertIn("check output", completed.stderr)
+        self.assertEqual(summary["schema_version"], 1)
+        self.assertEqual(summary["state"], "passed")
+        self.assertEqual(summary["selected_count"], 1)
+        self.assertEqual(summary["executed_count"], 1)
+        self.assertEqual(summary["passed_count"], 1)
+        self.assertEqual(summary["failed_count"], 0)
+        self.assertEqual(summary["skipped_count"], 0)
+        self.assertEqual(summary["skipped_checks"], [])
+        self.assertEqual(summary["results"][0]["name"], "noisy")
+        self.assertEqual(summary["results"][0]["state"], "passed")
+        self.assertEqual(summary["results"][0]["exit_code"], 0)
+        self.assertIn("receipt_hash", summary["results"][0]["receipt"])
+
+    def test_verify_json_reports_fail_fast_skips_and_exit_code(self) -> None:
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text(
+            """
+[checks.fail]
+command = ["python3", "-c", "pass"]
+
+[checks.later]
+command = ["python3", "-c", "pass"]
+""".strip()
+            + "\n",
+            encoding="utf-8",
+        )
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        results = [
+            {
+                "name": "fail",
+                "command": ["python3", "-c", "pass"],
+                "exit_code": 5,
+                "receipt": {"id": "failed-receipt", "duration_ms": 12},
+            }
+        ]
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with patch("proofrun.cli.run_suite", return_value=(5, results)) as run:
+                with redirect_stdout(output):
+                    exit_code = main(
+                        [
+                            "--store",
+                            str(store),
+                            "verify",
+                            "--manifest",
+                            str(manifest),
+                            "--fail-fast",
+                            "--json",
+                        ]
+                    )
+
+        summary = json.loads(output.getvalue())
+        self.assertEqual(exit_code, 5)
+        self.assertIs(run.call_args.kwargs["command_stdout"], sys.stderr)
+        self.assertEqual(summary["state"], "failed")
+        self.assertEqual(summary["exit_code"], 5)
+        self.assertEqual(summary["executed_count"], 1)
+        self.assertEqual(summary["failed_count"], 1)
+        self.assertEqual(summary["skipped_count"], 1)
+        self.assertEqual(summary["skipped_checks"], ["later"])
+        self.assertEqual(summary["results"][0]["state"], "failed")
 
     def test_select_checks_rejects_unknown_names(self) -> None:
         manifest = self.root / "proofrun.toml"

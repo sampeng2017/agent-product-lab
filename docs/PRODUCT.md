@@ -71,6 +71,8 @@ claimed checks still apply to this exact working tree."
 - `proofrun run --name NAME -- COMMAND...` executes and records a check.
 - `proofrun verify [NAME...]` runs named checks from `proofrun.toml`, with
   optional bounded concurrency via `--jobs N`.
+- `proofrun verify --json` emits a versioned suite result while routing check
+  output to standard error, making the output safe for agents and CI parsers.
 - Manifest checks can declare repository-contained working directories and
   environment overrides; receipts preserve that execution context.
 - `proofrun status` compares the latest evidence with the current Git state.
@@ -92,7 +94,8 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Add machine-readable suite output for reliable agent and CI consumption.
+1. Add an enforceable status gate that exits nonzero when required proof is
+   missing or stale, with optional named-check selection.
 2. Explore agent hooks and CI import after the local workflow is proven.
 3. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.

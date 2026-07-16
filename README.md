@@ -33,6 +33,7 @@ PYTHONPATH=src python3 -m proofrun run --name unit-tests -- \
   python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m proofrun verify unit
 PYTHONPATH=src python3 -m proofrun verify --jobs 4
+PYTHONPATH=src python3 -m proofrun verify --json
 PYTHONPATH=src python3 -m proofrun status --json
 PYTHONPATH=src python3 -m proofrun status --path-limit 5
 ```
@@ -69,6 +70,13 @@ cwd = "packages/api"
 APP_MODE = "test"
 PYTHONPATH = "src"
 ```
+
+Use `verify --json` for agent and CI consumption. Standard output contains one
+versioned JSON document with the suite state and exit code, selected, executed,
+passed, failed, and skipped counts, skipped check names, and manifest-ordered
+per-check results with their complete receipts. Check output is routed to
+standard error in this mode so it cannot corrupt the JSON document. A failed
+suite still exits with the first failing check's nonzero exit code.
 
 `command` must be a non-empty string array, `cwd` cannot be absolute or escape
 the repository, and every environment value must be a string. ProofRun validates

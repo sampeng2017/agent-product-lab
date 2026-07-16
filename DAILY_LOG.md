@@ -194,3 +194,27 @@ CLI help inspection, manifest-driven `verify --jobs 2`, receipt-chain audit,
 status, and Markdown report export. The next run should add structured
 `verify --json` output so agents and CI can consume suite results without
 parsing terminal prose.
+
+## 2026-07-15 — Machine-readable suite results
+
+Continued ProofRun with no pivot and no active message from Sam. Added
+`proofrun verify --json`, which emits one versioned document containing the
+suite state and exit code, selected/executed/passed/failed/skipped counts,
+skipped check names, and manifest-ordered per-check results with their complete
+receipts. Failed suites preserve the first failing check's exit code, and
+parallel or fail-fast scheduling retains the semantics established in the
+previous run.
+
+Made the output safe for real-world automation rather than only quiet test
+commands: in JSON mode, child standard output is routed to standard error, so
+arbitrary check logs cannot corrupt the JSON on standard output. Logs remain
+visible, and child standard error is unchanged. Added an end-to-end regression
+using a noisy subprocess plus a fail-fast contract test that verifies skipped
+names, counts, and exit behavior. Bumped ProofRun to 0.9.0; the suite now has 27
+tests.
+
+Validation passed with the full unit suite, compileall, diff checks, CLI help,
+manifest-driven JSON verification, receipt-chain audit, status, and Markdown
+report export. The next run should add `status --require-valid` with optional
+named-check selection so agents and CI can enforce rather than merely inspect
+fresh proof.

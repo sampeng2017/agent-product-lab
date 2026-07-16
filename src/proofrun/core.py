@@ -11,7 +11,7 @@ from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, BinaryIO, Iterable, Iterator, Sequence
+from typing import Any, BinaryIO, Iterable, IO, Iterator, Sequence
 
 if os.name == "nt":  # pragma: no cover - exercised on Windows
     import msvcrt
@@ -309,6 +309,7 @@ def run_check(
     store: Path,
     execution_cwd: Path | None = None,
     env: dict[str, str] | None = None,
+    command_stdout: IO[Any] | int | None = None,
 ) -> tuple[int, dict[str, Any]]:
     if not command:
         raise ValueError("a command is required")
@@ -326,6 +327,7 @@ def run_check(
             list(command),
             cwd=effective_cwd,
             env=process_env,
+            stdout=command_stdout,
             check=False,
         )
         exit_code = completed.returncode
@@ -359,6 +361,7 @@ def run_suite(
     store: Path,
     fail_fast: bool = False,
     jobs: int = 1,
+    command_stdout: IO[Any] | int | None = None,
 ) -> tuple[int, list[dict[str, Any]]]:
     if jobs < 1:
         raise ValueError("jobs must be one or greater")
@@ -390,6 +393,7 @@ def run_suite(
             store=store,
             execution_cwd=execution_cwd,
             env=env,
+            command_stdout=command_stdout,
         )
         return {
             "name": check.name,

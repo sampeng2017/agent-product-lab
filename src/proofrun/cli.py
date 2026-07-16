@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Sequence
 
 from .core import (
+    CheckDefinition,
     DEFAULT_STORE,
     assess_receipts,
     audit_receipts,
@@ -83,6 +84,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=1,
         help="maximum checks to run concurrently (default: 1)",
     )
+    verify.add_argument(
+        "--json",
+        action="store_true",
+        help="emit one machine-readable suite result on standard output",
+    )
     verify.add_argument("names", nargs="*", help="optional check names to run")
     return parser
 
@@ -134,6 +140,35 @@ def _format_status_reasons(item: dict[str, object], *, path_limit: int) -> str:
     return ", ".join(details) or "evidence applies"
 
 
+def _verify_json_summary(
+    checks: Sequence[CheckDefinition],
+    results: list[dict[str, object]],
+    suite_exit: int,
+) -> dict[str, object]:
+    serialized_results: list[dict[str, object]] = []
+    passed = 0
+    for item in results:
+        result = dict(item)
+        result["state"] = "passed" if item["exit_code"] == 0 else "failed"
+        serialized_results.append(result)
+        if item["exit_code"] == 0:
+            passed += 1
+
+    skipped_checks = [check.name for check in checks[len(results) :]]
+    return {
+        "schema_version": 1,
+        "state": "passed" if suite_exit == 0 else "failed",
+        "exit_code": suite_exit,
+        "selected_count": len(checks),
+        "executed_count": len(results),
+        "passed_count": passed,
+        "failed_count": len(results) - passed,
+        "skipped_count": len(skipped_checks),
+        "skipped_checks": skipped_checks,
+        "results": serialized_results,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cwd = Path.cwd()
@@ -169,10 +204,21 @@ def main(argv: Sequence[str] | None = None) -> int:
                 store=store,
                 fail_fast=args.fail_fast,
                 jobs=args.jobs,
+                command_stdout=sys.stderr if args.json else None,
             )
         except ValueError as exc:
             print(f"proofrun: {exc}", file=sys.stderr)
             return 2
+        if args.json:
+            print(
+                json.dumps(
+                    _verify_json_summary(checks, results, suite_exit),
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return suite_exit
+
         passed = 0
         for item in results:
             result = "passed" if item["exit_code"] == 0 else f"failed ({item['exit_code']})"
