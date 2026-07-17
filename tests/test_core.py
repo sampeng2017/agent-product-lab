@@ -161,6 +161,77 @@ class ProofRunTests(unittest.TestCase):
         )
         self.assertIn("- Additional invalidating paths: 10 not shown", report)
 
+    def test_status_require_valid_accepts_selected_fresh_proof(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        run_check(
+            name="unit",
+            command=[sys.executable, "-c", "pass"],
+            cwd=self.root,
+            store=store,
+        )
+        run_check(
+            name="lint",
+            command=[sys.executable, "-c", "import sys; sys.exit(3)"],
+            cwd=self.root,
+            store=store,
+        )
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--store", str(store), "status", "--require-valid", "unit"]
+                )
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("VALID  unit: evidence applies", output.getvalue())
+        self.assertNotIn("lint", output.getvalue())
+
+    def test_status_require_valid_reports_stale_and_missing_proof_as_json(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        run_check(
+            name="lint",
+            command=[sys.executable, "-c", "import sys; sys.exit(3)"],
+            cwd=self.root,
+            store=store,
+        )
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "--store",
+                        str(store),
+                        "status",
+                        "--require-valid",
+                        "--json",
+                        "lint",
+                        "integration",
+                    ]
+                )
+
+        status = json.loads(output.getvalue())
+        self.assertEqual(exit_code, 1)
+        self.assertEqual([item["name"] for item in status], ["lint", "integration"])
+        self.assertEqual([item["state"] for item in status], ["stale", "missing"])
+        self.assertEqual(status[1]["reasons"], ["no receipt"])
+        self.assertIsNone(status[1]["age_hours"])
+        self.assertIsNone(status[1]["receipt"])
+
+    def test_status_require_valid_fails_when_store_is_empty(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(
+                    ["--store", str(store), "status", "--require-valid"]
+                )
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(output.getvalue(), "No verification receipts yet.\n")
+
     def test_failed_or_expired_receipt_is_stale(self) -> None:
         old = datetime.now(timezone.utc) - timedelta(hours=48)
         current = git_state(self.root)

@@ -47,7 +47,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_PATH_LIMIT,
         help=f"maximum invalidating paths to display (default: {DEFAULT_PATH_LIMIT})",
     )
+    status.add_argument(
+        "--require-valid",
+        action="store_true",
+        help="exit nonzero when any selected proof is stale or missing",
+    )
     status.add_argument("--json", action="store_true")
+    status.add_argument("names", nargs="*", help="optional check names to assess")
 
     history = subparsers.add_parser("history", help="show recent receipts")
     history.add_argument("--limit", type=int, default=10)
@@ -138,6 +144,32 @@ def _format_status_reasons(item: dict[str, object], *, path_limit: int) -> str:
         else:
             details.append(reason)
     return ", ".join(details) or "evidence applies"
+
+
+def _select_status_items(
+    assessed: list[dict[str, object]], names: Sequence[str]
+) -> list[dict[str, object]]:
+    if not names:
+        return assessed
+
+    by_name = {str(item["name"]): item for item in assessed}
+    selected: list[dict[str, object]] = []
+    for name in names:
+        item = by_name.get(name)
+        if item is not None:
+            selected.append(item)
+            continue
+        selected.append(
+            {
+                "name": name,
+                "state": "missing",
+                "reasons": ["no receipt"],
+                "age_hours": None,
+                "working_tree_paths": {"tracked": [], "untracked": []},
+                "receipt": None,
+            }
+        )
+    return selected
 
 
 def _verify_json_summary(
@@ -242,10 +274,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     if args.action == "status":
-        assessed = assess_receipts(
-            receipts,
-            current=git_state(cwd),
-            max_age_hours=args.max_age_hours,
+        assessed = _select_status_items(
+            assess_receipts(
+                receipts,
+                current=git_state(cwd),
+                max_age_hours=args.max_age_hours,
+            ),
+            args.names,
         )
         if args.json:
             print(json.dumps(assessed, indent=2, sort_keys=True))
@@ -255,6 +290,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             for item in assessed:
                 details = _format_status_reasons(item, path_limit=args.path_limit)
                 print(f"{item['state'].upper():5}  {item['name']}: {details}")
+        if args.require_valid and (
+            not assessed or any(item["state"] != "valid" for item in assessed)
+        ):
+            return 1
         return 0
 
     if args.action == "audit":

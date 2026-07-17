@@ -36,6 +36,7 @@ PYTHONPATH=src python3 -m proofrun verify --jobs 4
 PYTHONPATH=src python3 -m proofrun verify --json
 PYTHONPATH=src python3 -m proofrun status --json
 PYTHONPATH=src python3 -m proofrun status --path-limit 5
+PYTHONPATH=src python3 -m proofrun status --require-valid unit
 ```
 
 `status` marks a successful receipt as `valid` only while all of these remain
@@ -51,6 +52,14 @@ drifted, `status` names up to 10 tracked and untracked paths that changed, then
 reports how many more were omitted. Set `--path-limit N` to change that display
 limit or `--path-limit 0` to show only the overflow count. JSON output always
 contains the complete path lists regardless of the display limit.
+
+Use `status --require-valid [NAME...]` as an acceptance gate for an agent or CI
+job. With names, ProofRun assesses only those checks in the requested order and
+reports `missing` when a name has no receipt. Without names, it requires every
+latest receipt to be valid and rejects an empty store. The command exits 0 only
+when every selected proof is valid, 1 when any proof is stale or missing, and 2
+for malformed input or an unreadable store. Without `--require-valid`, status
+remains informational and exits 0. The same contract applies with `--json`.
 
 `verify` runs checks from `proofrun.toml` and records one receipt per check. It
 runs sequentially by default; use `--jobs N` to run at most `N` checks at once.

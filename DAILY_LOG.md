@@ -218,3 +218,24 @@ manifest-driven JSON verification, receipt-chain audit, status, and Markdown
 report export. The next run should add `status --require-valid` with optional
 named-check selection so agents and CI can enforce rather than merely inspect
 fresh proof.
+
+## 2026-07-16 — Enforceable proof-status gate
+
+Continued ProofRun with no pivot and no active message from Sam. Added optional
+named-check selection to `proofrun status`; selections retain caller order and
+names without receipts produce explicit `missing` results in both terminal and
+JSON output. Added `--require-valid` as an acceptance contract: it exits 0 only
+when all selected evidence is valid, exits 1 for stale or missing evidence and
+for an empty unscoped store, and preserves exit 2 for malformed input or store
+errors. Existing status calls remain informational and continue to exit 0.
+
+Added end-to-end regressions for selecting a valid check while ignoring an
+unrelated failure, mixed stale/missing JSON output, and empty-store rejection.
+The suite grew from 27 to 30 tests, the package reached version 1.0.0, and the
+README and product roadmap now document the gate for agent and CI use.
+
+Validation passed with the full unit suite, compileall, diff checks, status help
+inspection, a live missing-proof gate probe, manifest-driven verification,
+receipt-chain audit, gated status, and Markdown report export. The next run
+should compare pre- and post-command Git state so a check that mutates the
+repository cannot accidentally claim proof for code it did not fully test.
