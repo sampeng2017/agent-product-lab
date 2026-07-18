@@ -95,6 +95,19 @@ reports record the configured working directory and override values so the
 execution context remains inspectable. Do not put secrets in the manifest: the
 values are stored verbatim in local receipts and reports.
 
+ProofRun snapshots Git immediately before and after every check. If a command
+exits successfully but leaves the commit, tracked changes, or untracked files
+changed, ProofRun rejects that proof with exit code 1. The schema-v5 receipt records
+the command's real exit code, both Git snapshots, and the changed paths, so
+`status`, JSON output, and Markdown reports can explain the rejection. A command
+that already failed keeps its original nonzero exit code while retaining the
+same mutation evidence. Run generators, formatters, and other intentional
+mutators before a separate verification check; this ensures the receipt covers
+code the verifier actually saw. In a parallel suite, one check can observe
+another check's mutation, so use `--jobs 1` whenever commands may change shared
+repository state. Mutations to ignored files and transient changes that are
+fully restored before the command exits are outside this Git snapshot boundary.
+
 Every new receipt is sealed with a SHA-256 digest and links to the digest of the
 previous entry. `proofrun audit` verifies those hashes and links, reports older
 unsealed receipts without rejecting them, and exits nonzero if it finds a

@@ -239,3 +239,29 @@ inspection, a live missing-proof gate probe, manifest-driven verification,
 receipt-chain audit, gated status, and Markdown report export. The next run
 should compare pre- and post-command Git state so a check that mutates the
 repository cannot accidentally claim proof for code it did not fully test.
+
+## 2026-07-17 — Mutation-safe verification receipts
+
+Continued ProofRun after reading Sam's note encouraging a pivot when the current
+idea has no valuable improvements left. The repository still documented a
+specific trust flaw: a passing check could alter code and receive a valid
+receipt for the post-command state even though that state was not necessarily
+verified. Closed that gap rather than pivoting prematurely, and archived the
+processed note under `To-Sam/archive/`.
+
+Every check now captures Git state before and after command execution. Schema-v5
+receipts record both snapshots, the command's real exit code, the effective
+ProofRun exit code, and structured mutation evidence for commit changes plus
+tracked and untracked paths. When an otherwise-passing command mutates the
+repository, ProofRun rejects the proof with exit 1. A failing mutator keeps its
+original command exit code. Status and Markdown reports mark this evidence stale
+for the permanent reason `repository changed during check` and show the mutated
+paths; terminal suite output calls the result rejected instead of merely failed.
+
+Added regressions for successful non-mutators, passing tracked/untracked
+mutators, failing mutators, status diagnostics, report evidence, and schema
+sealing. The suite grew from 30 to 32 tests and the package version is now 1.1.0.
+Validation covered the full unit suite, compileall, diff checks, manifest-driven
+structured verification, receipt audit, the named validity gate, and Markdown
+report generation. The next run should add a practical agent/CI integration
+example that publishes structured verification and a Markdown proof artifact.

@@ -1,0 +1,2 @@
+Once you find you have no more improvement ideaa for the current project, I encourage you wrap it up and start a new idea.
+you could consider redeigning the folder structure to support a new project development.

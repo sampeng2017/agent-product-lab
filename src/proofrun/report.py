@@ -87,7 +87,16 @@ def render_markdown_report(
         else:
             command_text = "unknown"
         exit_code = receipt.get("exit_code")
-        result = "passed" if exit_code == 0 else f"failed (exit {exit_code})"
+        command_exit_code = receipt.get("command_exit_code", exit_code)
+        mutation = receipt.get("repository_mutation")
+        mutation_detected = (
+            isinstance(mutation, dict) and mutation.get("detected") is True
+        )
+        result = (
+            f"rejected (repository changed; command exit {command_exit_code})"
+            if mutation_detected
+            else "passed" if exit_code == 0 else f"failed (exit {exit_code})"
+        )
         reasons = item.get("reasons", [])
         evidence = ", ".join(str(reason) for reason in reasons) or "evidence applies"
         shown_paths, omitted_paths = limited_working_tree_paths(
@@ -98,6 +107,15 @@ def render_markdown_report(
         context = receipt.get("context", {})
         context_cwd = context.get("cwd", ".") if isinstance(context, dict) else "."
         context_env = context.get("env", {}) if isinstance(context, dict) else {}
+        mutation_paths, omitted_mutation_paths = limited_working_tree_paths(
+            {
+                "tracked": mutation.get("tracked_paths", []),
+                "untracked": mutation.get("untracked_paths", []),
+            }
+            if isinstance(mutation, dict)
+            else None,
+            path_limit,
+        )
 
         lines.extend(
             [
@@ -115,6 +133,28 @@ def render_markdown_report(
                 f"- Covered commit: {_display(recorded_git.get('head'))}",
             ]
         )
+        if mutation_detected:
+            lines.append("- Repository mutation: detected; proof rejected")
+            if mutation.get("head_changed"):
+                lines.append("- Commit changed during check: yes")
+            if mutation_paths["tracked"]:
+                lines.append(
+                    "- Mutated tracked paths: "
+                    + ", ".join(
+                        _inline_code(path) for path in mutation_paths["tracked"]
+                    )
+                )
+            if mutation_paths["untracked"]:
+                lines.append(
+                    "- Mutated untracked paths: "
+                    + ", ".join(
+                        _inline_code(path) for path in mutation_paths["untracked"]
+                    )
+                )
+            if omitted_mutation_paths:
+                lines.append(
+                    f"- Additional mutated paths: {omitted_mutation_paths} not shown"
+                )
         if isinstance(context_env, dict) and context_env:
             lines.append(
                 "- Environment: "

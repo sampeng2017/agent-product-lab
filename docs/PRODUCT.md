@@ -75,6 +75,9 @@ claimed checks still apply to this exact working tree."
   output to standard error, making the output safe for agents and CI parsers.
 - Manifest checks can declare repository-contained working directories and
   environment overrides; receipts preserve that execution context.
+- Every check captures pre/post Git state. A passing command that leaves the
+  repository changed is rejected, while the receipt keeps the real command
+  exit code and exact mutation evidence for diagnosis.
 - `proofrun status` compares the latest evidence with the current Git state;
   named selection plus `--require-valid` turns that assessment into a process
   acceptance gate for agents and CI.
@@ -96,9 +99,10 @@ claimed checks still apply to this exact working tree."
 
 ## Near-term roadmap
 
-1. Detect checks that change the repository while they run so a post-command
-   snapshot cannot accidentally claim evidence for code the check did not see.
-2. Explore agent hooks and CI import now that the local acceptance gate exists.
+1. Explore agent hooks and CI integration now that mutation-safe local proof
+   and an enforceable acceptance gate exist.
+2. Measure and optimize fingerprint cost in repositories with many or large
+   untracked files without weakening exact drift detection.
 3. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 

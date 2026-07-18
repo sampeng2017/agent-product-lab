@@ -19,7 +19,7 @@ else:  # pragma: no cover - platform branch, locking behavior tested below
     import fcntl
 
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 DEFAULT_STORE = Path(".proofrun/receipts.jsonl")
 
 
@@ -301,6 +301,33 @@ def audit_receipts(receipts: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
     return results
 
 
+def _path_map_changes(before: dict[str, str], after: dict[str, str]) -> list[str]:
+    return [
+        path
+        for path in sorted(set(before) | set(after))
+        if before.get(path) != after.get(path)
+    ]
+
+
+def _repository_mutation(before: GitState, after: GitState) -> dict[str, Any]:
+    detected = (
+        before.available != after.available
+        or before.head != after.head
+        or before.dirty != after.dirty
+        or before.fingerprint != after.fingerprint
+    )
+    return {
+        "detected": detected,
+        "head_changed": before.head != after.head,
+        "tracked_paths": _path_map_changes(
+            before.tracked_changes, after.tracked_changes
+        ),
+        "untracked_paths": _path_map_changes(
+            before.untracked_files, after.untracked_files
+        ),
+    }
+
+
 def run_check(
     *,
     name: str,
@@ -320,6 +347,7 @@ def run_check(
     env_overrides = dict(sorted((env or {}).items()))
     process_env = os.environ.copy()
     process_env.update(env_overrides)
+    state_before = git_state(repository_cwd)
     started_at = datetime.now(timezone.utc)
     start = time.monotonic()
     try:
@@ -330,11 +358,13 @@ def run_check(
             stdout=command_stdout,
             check=False,
         )
-        exit_code = completed.returncode
+        command_exit_code = completed.returncode
     except FileNotFoundError:
-        exit_code = 127
+        command_exit_code = 127
     duration_ms = round((time.monotonic() - start) * 1000)
-    state = git_state(repository_cwd)
+    state_after = git_state(repository_cwd)
+    mutation = _repository_mutation(state_before, state_after)
+    exit_code = 1 if command_exit_code == 0 and mutation["detected"] else command_exit_code
     try:
         receipt_cwd = effective_cwd.relative_to(repository_cwd).as_posix() or "."
     except ValueError:
@@ -347,8 +377,11 @@ def run_check(
         "context": {"cwd": receipt_cwd, "env": env_overrides},
         "started_at": started_at.isoformat(),
         "duration_ms": duration_ms,
+        "command_exit_code": command_exit_code,
         "exit_code": exit_code,
-        "git": asdict(state),
+        "git_before": asdict(state_before),
+        "git": asdict(state_after),
+        "repository_mutation": mutation,
     }
     append_receipt(store, receipt)
     return exit_code, receipt
@@ -455,11 +488,7 @@ def _changed_paths(recorded: Any, current: dict[str, str]) -> list[str]:
     if recorded_map is None:
         return []
 
-    changed: list[str] = []
-    for path in sorted(set(recorded_map) | set(current)):
-        if recorded_map.get(path) != current.get(path):
-            changed.append(path)
-    return changed
+    return _path_map_changes(recorded_map, current)
 
 
 def assess_receipts(
@@ -489,8 +518,14 @@ def assess_receipts(
         reasons: list[str] = []
         if integrity[index]["state"] == "invalid":
             reasons.append("receipt chain invalid")
-        if receipt.get("exit_code") != 0:
+        command_exit_code = receipt.get(
+            "command_exit_code", receipt.get("exit_code")
+        )
+        if command_exit_code != 0:
             reasons.append("failed")
+        mutation = receipt.get("repository_mutation")
+        if isinstance(mutation, dict) and mutation.get("detected") is True:
+            reasons.append("repository changed during check")
 
         try:
             started_at = datetime.fromisoformat(receipt["started_at"])

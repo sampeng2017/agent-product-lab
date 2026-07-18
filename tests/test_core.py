@@ -61,10 +61,88 @@ class ProofRunTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(load_receipts(store), [receipt])
+        self.assertEqual(receipt["command_exit_code"], 0)
+        self.assertFalse(receipt["repository_mutation"]["detected"])
+        self.assertEqual(receipt["git_before"], receipt["git"])
         assessed = assess_receipts(
             [receipt], current=git_state(self.root), max_age_hours=24
         )
         self.assertEqual(assessed[0]["state"], "valid")
+
+    def test_passing_check_that_mutates_repository_is_rejected(self) -> None:
+        tracked = self.root / "tracked.py"
+        tracked.write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.py"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "seed"], cwd=self.root, check=True)
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        command = [
+            sys.executable,
+            "-c",
+            "from pathlib import Path; Path('tracked.py').write_text('after\\n'); Path('generated.txt').write_text('new\\n')",
+        ]
+
+        exit_code, receipt = run_check(
+            name="mutator", command=command, cwd=self.root, store=store
+        )
+        assessed = assess_receipts(
+            [receipt], current=git_state(self.root), max_age_hours=24
+        )
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(receipt["command_exit_code"], 0)
+        self.assertEqual(receipt["exit_code"], 1)
+        self.assertEqual(receipt["schema_version"], 5)
+        self.assertTrue(receipt["repository_mutation"]["detected"])
+        self.assertFalse(receipt["repository_mutation"]["head_changed"])
+        self.assertEqual(
+            receipt["repository_mutation"]["tracked_paths"], ["tracked.py"]
+        )
+        self.assertEqual(
+            receipt["repository_mutation"]["untracked_paths"], ["generated.txt"]
+        )
+        self.assertEqual(assessed[0]["state"], "stale")
+        self.assertEqual(
+            assessed[0]["reasons"], ["repository changed during check"]
+        )
+        output = io.StringIO()
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                self.assertEqual(main(["--store", str(store), "status"]), 0)
+        self.assertIn(
+            "repository changed during check: tracked.py, generated.txt",
+            output.getvalue(),
+        )
+        report = render_markdown_report(
+            [receipt], current=git_state(self.root), max_age_hours=24
+        )
+        self.assertIn(
+            "- Result: rejected (repository changed; command exit 0)", report
+        )
+        self.assertIn("- Mutated tracked paths: `tracked.py`", report)
+        self.assertIn("- Mutated untracked paths: `generated.txt`", report)
+
+    def test_failing_mutating_check_preserves_command_exit_code(self) -> None:
+        store = self.root / ".proofrun" / "receipts.jsonl"
+        exit_code, receipt = run_check(
+            name="failing-mutator",
+            command=[
+                sys.executable,
+                "-c",
+                "from pathlib import Path; import sys; Path('artifact.txt').write_text('x'); sys.exit(7)",
+            ],
+            cwd=self.root,
+            store=store,
+        )
+
+        self.assertEqual(exit_code, 7)
+        self.assertEqual(receipt["command_exit_code"], 7)
+        self.assertEqual(receipt["exit_code"], 7)
+        assessed = assess_receipts(
+            [receipt], current=git_state(self.root), max_age_hours=24
+        )
+        self.assertEqual(
+            assessed[0]["reasons"], ["failed", "repository changed during check"]
+        )
 
     def test_working_tree_change_makes_receipt_stale(self) -> None:
         store = self.root / ".proofrun" / "receipts.jsonl"
@@ -285,7 +363,7 @@ class ProofRunTests(unittest.TestCase):
             store=store,
         )
 
-        self.assertEqual(first["schema_version"], 4)
+        self.assertEqual(first["schema_version"], 5)
         self.assertIsNone(first["previous_hash"])
         self.assertEqual(first["receipt_hash"], receipt_digest(first))
         self.assertEqual(second["previous_hash"], receipt_digest(first))
@@ -506,7 +584,7 @@ class ProofRunTests(unittest.TestCase):
         self.assertIn("wrote Markdown report", output.getvalue())
         report = output_path.read_text(encoding="utf-8")
         self.assertIn("- Receipt chain: INVALID", report)
-        self.assertIn("receipt chain invalid, failed", report)
+        self.assertIn("receipt chain invalid", report)
 
     def test_manifest_load_and_selection(self) -> None:
         manifest = self.root / "proofrun.toml"

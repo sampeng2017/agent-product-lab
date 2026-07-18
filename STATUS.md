@@ -15,8 +15,11 @@ with bounded `--jobs N` concurrency. Parallel suites report results in manifest
 order and append receipts in completion order. `verify --json` emits a
 versioned suite document with complete receipts and explicit skip accounting;
 check output moves to standard error so standard output remains valid JSON.
-Schema-v4 receipts preserve the execution context alongside Git snapshots,
-file-level drift details, canonical SHA-256 hashes, and links to prior receipts.
+Schema-v5 receipts preserve the execution context, pre/post Git snapshots, the
+real command exit code, file-level drift and in-command mutation details,
+canonical SHA-256 hashes, and links to prior receipts. A passing check that
+changes repository state is rejected with exit 1, so its post-command snapshot
+cannot silently claim evidence for code the check did not fully verify.
 A named `status --require-valid` selection now acts as a process gate: missing
 proof is represented explicitly, while stale, missing, or empty-store
 assessments return a nonzero exit code without changing normal status behavior.
@@ -31,23 +34,23 @@ overflow counts; structured JSON remains complete.
 
 ## Completed today
 
-- Added optional check names to `proofrun status`, preserving request order and
-  returning explicit `missing` assessments for names without receipts.
-- Added `status --require-valid`: it exits 0 only when every selected proof is
-  valid, 1 for stale, missing, or an empty unscoped store, and leaves existing
-  informational status calls at exit 0.
-- Kept the gate compatible with both human and JSON output, including complete
-  stale reasons and a stable missing-proof object with a null receipt.
-- Added regressions for a selected valid proof, mixed stale/missing JSON, and
-  empty-store rejection; expanded the suite from 27 to 30 tests.
-- Bumped the package to version 1.0.0 and documented the acceptance contract.
+- Captured Git state before and after every check and added explicit mutation
+  evidence for commit, tracked-path, and untracked-path changes.
+- Rejected otherwise-passing mutators with ProofRun exit 1 while preserving a
+  failed command's original nonzero exit code and recording both values.
+- Surfaced mutation rejections and paths in human status, structured receipts,
+  suite output, and Markdown reports; large mutation sets obey display limits.
+- Added regressions for passing and failing mutators and expanded the suite from
+  30 to 32 tests.
+- Bumped the package to version 1.1.0 and documented the split between an
+  intentional mutation step and a subsequent verification step.
 
 ## Changed since the previous run
 
-Agents and CI can now enforce that specific named evidence still applies to the
-current repository instead of merely inspecting status output. Missing proof is
-distinguishable from stale proof, and existing observational workflows remain
-backward-compatible.
+ProofRun no longer grants valid evidence to a command that passed while changing
+the repository. Receipts distinguish command failure from proof rejection and
+explain exactly what changed during execution, closing the highest-risk gap in
+the local trust contract.
 
 ## Known issues and incomplete work
 
@@ -64,22 +67,28 @@ backward-compatible.
 - Output written directly by parallel child commands can interleave on the
   terminal; ProofRun's own per-check summaries remain ordered.
 - Checks that mutate shared files may race when run in parallel. `--jobs 1`
-  remains the safe choice for suites whose commands are not independent.
+  remains the safe choice for suites whose commands are not independent; safe
+  mutation detection can conservatively reject a check because another parallel
+  check changed repository state during its execution window.
 - Structured verification intentionally preserves check standard error as live
   terminal output; parallel checks can still interleave those diagnostics.
-- Receipts capture Git state after a command finishes. If a check mutates the
-  repository, the receipt may cover a post-command state that the command did
-  not fully validate; pre/post execution-state comparison is not implemented.
+- Pre/post fingerprinting doubles the Git-state inspection work around each
+  check, which may be noticeable when many large untracked files are present.
+- Mutation detection compares Git-visible state at check boundaries; ignored
+  files and transient changes fully restored before exit are not detected.
 
 ## Recommended next step
 
-Capture Git state before and after each command and make repository-mutating
-checks explicit, preventing a passing command from accidentally claiming proof
-for code it changed but did not subsequently verify.
+Add a low-friction agent/CI integration example that runs structured verification
+and the named status gate, then publishes the Markdown proof report as a review
+artifact or job summary.
 
 ## Important decisions
 
 - Local-first and zero runtime dependencies remain the initial wedge.
+- A successful command that changes Git state is a rejected proof with exit 1;
+  intentional mutators should run before a separate verifier. Failed mutators
+  preserve the command's original nonzero exit code.
 - Check working directories are relative to the repository invocation root and
   cannot escape it, including through symlinks.
 - All selected check contexts are validated before suite execution to avoid
@@ -114,6 +123,10 @@ for code it changed but did not subsequently verify.
 - Path limits are presentation-only, apply across tracked paths before
   untracked paths in stable order, and never truncate receipt or JSON data.
 - Evidence is invalidated by commit or working-tree changes, age, or a broken
-  receipt chain.
+  receipt chain, and permanently rejected when the check itself mutated the
+  repository.
+- Sam's suggestion to pivot once improvement ideas are exhausted is accepted;
+  ProofRun continues for now because mutation safety and agent/CI adoption remain
+  concrete product work, with the repository structure to be revisited at pivot.
 - Receipts stay ignored by Git while product decisions and run handoffs are
   committed; schema changes remain backward-compatible at read time.

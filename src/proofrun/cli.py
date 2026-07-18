@@ -141,6 +141,32 @@ def _format_status_reasons(item: dict[str, object], *, path_limit: int) -> str:
                 overflow = f"+{omitted} more"
                 path_details = f"{path_details}, {overflow}" if path_details else overflow
             details.append(f"{reason}: {path_details}")
+        elif reason == "repository changed during check":
+            receipt = item.get("receipt")
+            mutation = (
+                receipt.get("repository_mutation")
+                if isinstance(receipt, dict)
+                else None
+            )
+            mutation_paths = {
+                "tracked": mutation.get("tracked_paths", []),
+                "untracked": mutation.get("untracked_paths", []),
+            } if isinstance(mutation, dict) else None
+            shown, mutation_omitted = limited_working_tree_paths(
+                mutation_paths, path_limit
+            )
+            paths = shown["tracked"] + shown["untracked"]
+            path_details = ", ".join(paths)
+            if mutation_omitted:
+                overflow = f"+{mutation_omitted} more"
+                path_details = f"{path_details}, {overflow}" if path_details else overflow
+            if isinstance(mutation, dict) and mutation.get("head_changed"):
+                path_details = (
+                    f"{path_details}, commit changed"
+                    if path_details
+                    else "commit changed"
+                )
+            details.append(f"{reason}: {path_details}" if path_details else reason)
         else:
             details.append(reason)
     return ", ".join(details) or "evidence applies"
@@ -201,6 +227,14 @@ def _verify_json_summary(
     }
 
 
+def _result_label(exit_code: int, receipt: dict[str, object]) -> str:
+    mutation = receipt.get("repository_mutation")
+    if isinstance(mutation, dict) and mutation.get("detected") is True:
+        command_exit = receipt.get("command_exit_code", exit_code)
+        return f"rejected: repository changed (command exit {command_exit})"
+    return "passed" if exit_code == 0 else f"failed ({exit_code})"
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cwd = Path.cwd()
@@ -214,7 +248,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             print("proofrun: a command is required after --", file=sys.stderr)
             return 2
         exit_code, receipt = run_check(name=args.name, command=command, cwd=cwd, store=store)
-        result = "passed" if exit_code == 0 else f"failed ({exit_code})"
+        result = _result_label(exit_code, receipt)
         print(
             f"proofrun: {args.name} {result}; receipt {receipt['id']} "
             f"({receipt['duration_ms']} ms)"
@@ -253,7 +287,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         passed = 0
         for item in results:
-            result = "passed" if item["exit_code"] == 0 else f"failed ({item['exit_code']})"
+            result = _result_label(item["exit_code"], item["receipt"])
             print(
                 f"proofrun: {item['name']} {result}; receipt {item['receipt']['id']} "
                 f"({item['receipt']['duration_ms']} ms)"
