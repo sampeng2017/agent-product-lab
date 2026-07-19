@@ -265,3 +265,28 @@ Validation covered the full unit suite, compileall, diff checks, manifest-driven
 structured verification, receipt audit, the named validity gate, and Markdown
 report generation. The next run should add a practical agent/CI integration
 example that publishes structured verification and a Markdown proof artifact.
+
+## 2026-07-18 — GitHub Actions proof publishing
+
+Continued ProofRun and completed the adoption task from the prior handoff. Added
+an active GitHub Actions workflow for pushes, pull requests, and manual runs. It
+installs the package, captures the versioned `verify --json` document outside
+the checkout, renders the Markdown report into GitHub's job summary, and uploads
+both evidence files as a 14-day artifact. The report, upload, and proof-gate
+steps use `always()` so a failed verification does not short-circuit evidence
+publication, while the original suite exit remains failed. A final receipt
+audit plus `status --require-valid unit` independently rejects stale, missing,
+damaged, or unsuccessful proof.
+
+The runner temp location is a deliberate part of the integration contract.
+Writing JSON or Markdown into the checkout while ProofRun is observing it could
+make an otherwise valid check look like a repository mutator. Documented this
+constraint and how to adapt the named gate for another manifest. Updated the
+product roadmap from CI exploration to a conservative bootstrap command that
+can generate starter configuration without overwriting user files.
+
+Validation used the existing 32-test suite, Ruby's YAML parser, a local
+simulation of the evidence-producing commands with runner-temp and job-summary
+files, JSON parsing, byte comparison of the generated report and summary,
+receipt audit, and the named validity gate. The next run should add
+`proofrun init` to scaffold a starter manifest and CI workflow safely.

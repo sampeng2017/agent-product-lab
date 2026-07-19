@@ -135,6 +135,22 @@ it as trusted evidence. Reports use the same 10-path default per check and
 accept `--path-limit N`; omitted paths are counted explicitly. This limit is
 presentation-only and never changes stored receipts or status JSON.
 
+## GitHub Actions
+
+The repository includes a working CI integration in
+[`proofrun.yml`](.github/workflows/proofrun.yml). It installs ProofRun, saves
+the versioned `verify --json` result, adds the Markdown report to the workflow
+job summary, uploads both files as a 14-day `proofrun-evidence` artifact, and
+then enforces the named `unit` proof with `status --require-valid`.
+
+The report, artifact, and proof-gate steps use `always()` so they still run
+after unsuccessful verification; the original failure remains part of the job
+result. Both generated files live under GitHub's runner temp directory rather
+than the checkout, because writing them into the repository during a check
+could invalidate mutation-safe evidence. Copy the workflow into another Python
+repository, adjust the install step, and replace `unit` with the check names
+from that repository's `proofrun.toml`.
+
 ## Why this exists
 
 AI agents can generate code quickly, but a claim like "tests passed" becomes

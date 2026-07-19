@@ -96,11 +96,14 @@ claimed checks still apply to this exact working tree."
 - Parallel suite output stays in manifest order; fail-fast stops new launches
   after an observed failure but preserves receipts from work already running.
 - The implementation has no runtime dependencies.
+- The checked-in GitHub Actions workflow publishes structured verification and
+  a Markdown job summary/artifact even when verification fails, then applies a
+  named validity gate so evidence publication cannot mask a failed job.
 
 ## Near-term roadmap
 
-1. Explore agent hooks and CI integration now that mutation-safe local proof
-   and an enforceable acceptance gate exist.
+1. Add a first-class bootstrap command that can create a starter manifest and
+   CI workflow without overwriting existing project configuration.
 2. Measure and optimize fingerprint cost in repositories with many or large
    untracked files without weakening exact drift detection.
 3. Consider authenticated or externally checkpointed receipt chains after

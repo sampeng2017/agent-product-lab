@@ -31,26 +31,31 @@ applies, audit detects local receipt-chain damage, and report packages both
 views into a Markdown handoff.
 Human status and reports cap invalidating paths at 10 by default with explicit
 overflow counts; structured JSON remains complete.
+The checked-in GitHub Actions workflow now exercises this full contract on
+pushes and pull requests: it preserves structured output and a Markdown report
+as run evidence, publishes the report as the job summary, and finishes with a
+named validity gate.
 
 ## Completed today
 
-- Captured Git state before and after every check and added explicit mutation
-  evidence for commit, tracked-path, and untracked-path changes.
-- Rejected otherwise-passing mutators with ProofRun exit 1 while preserving a
-  failed command's original nonzero exit code and recording both values.
-- Surfaced mutation rejections and paths in human status, structured receipts,
-  suite output, and Markdown reports; large mutation sets obey display limits.
-- Added regressions for passing and failing mutators and expanded the suite from
-  30 to 32 tests.
-- Bumped the package to version 1.1.0 and documented the split between an
-  intentional mutation step and a subsequent verification step.
+- Added an active GitHub Actions workflow for pushes, pull requests, and manual
+  runs using read-only repository permissions and Python 3.12.
+- Preserved `verify --json` output and the Markdown proof report as a 14-day
+  workflow artifact, while also rendering the report in the GitHub job summary.
+- Marked report, artifact, and proof-gate steps to run after verification
+  failures without forgiving the original suite exit, then enforced receipt
+  integrity and the named `unit` proof in a final gate.
+- Put generated evidence in the runner temp directory so CI does not invalidate
+  its own mutation-safe receipt by writing into the checkout.
+- Documented how to adapt the workflow and locally exercised its evidence and
+  gate sequence; the existing 32-test suite and proof gate pass.
 
 ## Changed since the previous run
 
-ProofRun no longer grants valid evidence to a command that passed while changing
-the repository. Receipts distinguish command failure from proof rejection and
-explain exactly what changed during execution, closing the highest-risk gap in
-the local trust contract.
+ProofRun now demonstrates its complete agent/CI handoff instead of documenting
+the primitives separately. A failed suite can still leave inspectable JSON and
+Markdown evidence, but the final audit and named status gate ensure artifact
+publication cannot turn a failed verification into a successful job.
 
 ## Known issues and incomplete work
 
@@ -76,12 +81,16 @@ the local trust contract.
   check, which may be noticeable when many large untracked files are present.
 - Mutation detection compares Git-visible state at check boundaries; ignored
   files and transient changes fully restored before exit are not detected.
+- The example workflow targets GitHub.com and current GitHub-hosted runners;
+  its `upload-artifact` version is not compatible with GitHub Enterprise Server.
+- The workflow has been syntax-checked and its ProofRun command sequence was
+  executed locally, but no hosted GitHub Actions run is recorded yet.
 
 ## Recommended next step
 
-Add a low-friction agent/CI integration example that runs structured verification
-and the named status gate, then publishes the Markdown proof report as a review
-artifact or job summary.
+Add a conservative `proofrun init` bootstrap command that can create a starter
+manifest and CI workflow, refuses to overwrite existing files by default, and
+lets users adopt the proven integration without copying configuration manually.
 
 ## Important decisions
 
@@ -117,6 +126,14 @@ artifact or job summary.
   one parseable JSON document.
 - Parallel fail-fast is observation-based: no new work is launched after a
   failure is seen, but already-started checks complete and retain their proof.
+- CI evidence files belong outside the checkout so generating JSON and Markdown
+  cannot change the repository state covered by a verification receipt.
+- Report, artifact, and proof-gate steps use GitHub's `always()` condition so
+  diagnostics survive a failed verification; the suite exit and final audit or
+  named status gate can each fail the job.
+- The repository workflow grants only `contents: read` and pins the current
+  supported major versions of GitHub's official checkout, Python setup, and
+  artifact actions.
 - Unix readers use shared locks for concurrent snapshots; Windows readers use
   the platform's short exclusive file lock because its standard library does
   not expose a shared mode.
