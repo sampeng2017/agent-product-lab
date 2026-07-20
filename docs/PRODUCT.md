@@ -99,14 +99,19 @@ claimed checks still apply to this exact working tree."
 - The checked-in GitHub Actions workflow publishes structured verification and
   a Markdown job summary/artifact even when verification fails, then applies a
   named validity gate so evidence publication cannot mask a failed job.
+- `proofrun init` detects a single supported project type or accepts an explicit
+  command, creates a starter manifest without overwriting files, and can add the
+  proven GitHub Actions workflow when given a concrete ProofRun install source.
 
 ## Near-term roadmap
 
-1. Add a first-class bootstrap command that can create a starter manifest and
-   CI workflow without overwriting existing project configuration.
-2. Measure and optimize fingerprint cost in repositories with many or large
+1. Establish a remote, tagged install source and validate both the checked-in
+   and generated workflows on hosted GitHub Actions.
+2. Exercise `proofrun init` in representative Python, Node.js, Rust, and Go
+   sample repositories and refine detection from real adoption feedback.
+3. Measure and optimize fingerprint cost in repositories with many or large
    untracked files without weakening exact drift detection.
-3. Consider authenticated or externally checkpointed receipt chains after
+4. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 
 ## Success signals

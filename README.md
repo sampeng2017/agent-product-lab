@@ -147,9 +147,9 @@ The report, artifact, and proof-gate steps use `always()` so they still run
 after unsuccessful verification; the original failure remains part of the job
 result. Both generated files live under GitHub's runner temp directory rather
 than the checkout, because writing them into the repository during a check
-could invalidate mutation-safe evidence. Copy the workflow into another Python
-repository, adjust the install step, and replace `unit` with the check names
-from that repository's `proofrun.toml`.
+could invalidate mutation-safe evidence. Use `proofrun init --github-actions`
+to generate the same integration in another repository with an explicit
+ProofRun install source.
 
 ## Why this exists
 
@@ -166,3 +166,33 @@ PYTHONPATH=src python3 -m proofrun verify
 ```
 
 The project uses only the Python standard library.
+
+## Bootstrap another repository
+
+`proofrun init` detects a single Python, Node.js, Rust, or Go project and writes
+a starter `proofrun.toml`. Python projects with pytest configuration use
+`python -m pytest`; other repositories with a `tests/` directory use unittest.
+Mixed or unrecognized repositories must provide the intended command
+explicitly:
+
+```bash
+proofrun init --check-name unit -- python -m pytest -q
+```
+
+Existing targets are never overwritten unless `--force` is explicit. When CI
+adoption is wanted, `--github-actions` also creates the proven evidence
+workflow. It requires a real pip install requirement rather than guessing that
+ProofRun is published at a particular location:
+
+```bash
+proofrun init \
+  --github-actions \
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.2.0"
+```
+
+ProofRun validates the command choice and every selected destination before it
+writes anything, so an existing manifest or workflow prevents a partial
+scaffold. The generated workflow publishes structured JSON and a Markdown job
+summary/artifact, audits the receipt chain, and requires all latest proofs to be
+valid. Review the detected command and pin the install requirement to a tag or
+commit before committing the generated files.

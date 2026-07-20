@@ -20,6 +20,7 @@ from .core import (
 from .manifest import load_manifest, select_checks
 from .presentation import DEFAULT_PATH_LIMIT, limited_working_tree_paths
 from .report import render_markdown_report
+from .scaffold import initialize_repository
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -34,6 +35,34 @@ def build_parser() -> argparse.ArgumentParser:
         help="receipt store (default: .proofrun/receipts.jsonl)",
     )
     subparsers = parser.add_subparsers(dest="action", required=True)
+
+    init = subparsers.add_parser(
+        "init", help="create a starter manifest and optional GitHub Actions workflow"
+    )
+    init.add_argument(
+        "--check-name",
+        default="test",
+        help="name for the starter check (default: test)",
+    )
+    init.add_argument(
+        "--github-actions",
+        action="store_true",
+        help="also create .github/workflows/proofrun.yml",
+    )
+    init.add_argument(
+        "--ci-install",
+        help="pip requirement used to install ProofRun in the generated workflow",
+    )
+    init.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite selected scaffold files",
+    )
+    init.add_argument(
+        "command",
+        nargs=argparse.REMAINDER,
+        help="custom check command after --; otherwise detect the project type",
+    )
 
     run = subparsers.add_parser("run", help="run a command and record its receipt")
     run.add_argument("--name", required=True, help="stable name for this check")
@@ -239,6 +268,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cwd = Path.cwd()
     store = _resolve_store(cwd, args.store)
+
+    if args.action == "init":
+        command = list(args.command)
+        if command and command[0] == "--":
+            command = command[1:]
+        try:
+            written, preset = initialize_repository(
+                cwd,
+                check_name=args.check_name,
+                command=command or None,
+                github_actions=args.github_actions,
+                ci_install=args.ci_install,
+                force=args.force,
+            )
+        except (OSError, ValueError) as exc:
+            print(f"proofrun: {exc}", file=sys.stderr)
+            return 2
+        if preset is not None:
+            print(f"proofrun: detected {preset.label}; using {shlex.join(preset.command)}")
+        for path in written:
+            print(f"proofrun: wrote {path.relative_to(cwd)}")
+        return 0
 
     if args.action == "run":
         command = list(args.command)

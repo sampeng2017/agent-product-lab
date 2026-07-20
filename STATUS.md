@@ -7,12 +7,17 @@ development commands and binds them to the exact Git working state they covered.
 
 ## Current product shape
 
-The dependency-free Python CLI has six commands: `run`, `verify`, `status`,
-`audit`, `report`, and `history`. Receipts stay in append-only JSON Lines under
-the ignored `.proofrun/` directory. Manifest checks can run from distinct
-repository subdirectories with explicit environment overrides, sequentially or
-with bounded `--jobs N` concurrency. Parallel suites report results in manifest
-order and append receipts in completion order. `verify --json` emits a
+The dependency-free Python CLI has seven commands: `init`, `run`, `verify`,
+`status`, `audit`, `report`, and `history`. `init` detects a single Python,
+Node.js, Rust, or Go project (or accepts an explicit command), writes a starter
+manifest, and can generate the proven GitHub Actions integration when given a
+concrete pip install source. It preflights every target and refuses to overwrite
+existing configuration unless `--force` is explicit. Receipts stay in
+append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
+checks can run from distinct repository subdirectories with explicit
+environment overrides, sequentially or with bounded `--jobs N` concurrency.
+Parallel suites report results in manifest order and append receipts in
+completion order. `verify --json` emits a
 versioned suite document with complete receipts and explicit skip accounting;
 check output moves to standard error so standard output remains valid JSON.
 Schema-v5 receipts preserve the execution context, pre/post Git snapshots, the
@@ -38,24 +43,29 @@ named validity gate.
 
 ## Completed today
 
-- Added an active GitHub Actions workflow for pushes, pull requests, and manual
-  runs using read-only repository permissions and Python 3.12.
-- Preserved `verify --json` output and the Markdown proof report as a 14-day
-  workflow artifact, while also rendering the report in the GitHub job summary.
-- Marked report, artifact, and proof-gate steps to run after verification
-  failures without forgiving the original suite exit, then enforced receipt
-  integrity and the named `unit` proof in a final gate.
-- Put generated evidence in the runner temp directory so CI does not invalidate
-  its own mutation-safe receipt by writing into the checkout.
-- Documented how to adapt the workflow and locally exercised its evidence and
-  gate sequence; the existing 32-test suite and proof gate pass.
+- Added `proofrun init` with conservative Python/unittest, Python/pytest,
+  Node.js, Rust, and Go command detection plus an explicit custom-command path.
+- Added optional GitHub Actions generation that requires an explicit pip
+  requirement for ProofRun, avoiding an unsafe assumption about package
+  publication or ownership.
+- Preflighted all selected targets before writing, rejected ambiguous or unknown
+  project types, preserved existing files by default, and added explicit
+  `--force` replacement.
+- Added four end-to-end bootstrap regressions covering detection, overwrite
+  refusal and force, all-target conflict safety, workflow generation, and the CI
+  install-source requirement, plus detection coverage across supported project
+  types; the suite now has 37 tests.
+- Parsed a generated workflow as YAML and exercised init in a disposable
+  repository. Bumped ProofRun to 1.2.0.
+- Processed Sam's GitHub remote offer and left a concrete, non-blocking handoff
+  request under `To-Sam/` for the next adoption step.
 
 ## Changed since the previous run
 
-ProofRun now demonstrates its complete agent/CI handoff instead of documenting
-the primitives separately. A failed suite can still leave inspectable JSON and
-Markdown evidence, but the final audit and named status gate ensure artifact
-publication cannot turn a failed verification into a successful job.
+ProofRun's proven local and CI workflow is now adoptable through a first-class
+command instead of manual configuration copying. The scaffold is conservative:
+it will not guess across mixed ecosystems, overwrite user files silently, or
+emit a workflow that assumes an unspecified ProofRun distribution source.
 
 ## Known issues and incomplete work
 
@@ -85,16 +95,26 @@ publication cannot turn a failed verification into a successful job.
   its `upload-artifact` version is not compatible with GitHub Enterprise Server.
 - The workflow has been syntax-checked and its ProofRun command sequence was
   executed locally, but no hosted GitHub Actions run is recorded yet.
+- ProofRun does not yet have a configured remote or tagged public/private pip
+  install source, so generated CI requires the adopter to pass `--ci-install`.
+- Project detection is intentionally narrow and has only local fixture coverage;
+  real-world monorepos and nonstandard test layouts require an explicit command.
 
 ## Recommended next step
 
-Add a conservative `proofrun init` bootstrap command that can create a starter
-manifest and CI workflow, refuses to overwrite existing files by default, and
-lets users adopt the proven integration without copying configuration manually.
+After Sam provides the requested remote, configure it, push the repository,
+create a versioned installation reference, and validate the checked-in workflow
+on hosted GitHub Actions. Then use that pinned reference to test the generated
+`proofrun init --github-actions` output in a separate sample repository.
 
 ## Important decisions
 
 - Local-first and zero runtime dependencies remain the initial wedge.
+- Bootstrap detection only succeeds for one recognized ecosystem; ambiguity or
+  no match requires the user to state the verification command explicitly.
+- Scaffold target conflicts are checked as a group before any write. Existing
+  files require explicit `--force`, and generated CI requires an explicit,
+  single-line pip install requirement for ProofRun.
 - A successful command that changes Git state is a rejected proof with exit 1;
   intentional mutators should run before a separate verifier. Failed mutators
   preserve the command's original nonzero exit code.

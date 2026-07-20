@@ -290,3 +290,34 @@ simulation of the evidence-producing commands with runner-temp and job-summary
 files, JSON parsing, byte comparison of the generated report and summary,
 receipt audit, and the named validity gate. The next run should add
 `proofrun init` to scaffold a starter manifest and CI workflow safely.
+
+## 2026-07-19 — Conservative repository bootstrap
+
+Continued ProofRun and completed the adoption improvement selected in the prior
+handoff. Added `proofrun init`, which recognizes a single Python/unittest,
+Python/pytest, Node.js, Rust, or Go project and writes a starter manifest. Mixed
+or unknown repositories fail with an actionable request for an explicit command
+instead of receiving a misleading default. Users can set the check name or pass
+the exact command after `--`.
+
+The command preserves existing project configuration by default. It preflights
+every selected destination before writing, reports all conflicts, and only
+replaces files when `--force` is explicit. Optional `--github-actions`
+generation reproduces the repository's structured verification, Markdown
+evidence publication, audit, and validity gate. It deliberately requires
+`--ci-install` with a concrete pip requirement so ProofRun does not claim a
+package location or publisher that does not yet exist.
+
+Added four CLI regressions covering automatic detection, overwrite refusal and
+force, multi-target preflight, generated workflow content, and the install-source
+requirement, plus detection coverage across supported project types. The suite
+grew from 32 to 37 tests and the package version is now 1.2.0. A disposable
+repository smoke test generated valid TOML and YAML. Sam
+offered to create a GitHub remote; the processed note is archived and an active
+request now explains how to hand back an empty repository URL.
+
+Validation used the full unit suite, compileall, diff checks, CLI help, generated
+YAML parsing, manifest-driven structured verification, receipt audit, the named
+validity gate, and Markdown report export. The next run should connect Sam's
+remote, establish a pinned installation reference, run hosted CI, and exercise
+the generated workflow in a separate sample repository.

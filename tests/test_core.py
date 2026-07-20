@@ -10,7 +10,7 @@ import threading
 import time
 import unittest
 from concurrent.futures import ThreadPoolExecutor, wait as wait_for_futures
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -29,6 +29,7 @@ from proofrun.core import (
 )
 from proofrun.manifest import load_manifest, select_checks
 from proofrun.report import render_markdown_report
+from proofrun.scaffold import detect_project_preset
 
 
 class ProofRunTests(unittest.TestCase):
@@ -606,6 +607,142 @@ command = ["python3", "-c", "print('lint')"]
         self.assertEqual([check.name for check in checks], ["unit", "lint"])
         self.assertEqual([check.name for check in selected], ["lint"])
         self.assertEqual(selected[0].command, ("python3", "-c", "print('lint')"))
+
+    def test_init_detects_unittest_and_refuses_to_overwrite_manifest(self) -> None:
+        tests = self.root / "tests"
+        tests.mkdir()
+        (tests / "test_example.py").write_text("", encoding="utf-8")
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                self.assertEqual(main(["init"]), 0)
+
+        manifest = self.root / "proofrun.toml"
+        expected = (
+            "[checks.test]\n"
+            'command = ["python", "-m", "unittest", "discover", "-s", "tests", "-v"]\n'
+        )
+        self.assertEqual(manifest.read_text(encoding="utf-8"), expected)
+        self.assertIn("detected Python (unittest)", output.getvalue())
+
+        error = io.StringIO()
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stderr(error):
+                self.assertEqual(main(["init", "--", "python", "-m", "pytest"]), 2)
+        self.assertIn(
+            "refusing to overwrite existing files: proofrun.toml",
+            error.getvalue(),
+        )
+        self.assertEqual(manifest.read_text(encoding="utf-8"), expected)
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    main(["init", "--force", "--", "python", "-m", "pytest"]),
+                    0,
+                )
+        self.assertEqual(
+            manifest.read_text(encoding="utf-8"),
+            '[checks.test]\ncommand = ["python", "-m", "pytest"]\n',
+        )
+
+    def test_init_detects_supported_projects_and_rejects_ambiguity(self) -> None:
+        cases = [
+            ("pytest", ("tests/conftest.py",), ("python", "-m", "pytest")),
+            ("node", ("package.json",), ("npm", "test")),
+            ("rust", ("Cargo.toml",), ("cargo", "test")),
+            ("go", ("go.mod",), ("go", "test", "./...")),
+        ]
+        for name, files, expected in cases:
+            with self.subTest(name=name):
+                root = self.root / name
+                for relative in files:
+                    path = root / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("", encoding="utf-8")
+                self.assertEqual(detect_project_preset(root).command, expected)
+
+        mixed = self.root / "mixed"
+        mixed.mkdir()
+        (mixed / "package.json").write_text("{}\n", encoding="utf-8")
+        (mixed / "go.mod").write_text("module example.test/mixed\n", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "multiple project types detected"):
+            detect_project_preset(mixed)
+
+    def test_init_preflights_all_targets_before_writing(self) -> None:
+        workflow = self.root / ".github" / "workflows" / "proofrun.yml"
+        workflow.parent.mkdir(parents=True)
+        workflow.write_text("existing\n", encoding="utf-8")
+        error = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stderr(error):
+                exit_code = main(
+                    [
+                        "init",
+                        "--github-actions",
+                        "--ci-install",
+                        "proofrun @ git+https://example.test/proofrun.git@v1.2.0",
+                        "--",
+                        "python",
+                        "-m",
+                        "pytest",
+                    ]
+                )
+
+        self.assertEqual(exit_code, 2)
+        self.assertFalse((self.root / "proofrun.toml").exists())
+        self.assertEqual(workflow.read_text(encoding="utf-8"), "existing\n")
+        self.assertIn(".github/workflows/proofrun.yml", error.getvalue())
+
+    def test_init_creates_custom_manifest_and_runnable_workflow(self) -> None:
+        output = io.StringIO()
+        requirement = "proofrun @ git+https://example.test/proofrun.git@v1.2.0"
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "init",
+                        "--check-name",
+                        "quality",
+                        "--github-actions",
+                        "--ci-install",
+                        requirement,
+                        "--",
+                        "python",
+                        "-m",
+                        "pytest",
+                        "-q",
+                    ]
+                )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            (self.root / "proofrun.toml").read_text(encoding="utf-8"),
+            '[checks.quality]\ncommand = ["python", "-m", "pytest", "-q"]\n',
+        )
+        workflow = (self.root / ".github" / "workflows" / "proofrun.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("python -m pip install 'proofrun @ git+", workflow)
+        self.assertIn("proofrun verify --json", workflow)
+        self.assertIn("proofrun status --require-valid", workflow)
+        self.assertIn("wrote proofrun.toml", output.getvalue())
+        self.assertIn("wrote .github/workflows/proofrun.yml", output.getvalue())
+
+    def test_init_requires_explicit_ci_install_source(self) -> None:
+        error = io.StringIO()
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stderr(error):
+                exit_code = main(
+                    ["init", "--github-actions", "--", "python", "-m", "pytest"]
+                )
+
+        self.assertEqual(exit_code, 2)
+        self.assertFalse((self.root / "proofrun.toml").exists())
+        self.assertIn("--github-actions requires --ci-install", error.getvalue())
 
     def test_manifest_context_runs_from_subdirectory_and_is_recorded(self) -> None:
         package = self.root / "packages" / "api"

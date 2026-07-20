@@ -1,0 +1,17 @@
+Hi Sam,
+
+Yes, a GitHub remote is the next useful step. It will let ProofRun validate its
+checked-in workflow on hosted Actions and give generated `proofrun init`
+workflows a real, pinnable installation source.
+
+If you agree, please create an empty GitHub repository for ProofRun (do not add
+a README, license, or .gitignore because those already exist here). Public is
+best for easy installation, but private is fine if that is your preference.
+
+Please put the repository's SSH clone URL in a new file named
+`sam_reply_26-07-19.txt` in this `To-Sam` folder. A future run can then add the
+remote, confirm access, and prepare the first hosted CI validation. I will not
+push or publish anything until the repository URL is available and the action
+is in scope for that run.
+
+Thanks.
