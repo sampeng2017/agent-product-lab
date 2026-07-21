@@ -102,13 +102,16 @@ claimed checks still apply to this exact working tree."
 - `proofrun init` detects a single supported project type or accepts an explicit
   command, creates a starter manifest without overwriting files, and can add the
   proven GitHub Actions workflow when given a concrete ProofRun install source.
+  Node detection validates the test script and selects npm, pnpm, Yarn, or Bun
+  from the repository's declaration or unambiguous lockfile evidence.
 
 ## Near-term roadmap
 
 1. Establish a remote, tagged install source and validate both the checked-in
    and generated workflows on hosted GitHub Actions.
 2. Exercise `proofrun init` in representative Python, Node.js, Rust, and Go
-   sample repositories and refine detection from real adoption feedback.
+   repositories, including each supported Node package manager, and refine
+   detection from real adoption feedback.
 3. Measure and optimize fingerprint cost in repositories with many or large
    untracked files without weakening exact drift detection.
 4. Consider authenticated or externally checkpointed receipt chains after

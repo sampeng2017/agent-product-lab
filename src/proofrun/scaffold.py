@@ -19,6 +19,14 @@ class ProjectPreset:
     command: tuple[str, ...]
 
 
+NODE_COMMANDS = {
+    "npm": ("npm", "test"),
+    "pnpm": ("pnpm", "test"),
+    "yarn": ("yarn", "test"),
+    "bun": ("bun", "run", "test"),
+}
+
+
 def _python_preset(root: Path) -> ProjectPreset | None:
     tests = root / "tests"
     if not tests.is_dir():
@@ -42,14 +50,80 @@ def _python_preset(root: Path) -> ProjectPreset | None:
     )
 
 
+def _declared_node_package_manager(package: dict[str, object]) -> str | None:
+    declaration = package.get("packageManager")
+    if declaration is None:
+        return None
+    if not isinstance(declaration, str) or not declaration.strip():
+        raise ValueError("package.json packageManager must be a non-empty string")
+
+    manager = declaration.strip().partition("@")[0]
+    if manager not in NODE_COMMANDS:
+        supported = ", ".join(NODE_COMMANDS)
+        raise ValueError(
+            f"unsupported Node package manager {manager!r}; supported: {supported}; "
+            "or provide a command after --"
+        )
+    return manager
+
+
+def _locked_node_package_manager(root: Path) -> str | None:
+    lockfiles = {
+        "npm": ("package-lock.json", "npm-shrinkwrap.json"),
+        "pnpm": ("pnpm-lock.yaml",),
+        "yarn": ("yarn.lock",),
+        "bun": ("bun.lock", "bun.lockb"),
+    }
+    detected = [
+        manager
+        for manager, names in lockfiles.items()
+        if any((root / name).is_file() for name in names)
+    ]
+    if len(detected) > 1:
+        raise ValueError(
+            "multiple Node package managers detected from lockfiles "
+            f"({', '.join(detected)}); provide a command after --"
+        )
+    return detected[0] if detected else None
+
+
+def _node_preset(root: Path) -> ProjectPreset | None:
+    package_path = root / "package.json"
+    if not package_path.is_file():
+        return None
+    try:
+        package = json.loads(package_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"could not read package.json: {exc}") from exc
+    if not isinstance(package, dict):
+        raise ValueError("package.json must contain a JSON object")
+
+    scripts = package.get("scripts")
+    test_script = scripts.get("test") if isinstance(scripts, dict) else None
+    if not isinstance(test_script, str) or not test_script.strip():
+        raise ValueError(
+            "package.json has no runnable test script; provide a command after --"
+        )
+    if "error: no test specified" in test_script.lower():
+        raise ValueError(
+            "package.json still has the placeholder test script; "
+            "provide a command after --"
+        )
+
+    manager = (
+        _declared_node_package_manager(package)
+        or _locked_node_package_manager(root)
+        or "npm"
+    )
+    return ProjectPreset(f"Node.js ({manager})", NODE_COMMANDS[manager])
+
+
 def detect_project_preset(root: Path) -> ProjectPreset:
     candidates = [
         preset
         for preset in (
             _python_preset(root),
-            ProjectPreset("Node.js", ("npm", "test"))
-            if (root / "package.json").is_file()
-            else None,
+            _node_preset(root),
             ProjectPreset("Rust", ("cargo", "test"))
             if (root / "Cargo.toml").is_file()
             else None,

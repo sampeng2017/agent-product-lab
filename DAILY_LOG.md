@@ -321,3 +321,28 @@ YAML parsing, manifest-driven structured verification, receipt audit, the named
 validity gate, and Markdown report export. The next run should connect Sam's
 remote, establish a pinned installation reference, run hosted CI, and exercise
 the generated workflow in a separate sample repository.
+
+## 2026-07-20 — Package-manager-aware Node bootstrap
+
+Continued ProofRun while the active request for Sam's GitHub remote remains
+unanswered. Used the time for a local adoption fix: the initial Node detector
+treated every `package.json` as proof that `npm test` was runnable. It now parses
+the manifest, requires a non-empty `scripts.test`, rejects the default
+"no test specified" placeholder, and returns an actionable explicit-command
+fallback rather than creating configuration that is guaranteed to fail.
+
+Node bootstrap now honors npm, pnpm, Yarn, and Bun. A supported
+`packageManager` declaration is authoritative; otherwise a single recognized
+lockfile family selects the command, no lockfile defaults to npm, and conflicting
+manager lockfiles are rejected instead of guessed. Bun uses `bun run test` while
+the other managers use their native `test` command. Added regression coverage
+for declarations, lockfiles, absent and placeholder scripts, and ambiguous
+manager evidence. The full suite now contains 39 tests and the package version
+is 1.3.0.
+
+Validation covered the focused detector tests, the full unit suite, compileall,
+diff checks, package version inspection, CLI help, manifest-driven structured
+verification, receipt audit, the named validity gate, and Markdown report
+generation. When Sam supplies the remote, the next run should publish and test
+the pinned workflow. If that remains blocked, the next local adoption feature
+should be a dry-run or structured preview for `proofrun init`.

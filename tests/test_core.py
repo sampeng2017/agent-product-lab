@@ -649,26 +649,89 @@ command = ["python3", "-c", "print('lint')"]
 
     def test_init_detects_supported_projects_and_rejects_ambiguity(self) -> None:
         cases = [
-            ("pytest", ("tests/conftest.py",), ("python", "-m", "pytest")),
-            ("node", ("package.json",), ("npm", "test")),
-            ("rust", ("Cargo.toml",), ("cargo", "test")),
-            ("go", ("go.mod",), ("go", "test", "./...")),
+            (
+                "pytest",
+                (("tests/conftest.py", ""),),
+                ("python", "-m", "pytest"),
+            ),
+            (
+                "node",
+                (("package.json", '{"scripts":{"test":"node --test"}}'),),
+                ("npm", "test"),
+            ),
+            ("rust", (("Cargo.toml", ""),), ("cargo", "test")),
+            ("go", (("go.mod", ""),), ("go", "test", "./...")),
         ]
         for name, files, expected in cases:
             with self.subTest(name=name):
                 root = self.root / name
-                for relative in files:
+                for relative, content in files:
                     path = root / relative
                     path.parent.mkdir(parents=True, exist_ok=True)
-                    path.write_text("", encoding="utf-8")
+                    path.write_text(content, encoding="utf-8")
                 self.assertEqual(detect_project_preset(root).command, expected)
 
         mixed = self.root / "mixed"
         mixed.mkdir()
-        (mixed / "package.json").write_text("{}\n", encoding="utf-8")
+        (mixed / "package.json").write_text(
+            '{"scripts":{"test":"node --test"}}\n', encoding="utf-8"
+        )
         (mixed / "go.mod").write_text("module example.test/mixed\n", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "multiple project types detected"):
             detect_project_preset(mixed)
+
+    def test_init_uses_declared_or_locked_node_package_manager(self) -> None:
+        cases = [
+            (
+                "declared-pnpm",
+                {"packageManager": " pnpm@10.0.0 "},
+                None,
+                ("pnpm", "test"),
+            ),
+            ("yarn-lock", {}, "yarn.lock", ("yarn", "test")),
+            ("bun-lock", {}, "bun.lock", ("bun", "run", "test")),
+        ]
+        for name, package_fields, lockfile, expected in cases:
+            with self.subTest(name=name):
+                root = self.root / name
+                root.mkdir()
+                package = {"scripts": {"test": "vitest run"}, **package_fields}
+                (root / "package.json").write_text(
+                    json.dumps(package), encoding="utf-8"
+                )
+                if lockfile:
+                    (root / lockfile).write_text("", encoding="utf-8")
+                preset = detect_project_preset(root)
+                self.assertEqual(preset.command, expected)
+                self.assertIn(expected[0], preset.label)
+
+    def test_init_rejects_unrunnable_or_ambiguous_node_projects(self) -> None:
+        cases = [
+            ("missing", {}),
+            (
+                "placeholder",
+                {"scripts": {"test": 'echo "Error: no test specified" && exit 1'}},
+            ),
+        ]
+        for name, package in cases:
+            with self.subTest(name=name):
+                root = self.root / name
+                root.mkdir()
+                (root / "package.json").write_text(
+                    json.dumps(package), encoding="utf-8"
+                )
+                with self.assertRaisesRegex(ValueError, "provide a command after --"):
+                    detect_project_preset(root)
+
+        ambiguous = self.root / "ambiguous-locks"
+        ambiguous.mkdir()
+        (ambiguous / "package.json").write_text(
+            '{"scripts":{"test":"vitest run"}}', encoding="utf-8"
+        )
+        (ambiguous / "pnpm-lock.yaml").write_text("", encoding="utf-8")
+        (ambiguous / "yarn.lock").write_text("", encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "multiple Node package managers"):
+            detect_project_preset(ambiguous)
 
     def test_init_preflights_all_targets_before_writing(self) -> None:
         workflow = self.root / ".github" / "workflows" / "proofrun.yml"

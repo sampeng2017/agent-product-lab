@@ -11,9 +11,11 @@ The dependency-free Python CLI has seven commands: `init`, `run`, `verify`,
 `status`, `audit`, `report`, and `history`. `init` detects a single Python,
 Node.js, Rust, or Go project (or accepts an explicit command), writes a starter
 manifest, and can generate the proven GitHub Actions integration when given a
-concrete pip install source. It preflights every target and refuses to overwrite
-existing configuration unless `--force` is explicit. Receipts stay in
-append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
+concrete pip install source. Node detection requires a real test script and
+chooses npm, pnpm, Yarn, or Bun from `packageManager` or unambiguous lockfile
+evidence instead of blindly assuming npm. It preflights every target and refuses
+to overwrite existing configuration unless `--force` is explicit. Receipts
+stay in append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
 checks can run from distinct repository subdirectories with explicit
 environment overrides, sequentially or with bounded `--jobs N` concurrency.
 Parallel suites report results in manifest order and append receipts in
@@ -43,29 +45,24 @@ named validity gate.
 
 ## Completed today
 
-- Added `proofrun init` with conservative Python/unittest, Python/pytest,
-  Node.js, Rust, and Go command detection plus an explicit custom-command path.
-- Added optional GitHub Actions generation that requires an explicit pip
-  requirement for ProofRun, avoiding an unsafe assumption about package
-  publication or ownership.
-- Preflighted all selected targets before writing, rejected ambiguous or unknown
-  project types, preserved existing files by default, and added explicit
-  `--force` replacement.
-- Added four end-to-end bootstrap regressions covering detection, overwrite
-  refusal and force, all-target conflict safety, workflow generation, and the CI
-  install-source requirement, plus detection coverage across supported project
-  types; the suite now has 37 tests.
-- Parsed a generated workflow as YAML and exercised init in a disposable
-  repository. Bumped ProofRun to 1.2.0.
-- Processed Sam's GitHub remote offer and left a concrete, non-blocking handoff
-  request under `To-Sam/` for the next adoption step.
+- Made Node.js bootstrap validate that `package.json` is readable and contains a
+  non-empty, non-placeholder `scripts.test` command before creating a manifest.
+- Added package-manager selection for npm, pnpm, Yarn, and Bun. The standard
+  `packageManager` field takes precedence; otherwise one recognized lockfile
+  family is accepted and conflicting manager lockfiles are rejected.
+- Added focused regressions for manager declarations, Yarn and Bun locks,
+  missing and placeholder scripts, and ambiguous lockfiles. The suite now has
+  39 tests.
+- Bumped ProofRun to 1.3.0 and updated the adoption documentation and roadmap.
+- Checked `To-Sam/`; the existing remote request remains active and there is no
+  reply yet, so this run continued with a valuable local improvement.
 
 ## Changed since the previous run
 
-ProofRun's proven local and CI workflow is now adoptable through a first-class
-command instead of manual configuration copying. The scaffold is conservative:
-it will not guess across mixed ecosystems, overwrite user files silently, or
-emit a workflow that assumes an unspecified ProofRun distribution source.
+Node repositories no longer receive an optimistic `npm test` manifest merely
+because `package.json` exists. Bootstrap now proves that a test script is
+available and preserves the repository's chosen package-manager convention,
+while ambiguous evidence stops with an actionable explicit-command fallback.
 
 ## Known issues and incomplete work
 
@@ -99,19 +96,26 @@ emit a workflow that assumes an unspecified ProofRun distribution source.
   install source, so generated CI requires the adopter to pass `--ci-install`.
 - Project detection is intentionally narrow and has only local fixture coverage;
   real-world monorepos and nonstandard test layouts require an explicit command.
+- Node package-manager detection covers conventional declarations and lockfile
+  names but does not install or configure those managers in generated CI; the
+  target runner must provide the selected command.
 
 ## Recommended next step
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. Then use that pinned reference to test the generated
-`proofrun init --github-actions` output in a separate sample repository.
+on hosted GitHub Actions. If the remote remains unavailable, add a dry-run or
+structured preview mode for `proofrun init` so agents can inspect scaffold
+decisions before any files are written.
 
 ## Important decisions
 
 - Local-first and zero runtime dependencies remain the initial wedge.
 - Bootstrap detection only succeeds for one recognized ecosystem; ambiguity or
   no match requires the user to state the verification command explicitly.
+- Node bootstrap requires a real `scripts.test`; `packageManager` is
+  authoritative when present, one recognized lockfile family is the fallback,
+  and conflicting lockfile families require an explicit command.
 - Scaffold target conflicts are checked as a group before any write. Existing
   files require explicit `--force`, and generated CI requires an explicit,
   single-line pip install requirement for ProofRun.
