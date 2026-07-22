@@ -14,7 +14,10 @@ manifest, and can generate the proven GitHub Actions integration when given a
 concrete pip install source. Node detection requires a real test script and
 chooses npm, pnpm, Yarn, or Bun from `packageManager` or unambiguous lockfile
 evidence instead of blindly assuming npm. It preflights every target and refuses
-to overwrite existing configuration unless `--force` is explicit. Receipts
+to overwrite existing configuration unless `--force` is explicit. A dry-run
+mode exposes the chosen command and create/overwrite actions without changing
+disk; its versioned JSON form also includes the exact generated content for
+agent inspection. Receipts
 stay in append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
 checks can run from distinct repository subdirectories with explicit
 environment overrides, sequentially or with bounded `--jobs N` concurrency.
@@ -45,24 +48,26 @@ named validity gate.
 
 ## Completed today
 
-- Made Node.js bootstrap validate that `package.json` is readable and contains a
-  non-empty, non-placeholder `scripts.test` command before creating a manifest.
-- Added package-manager selection for npm, pnpm, Yarn, and Bun. The standard
-  `packageManager` field takes precedence; otherwise one recognized lockfile
-  family is accepted and conflicting manager lockfiles are rejected.
-- Added focused regressions for manager declarations, Yarn and Bun locks,
-  missing and placeholder scripts, and ambiguous lockfiles. The suite now has
-  39 tests.
-- Bumped ProofRun to 1.3.0 and updated the adoption documentation and roadmap.
+- Split scaffold planning from application so every validated decision can be
+  inspected before files are written.
+- Added `proofrun init --dry-run` with detected/explicit command reporting and
+  per-target create or overwrite actions.
+- Added versioned `init --dry-run --json` output with the exact manifest and
+  workflow contents; `--json` is rejected without `--dry-run` to prevent a
+  structured preview from being mistaken for an applied change.
+- Preserved the existing conflict contract: overwrite previews still require
+  explicit `--force`, and dry runs never mutate either new or existing targets.
+- Added four focused regressions, bringing the suite to 43 tests, and bumped
+  ProofRun to 1.4.0.
 - Checked `To-Sam/`; the existing remote request remains active and there is no
   reply yet, so this run continued with a valuable local improvement.
 
 ## Changed since the previous run
 
-Node repositories no longer receive an optimistic `npm test` manifest merely
-because `package.json` exists. Bootstrap now proves that a test script is
-available and preserves the repository's chosen package-manager convention,
-while ambiguous evidence stops with an actionable explicit-command fallback.
+Repository bootstrap is now inspectable without side effects. Humans can review
+the chosen command and target actions, while agents can parse the same decision
+and exact generated content from a stable JSON envelope before opting into an
+apply.
 
 ## Known issues and incomplete work
 
@@ -104,9 +109,10 @@ while ambiguous evidence stops with an actionable explicit-command fallback.
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. If the remote remains unavailable, add a dry-run or
-structured preview mode for `proofrun init` so agents can inspect scaffold
-decisions before any files are written.
+on hosted GitHub Actions. If the remote remains unavailable, make generated
+GitHub Actions workflows provision the detected Node package manager when a
+pnpm, Yarn, or Bun command is selected, then cover those paths with workflow
+fixtures.
 
 ## Important decisions
 
@@ -119,6 +125,9 @@ decisions before any files are written.
 - Scaffold target conflicts are checked as a group before any write. Existing
   files require explicit `--force`, and generated CI requires an explicit,
   single-line pip install requirement for ProofRun.
+- Init dry runs use the exact same validated scaffold plan as real writes. Human
+  output summarizes command and target actions; versioned JSON additionally
+  carries exact contents, and JSON is intentionally unavailable in write mode.
 - A successful command that changes Git state is a rejected proof with exit 1;
   intentional mutators should run before a separate verifier. Failed mutators
   preserve the command's original nonzero exit code.

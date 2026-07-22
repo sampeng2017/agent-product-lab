@@ -346,3 +346,29 @@ verification, receipt audit, the named validity gate, and Markdown report
 generation. When Sam supplies the remote, the next run should publish and test
 the pinned workflow. If that remains blocked, the next local adoption feature
 should be a dry-run or structured preview for `proofrun init`.
+
+## 2026-07-21 — Side-effect-free init previews
+
+Continued ProofRun while the active GitHub remote request remains unanswered and
+completed the local adoption improvement from the prior handoff. Scaffold
+validation and rendering are now represented as an immutable plan that is
+applied only after the CLI decides to write. `proofrun init --dry-run` uses that
+same plan to report the detected or explicit command and whether each target
+would be created or overwritten, without touching the filesystem.
+
+Added `init --dry-run --json` for agent consumption. Its versioned document
+contains the check name, command source and preset, selected command, force
+state, target actions, and exact generated contents. JSON is deliberately
+rejected without dry-run so machine-readable preview output cannot be confused
+with a successful write. Existing conflict rules still apply: previewing an
+overwrite requires explicit `--force`, while neither new nor existing files are
+changed.
+
+Added four regressions covering detected human previews, exact structured
+content with mixed overwrite/create actions, the JSON safety guard, and a target
+appearing between planning and apply. The suite now has 43 tests and the package
+version is 1.4.0. Full unit tests,
+compileall, diff checks, CLI help inspection, and a live structured preview
+against this repository passed. The next run should publish and exercise hosted
+CI if Sam supplies the remote; otherwise generated workflows should provision
+pnpm, Yarn, or Bun when bootstrap selects those package managers.

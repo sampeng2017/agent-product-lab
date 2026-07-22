@@ -190,7 +190,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.3.0"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.4.0"
 ```
 
 ProofRun validates the command choice and every selected destination before it
@@ -199,3 +199,17 @@ scaffold. The generated workflow publishes structured JSON and a Markdown job
 summary/artifact, audits the receipt chain, and requires all latest proofs to be
 valid. Review the detected command and pin the install requirement to a tag or
 commit before committing the generated files.
+
+Preview the same validation and file decisions without writing anything:
+
+```bash
+proofrun init --dry-run
+proofrun init --dry-run --json -- python -m pytest -q
+```
+
+The human preview reports the detected or explicit command and whether each
+target would be created or overwritten. The versioned JSON preview also includes
+the exact generated content, making it suitable for agent review. `--force`
+still controls whether existing targets may be previewed as overwrites, and
+`--json` is accepted only with `--dry-run`, so structured preview cannot be
+mistaken for an applied scaffold.

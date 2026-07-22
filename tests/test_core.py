@@ -29,7 +29,11 @@ from proofrun.core import (
 )
 from proofrun.manifest import load_manifest, select_checks
 from proofrun.report import render_markdown_report
-from proofrun.scaffold import detect_project_preset
+from proofrun.scaffold import (
+    apply_scaffold_plan,
+    detect_project_preset,
+    plan_repository_initialization,
+)
 
 
 class ProofRunTests(unittest.TestCase):
@@ -806,6 +810,103 @@ command = ["python3", "-c", "print('lint')"]
         self.assertEqual(exit_code, 2)
         self.assertFalse((self.root / "proofrun.toml").exists())
         self.assertIn("--github-actions requires --ci-install", error.getvalue())
+
+    def test_init_dry_run_previews_detected_scaffold_without_writing(self) -> None:
+        tests = self.root / "tests"
+        tests.mkdir()
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(["init", "--dry-run"])
+
+        self.assertEqual(exit_code, 0)
+        self.assertFalse((self.root / "proofrun.toml").exists())
+        preview = output.getvalue()
+        self.assertIn("detected Python (unittest)", preview)
+        self.assertIn("would create proofrun.toml", preview)
+
+    def test_init_json_preview_includes_exact_targets_without_writing(self) -> None:
+        output = io.StringIO()
+        requirement = "proofrun @ git+https://example.test/proofrun.git@v1.4.0"
+        manifest = self.root / "proofrun.toml"
+        manifest.write_text("existing\n", encoding="utf-8")
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                exit_code = main(
+                    [
+                        "init",
+                        "--dry-run",
+                        "--json",
+                        "--force",
+                        "--check-name",
+                        "quality",
+                        "--github-actions",
+                        "--ci-install",
+                        requirement,
+                        "--",
+                        "python",
+                        "-m",
+                        "pytest",
+                        "-q",
+                    ]
+                )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(manifest.read_text(encoding="utf-8"), "existing\n")
+        self.assertFalse((self.root / ".github").exists())
+        preview = json.loads(output.getvalue())
+        self.assertEqual(preview["schema_version"], 1)
+        self.assertEqual(preview["mode"], "dry-run")
+        self.assertTrue(preview["force"])
+        self.assertEqual(preview["check"]["source"], "explicit")
+        self.assertEqual(
+            preview["check"]["command"], ["python", "-m", "pytest", "-q"]
+        )
+        self.assertEqual(
+            [target["path"] for target in preview["targets"]],
+            ["proofrun.toml", ".github/workflows/proofrun.yml"],
+        )
+        self.assertEqual(
+            [target["action"] for target in preview["targets"]],
+            ["overwrite", "create"],
+        )
+        self.assertEqual(
+            preview["targets"][0]["content"],
+            '[checks.quality]\ncommand = ["python", "-m", "pytest", "-q"]\n',
+        )
+        self.assertIn(requirement, preview["targets"][1]["content"])
+
+    def test_init_json_requires_dry_run(self) -> None:
+        error = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stderr(error):
+                exit_code = main(["init", "--json", "--", "python", "-m", "pytest"])
+
+        self.assertEqual(exit_code, 2)
+        self.assertFalse((self.root / "proofrun.toml").exists())
+        self.assertIn("--json requires --dry-run", error.getvalue())
+
+    def test_scaffold_apply_rejects_target_that_appeared_after_plan(self) -> None:
+        plan = plan_repository_initialization(
+            self.root,
+            check_name="test",
+            command=["python", "-m", "pytest"],
+            github_actions=True,
+            ci_install="proofrun @ git+https://example.test/proofrun.git@v1.4.0",
+            force=False,
+        )
+        workflow = self.root / ".github" / "workflows" / "proofrun.yml"
+        workflow.parent.mkdir(parents=True)
+        workflow.write_text("appeared\n", encoding="utf-8")
+
+        with self.assertRaisesRegex(ValueError, "changed after planning"):
+            apply_scaffold_plan(plan)
+
+        self.assertFalse((self.root / "proofrun.toml").exists())
+        self.assertEqual(workflow.read_text(encoding="utf-8"), "appeared\n")
 
     def test_manifest_context_runs_from_subdirectory_and_is_recorded(self) -> None:
         package = self.root / "packages" / "api"

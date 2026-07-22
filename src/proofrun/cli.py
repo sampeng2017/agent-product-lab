@@ -20,7 +20,11 @@ from .core import (
 from .manifest import load_manifest, select_checks
 from .presentation import DEFAULT_PATH_LIMIT, limited_working_tree_paths
 from .report import render_markdown_report
-from .scaffold import initialize_repository
+from .scaffold import (
+    ScaffoldPlan,
+    apply_scaffold_plan,
+    plan_repository_initialization,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -57,6 +61,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--force",
         action="store_true",
         help="overwrite selected scaffold files",
+    )
+    init.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="validate and preview the scaffold without writing files",
+    )
+    init.add_argument(
+        "--json",
+        action="store_true",
+        help="with --dry-run, include exact generated content as JSON",
     )
     init.add_argument(
         "command",
@@ -264,17 +278,45 @@ def _result_label(exit_code: int, receipt: dict[str, object]) -> str:
     return "passed" if exit_code == 0 else f"failed ({exit_code})"
 
 
+def _init_preview(
+    plan: ScaffoldPlan, cwd: Path, *, force: bool
+) -> dict[str, object]:
+    preset = plan.preset
+    return {
+        "schema_version": 1,
+        "mode": "dry-run",
+        "force": force,
+        "check": {
+            "name": plan.check_name,
+            "command": list(plan.command),
+            "source": "detected" if preset is not None else "explicit",
+            "preset": preset.label if preset is not None else None,
+        },
+        "targets": [
+            {
+                "path": target.path.relative_to(cwd).as_posix(),
+                "action": target.action,
+                "content": target.content,
+            }
+            for target in plan.targets
+        ],
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cwd = Path.cwd()
     store = _resolve_store(cwd, args.store)
 
     if args.action == "init":
+        if args.json and not args.dry_run:
+            print("proofrun: --json requires --dry-run for init", file=sys.stderr)
+            return 2
         command = list(args.command)
         if command and command[0] == "--":
             command = command[1:]
         try:
-            written, preset = initialize_repository(
+            plan = plan_repository_initialization(
                 cwd,
                 check_name=args.check_name,
                 command=command or None,
@@ -285,8 +327,34 @@ def main(argv: Sequence[str] | None = None) -> int:
         except (OSError, ValueError) as exc:
             print(f"proofrun: {exc}", file=sys.stderr)
             return 2
-        if preset is not None:
-            print(f"proofrun: detected {preset.label}; using {shlex.join(preset.command)}")
+        if args.dry_run and args.json:
+            print(
+                json.dumps(
+                    _init_preview(plan, cwd, force=args.force),
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            return 0
+        if plan.preset is not None:
+            print(
+                f"proofrun: detected {plan.preset.label}; "
+                f"using {shlex.join(plan.command)}"
+            )
+        else:
+            print(f"proofrun: using explicit command {shlex.join(plan.command)}")
+        if args.dry_run:
+            for target in plan.targets:
+                print(
+                    f"proofrun: would {target.action} "
+                    f"{target.path.relative_to(cwd)}"
+                )
+            return 0
+        try:
+            written = apply_scaffold_plan(plan)
+        except (OSError, ValueError) as exc:
+            print(f"proofrun: {exc}", file=sys.stderr)
+            return 2
         for path in written:
             print(f"proofrun: wrote {path.relative_to(cwd)}")
         return 0

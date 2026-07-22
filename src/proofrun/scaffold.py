@@ -19,6 +19,22 @@ class ProjectPreset:
     command: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class ScaffoldTarget:
+    path: Path
+    content: str
+    action: str
+
+
+@dataclass(frozen=True)
+class ScaffoldPlan:
+    root: Path
+    check_name: str
+    command: tuple[str, ...]
+    preset: ProjectPreset | None
+    targets: tuple[ScaffoldTarget, ...]
+
+
 NODE_COMMANDS = {
     "npm": ("npm", "test"),
     "pnpm": ("pnpm", "test"),
@@ -208,7 +224,7 @@ jobs:
 """
 
 
-def initialize_repository(
+def plan_repository_initialization(
     root: Path,
     *,
     check_name: str,
@@ -216,7 +232,7 @@ def initialize_repository(
     github_actions: bool,
     ci_install: str | None,
     force: bool,
-) -> tuple[list[Path], ProjectPreset | None]:
+) -> ScaffoldPlan:
     if not CHECK_NAME_PATTERN.fullmatch(check_name):
         raise ValueError("check name may contain only letters, numbers, '_' and '-'")
     if github_actions and not ci_install:
@@ -241,15 +257,15 @@ def initialize_repository(
     ):
         raise ValueError("the check command must contain non-empty arguments")
 
-    targets: list[tuple[Path, str]] = [
+    target_contents: list[tuple[Path, str]] = [
         (root / MANIFEST_PATH, _manifest_text(check_name, selected_command))
     ]
     if github_actions:
         assert ci_install is not None
-        targets.append((root / WORKFLOW_PATH, _workflow_text(ci_install)))
+        target_contents.append((root / WORKFLOW_PATH, _workflow_text(ci_install)))
 
     invalid_targets: list[Path] = []
-    for path, _ in targets:
+    for path, _ in target_contents:
         if path.exists() and not path.is_file():
             invalid_targets.append(path.relative_to(root))
             continue
@@ -262,14 +278,62 @@ def initialize_repository(
         names = ", ".join(path.as_posix() for path in invalid_targets)
         raise ValueError(f"scaffold targets are not writable files: {names}")
 
-    conflicts = [path.relative_to(root) for path, _ in targets if path.exists()]
+    conflicts = [
+        path.relative_to(root) for path, _ in target_contents if path.exists()
+    ]
     if conflicts and not force:
         names = ", ".join(path.as_posix() for path in conflicts)
         raise ValueError(f"refusing to overwrite existing files: {names}")
 
+    return ScaffoldPlan(
+        root=root,
+        check_name=check_name,
+        command=selected_command,
+        preset=preset,
+        targets=tuple(
+            ScaffoldTarget(
+                path=path,
+                content=content,
+                action="overwrite" if path.exists() else "create",
+            )
+            for path, content in target_contents
+        ),
+    )
+
+
+def apply_scaffold_plan(plan: ScaffoldPlan) -> list[Path]:
+    appeared = [
+        target.path.relative_to(plan.root)
+        for target in plan.targets
+        if target.action == "create" and target.path.exists()
+    ]
+    if appeared:
+        names = ", ".join(path.as_posix() for path in appeared)
+        raise ValueError(f"scaffold targets changed after planning: {names}")
+
     written: list[Path] = []
-    for path, content in targets:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
-        written.append(path)
-    return written, preset
+    for target in plan.targets:
+        target.path.parent.mkdir(parents=True, exist_ok=True)
+        target.path.write_text(target.content, encoding="utf-8")
+        written.append(target.path)
+    return written
+
+
+def initialize_repository(
+    root: Path,
+    *,
+    check_name: str,
+    command: Sequence[str] | None,
+    github_actions: bool,
+    ci_install: str | None,
+    force: bool,
+) -> tuple[list[Path], ProjectPreset | None]:
+    plan = plan_repository_initialization(
+        root,
+        check_name=check_name,
+        command=command,
+        github_actions=github_actions,
+        ci_install=ci_install,
+        force=force,
+    )
+    return apply_scaffold_plan(plan), plan.preset
