@@ -291,6 +291,9 @@ def _init_preview(
             "command": list(plan.command),
             "source": "detected" if preset is not None else "explicit",
             "preset": preset.label if preset is not None else None,
+            "package_manager": (
+                preset.package_manager if preset is not None else None
+            ),
         },
         "targets": [
             {

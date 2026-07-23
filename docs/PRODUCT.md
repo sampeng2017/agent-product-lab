@@ -103,7 +103,9 @@ claimed checks still apply to this exact working tree."
   command, creates a starter manifest without overwriting files, and can add the
   proven GitHub Actions workflow when given a concrete ProofRun install source.
   Node detection validates the test script and selects npm, pnpm, Yarn, or Bun
-  from the repository's declaration or unambiguous lockfile evidence.
+  from the repository's declaration or unambiguous lockfile evidence. Generated
+  CI for detected Node projects provisions that tool and installs dependencies,
+  using lockfile-strict installation when a lockfile exists.
 - `proofrun init --dry-run` exercises the same validation and overwrite rules
   without writing. Its versioned JSON form exposes the chosen command, target
   actions, and exact file contents for agent inspection.
@@ -115,11 +117,9 @@ claimed checks still apply to this exact working tree."
 2. Exercise `proofrun init` in representative Python, Node.js, Rust, and Go
    repositories, including each supported Node package manager, and refine
    detection from real adoption feedback.
-3. Make generated CI provision the selected Node package manager when the
-   detected command depends on pnpm, Yarn, or Bun.
-4. Measure and optimize fingerprint cost in repositories with many or large
+3. Measure and optimize fingerprint cost in repositories with many or large
    untracked files without weakening exact drift detection.
-5. Consider authenticated or externally checkpointed receipt chains after
+4. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 
 ## Success signals

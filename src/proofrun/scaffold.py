@@ -17,6 +17,9 @@ CHECK_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 class ProjectPreset:
     label: str
     command: tuple[str, ...]
+    package_manager: str | None = None
+    package_manager_declared: bool = False
+    has_lockfile: bool = False
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,13 @@ NODE_COMMANDS = {
     "pnpm": ("pnpm", "test"),
     "yarn": ("yarn", "test"),
     "bun": ("bun", "run", "test"),
+}
+
+NODE_LOCKFILES = {
+    "npm": ("package-lock.json", "npm-shrinkwrap.json"),
+    "pnpm": ("pnpm-lock.yaml",),
+    "yarn": ("yarn.lock",),
+    "bun": ("bun.lock", "bun.lockb"),
 }
 
 
@@ -84,15 +94,9 @@ def _declared_node_package_manager(package: dict[str, object]) -> str | None:
 
 
 def _locked_node_package_manager(root: Path) -> str | None:
-    lockfiles = {
-        "npm": ("package-lock.json", "npm-shrinkwrap.json"),
-        "pnpm": ("pnpm-lock.yaml",),
-        "yarn": ("yarn.lock",),
-        "bun": ("bun.lock", "bun.lockb"),
-    }
     detected = [
         manager
-        for manager, names in lockfiles.items()
+        for manager, names in NODE_LOCKFILES.items()
         if any((root / name).is_file() for name in names)
     ]
     if len(detected) > 1:
@@ -126,12 +130,18 @@ def _node_preset(root: Path) -> ProjectPreset | None:
             "provide a command after --"
         )
 
-    manager = (
-        _declared_node_package_manager(package)
-        or _locked_node_package_manager(root)
-        or "npm"
+    declared_manager = _declared_node_package_manager(package)
+    manager = declared_manager or _locked_node_package_manager(root) or "npm"
+    has_lockfile = any(
+        (root / name).is_file() for name in NODE_LOCKFILES[manager]
     )
-    return ProjectPreset(f"Node.js ({manager})", NODE_COMMANDS[manager])
+    return ProjectPreset(
+        f"Node.js ({manager})",
+        NODE_COMMANDS[manager],
+        package_manager=manager,
+        package_manager_declared=declared_manager is not None,
+        has_lockfile=has_lockfile,
+    )
 
 
 def detect_project_preset(root: Path) -> ProjectPreset:
@@ -167,8 +177,65 @@ def _manifest_text(check_name: str, command: Sequence[str]) -> str:
     return f"[checks.{check_name}]\ncommand = [{serialized}]\n"
 
 
-def _workflow_text(ci_install: str) -> str:
+def _node_workflow_steps(preset: ProjectPreset | None) -> str:
+    if preset is None or preset.package_manager is None:
+        return ""
+
+    manager = preset.package_manager
+    if manager == "bun":
+        install_command = "bun ci" if preset.has_lockfile else "bun install"
+        return f"""
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install project dependencies
+        run: {install_command}
+"""
+
+    install_commands = {
+        "npm": "npm ci" if preset.has_lockfile else "npm install",
+        "pnpm": (
+            "pnpm install --frozen-lockfile"
+            if preset.has_lockfile
+            else "pnpm install"
+        ),
+        "yarn": (
+            "yarn install --frozen-lockfile"
+            if preset.has_lockfile
+            else "yarn install"
+        ),
+    }
+    manager_setup = ""
+    if manager == "pnpm":
+        manager_setup = """
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+"""
+        if not preset.package_manager_declared:
+            manager_setup += """        with:
+          version: latest
+"""
+    elif manager == "yarn":
+        manager_setup = """
+      - name: Enable Corepack
+        run: corepack enable
+"""
+
+    return f"""
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          package-manager-cache: false
+{manager_setup}
+      - name: Install project dependencies
+        run: {install_commands[manager]}
+"""
+
+
+def _workflow_text(ci_install: str, preset: ProjectPreset | None) -> str:
     install_requirement = shlex.quote(ci_install)
+    project_setup = _node_workflow_steps(preset)
     return f"""name: ProofRun evidence
 
 on:
@@ -185,6 +252,7 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
+{project_setup}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -262,7 +330,9 @@ def plan_repository_initialization(
     ]
     if github_actions:
         assert ci_install is not None
-        target_contents.append((root / WORKFLOW_PATH, _workflow_text(ci_install)))
+        target_contents.append(
+            (root / WORKFLOW_PATH, _workflow_text(ci_install, preset))
+        )
 
     invalid_targets: list[Path] = []
     for path, _ in target_contents:

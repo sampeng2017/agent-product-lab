@@ -190,15 +190,26 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.4.0"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.5.0"
 ```
 
 ProofRun validates the command choice and every selected destination before it
 writes anything, so an existing manifest or workflow prevents a partial
 scaffold. The generated workflow publishes structured JSON and a Markdown job
 summary/artifact, audits the receipt chain, and requires all latest proofs to be
-valid. Review the detected command and pin the install requirement to a tag or
-commit before committing the generated files.
+valid. For an automatically detected Node project, it also provisions the
+selected runtime/package manager and installs project dependencies before
+verification: Node.js 24 for npm, pnpm, and Yarn; the official pnpm setup action;
+Corepack for Yarn; or the official Bun setup action. Existing lockfiles select
+strict install modes such as `npm ci`, `pnpm install --frozen-lockfile`,
+`yarn install --frozen-lockfile`, and `bun ci`.
+
+Review the detected command and pin the ProofRun install requirement to a tag or
+commit before committing the generated files. A `packageManager` declaration
+also pins pnpm, Yarn, or Bun for their setup tool; lockfile-only projects use the
+setup tool's current default, so add a declaration when exact package-manager
+reproducibility matters. Explicit custom commands remain opaque and do not
+receive inferred project setup.
 
 Preview the same validation and file decisions without writing anything:
 

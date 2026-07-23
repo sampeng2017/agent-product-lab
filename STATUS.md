@@ -13,11 +13,13 @@ Node.js, Rust, or Go project (or accepts an explicit command), writes a starter
 manifest, and can generate the proven GitHub Actions integration when given a
 concrete pip install source. Node detection requires a real test script and
 chooses npm, pnpm, Yarn, or Bun from `packageManager` or unambiguous lockfile
-evidence instead of blindly assuming npm. It preflights every target and refuses
-to overwrite existing configuration unless `--force` is explicit. A dry-run
-mode exposes the chosen command and create/overwrite actions without changing
-disk; its versioned JSON form also includes the exact generated content for
-agent inspection. Receipts
+evidence instead of blindly assuming npm. Generated CI for detected Node
+projects now sets up Node.js, pnpm, Yarn/Corepack, or Bun as appropriate and
+installs dependencies, choosing a lockfile-strict install when possible. It
+preflights every target and refuses to overwrite existing configuration unless
+`--force` is explicit. A dry-run mode exposes the chosen command and
+create/overwrite actions without changing disk; its versioned JSON form also
+includes the exact generated content for agent inspection. Receipts
 stay in append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
 checks can run from distinct repository subdirectories with explicit
 environment overrides, sequentially or with bounded `--jobs N` concurrency.
@@ -48,26 +50,28 @@ named validity gate.
 
 ## Completed today
 
-- Split scaffold planning from application so every validated decision can be
-  inspected before files are written.
-- Added `proofrun init --dry-run` with detected/explicit command reporting and
-  per-target create or overwrite actions.
-- Added versioned `init --dry-run --json` output with the exact manifest and
-  workflow contents; `--json` is rejected without `--dry-run` to prevent a
-  structured preview from being mistaken for an applied change.
-- Preserved the existing conflict contract: overwrite previews still require
-  explicit `--force`, and dry runs never mutate either new or existing targets.
-- Added four focused regressions, bringing the suite to 43 tests, and bumped
-  ProofRun to 1.4.0.
+- Made generated GitHub Actions workflows provision automatically detected Node
+  runtimes and package managers before ProofRun runs the selected test script.
+- Added Node.js 24 setup for npm, pnpm, and Yarn; official setup actions for
+  pnpm and Bun; and an explicit Corepack enable step for Yarn.
+- Added dependency installation with strict lockfile modes (`npm ci`, frozen
+  pnpm/Yarn installs, and `bun ci`) plus install fallbacks for lockfile-less
+  projects.
+- Preserved package-manager versions from `packageManager` declarations where
+  the official setup action supports them; pnpm lockfile-only projects request
+  the setup action's current version explicitly.
+- Added the detected package manager to structured init previews.
+- Added a five-path workflow matrix regression, bringing the suite to 44 tests,
+  and bumped ProofRun to 1.5.0.
 - Checked `To-Sam/`; the existing remote request remains active and there is no
   reply yet, so this run continued with a valuable local improvement.
 
 ## Changed since the previous run
 
-Repository bootstrap is now inspectable without side effects. Humans can review
-the chosen command and target actions, while agents can parse the same decision
-and exact generated content from a stable JSON envelope before opting into an
-apply.
+Generated workflows are now runnable for conventionally detected Node projects
+instead of merely naming a package-manager command that may be absent or running
+before dependencies exist. Dry-run JSON exposes both the package-manager choice
+and the exact setup/install steps before any files are written.
 
 ## Known issues and incomplete work
 
@@ -101,18 +105,23 @@ apply.
   install source, so generated CI requires the adopter to pass `--ci-install`.
 - Project detection is intentionally narrow and has only local fixture coverage;
   real-world monorepos and nonstandard test layouts require an explicit command.
-- Node package-manager detection covers conventional declarations and lockfile
-  names but does not install or configure those managers in generated CI; the
-  target runner must provide the selected command.
+- Lockfile-only pnpm, Yarn, and Bun projects do not provide an exact
+  package-manager version. Generated CI can provision them, but the setup tool's
+  current default is used; add a `packageManager` declaration to pin the tool.
+- Package-manager setup is inferred only for automatically detected Node
+  presets. Explicit custom commands are intentionally opaque, so adopters must
+  add any required runtime/dependency setup to the generated workflow.
+- A detected Node project without a lockfile uses the manager's normal install
+  command, so dependency resolution is not reproducible until a lockfile is
+  committed.
 
 ## Recommended next step
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. If the remote remains unavailable, make generated
-GitHub Actions workflows provision the detected Node package manager when a
-pnpm, Yarn, or Bun command is selected, then cover those paths with workflow
-fixtures.
+on hosted GitHub Actions. If the remote remains unavailable, benchmark exact Git
+fingerprinting against repositories with many and large untracked files, then
+optimize the measured bottleneck without weakening drift detection.
 
 ## Important decisions
 
@@ -122,6 +131,12 @@ fixtures.
 - Node bootstrap requires a real `scripts.test`; `packageManager` is
   authoritative when present, one recognized lockfile family is the fallback,
   and conflicting lockfile families require an explicit command.
+- Automatically detected Node presets carry package-manager and lockfile
+  metadata into workflow rendering. Generated CI provisions the corresponding
+  tool and installs dependencies before ProofRun snapshots verification state;
+  explicit commands do not trigger inferred setup.
+- Detected Node workflows pin Node.js 24 and action majors. Lockfiles select
+  strict installs; without a lockfile, normal install semantics are explicit.
 - Scaffold target conflicts are checked as a group before any write. Existing
   files require explicit `--force`, and generated CI requires an explicit,
   single-line pip install requirement for ProofRun.

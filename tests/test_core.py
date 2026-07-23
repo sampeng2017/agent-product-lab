@@ -799,6 +799,81 @@ command = ["python3", "-c", "print('lint')"]
         self.assertIn("wrote proofrun.toml", output.getvalue())
         self.assertIn("wrote .github/workflows/proofrun.yml", output.getvalue())
 
+    def test_init_generated_workflow_bootstraps_detected_node_manager(self) -> None:
+        cases = [
+            (
+                "npm",
+                {},
+                "package-lock.json",
+                ("actions/setup-node@v6", "npm ci"),
+                ("pnpm/action-setup", "setup-bun", "corepack enable"),
+            ),
+            (
+                "pnpm-declared",
+                {"packageManager": "pnpm@10.0.0"},
+                None,
+                ("actions/setup-node@v6", "pnpm/action-setup@v6", "pnpm install"),
+                ("version: latest", "setup-bun", "corepack enable"),
+            ),
+            (
+                "pnpm-locked",
+                {},
+                "pnpm-lock.yaml",
+                (
+                    "pnpm/action-setup@v6",
+                    "version: latest",
+                    "pnpm install --frozen-lockfile",
+                ),
+                ("setup-bun", "corepack enable"),
+            ),
+            (
+                "yarn",
+                {},
+                "yarn.lock",
+                (
+                    "actions/setup-node@v6",
+                    "corepack enable",
+                    "yarn install --frozen-lockfile",
+                ),
+                ("pnpm/action-setup", "setup-bun"),
+            ),
+            (
+                "bun",
+                {},
+                "bun.lock",
+                ("oven-sh/setup-bun@v2", "bun ci"),
+                ("actions/setup-node", "pnpm/action-setup", "corepack enable"),
+            ),
+        ]
+        for name, package_fields, lockfile, expected, absent in cases:
+            with self.subTest(name=name):
+                root = self.root / name
+                root.mkdir()
+                package = {"scripts": {"test": "vitest run"}, **package_fields}
+                (root / "package.json").write_text(
+                    json.dumps(package), encoding="utf-8"
+                )
+                if lockfile:
+                    (root / lockfile).write_text("", encoding="utf-8")
+
+                plan = plan_repository_initialization(
+                    root,
+                    check_name="test",
+                    command=None,
+                    github_actions=True,
+                    ci_install=(
+                        "proofrun @ "
+                        "git+https://example.test/proofrun.git@v1.5.0"
+                    ),
+                    force=False,
+                )
+                workflow = plan.targets[1].content
+
+                for marker in expected:
+                    self.assertIn(marker, workflow)
+                for marker in absent:
+                    self.assertNotIn(marker, workflow)
+
     def test_init_requires_explicit_ci_install_source(self) -> None:
         error = io.StringIO()
         with patch("proofrun.cli.Path.cwd", return_value=self.root):
@@ -861,6 +936,7 @@ command = ["python3", "-c", "print('lint')"]
         self.assertEqual(preview["mode"], "dry-run")
         self.assertTrue(preview["force"])
         self.assertEqual(preview["check"]["source"], "explicit")
+        self.assertIsNone(preview["check"]["package_manager"])
         self.assertEqual(
             preview["check"]["command"], ["python", "-m", "pytest", "-q"]
         )

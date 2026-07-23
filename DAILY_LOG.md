@@ -372,3 +372,34 @@ compileall, diff checks, CLI help inspection, and a live structured preview
 against this repository passed. The next run should publish and exercise hosted
 CI if Sam supplies the remote; otherwise generated workflows should provision
 pnpm, Yarn, or Bun when bootstrap selects those package managers.
+
+## 2026-07-22 — Runnable Node CI scaffolds
+
+Continued ProofRun while the active request for Sam's GitHub remote remains
+unanswered. Closed the next documented local adoption gap: Node bootstrap could
+select npm, pnpm, Yarn, or Bun, but the generated workflow neither provisioned
+the selected tool nor installed project dependencies before running the test
+command.
+
+Detected Node presets now carry package-manager declaration and lockfile
+metadata into workflow rendering. Generated CI sets up Node.js 24 for npm, pnpm,
+and Yarn, uses the current official pnpm setup action, enables Corepack for
+Yarn, and uses the official Bun setup action for Bun. It installs dependencies
+before ProofRun verification, selecting `npm ci`, frozen pnpm/Yarn installs, or
+`bun ci` when a matching lockfile exists and a normal install otherwise.
+Structured init previews now expose the detected package manager alongside the
+exact generated workflow.
+
+Added a workflow matrix regression covering npm, declared pnpm, lockfile-only
+pnpm, Yarn, and Bun setup/install behavior, including the absence of irrelevant
+setup actions. The suite grew from 43 to 44 tests and the package version is now
+1.5.0. Official setup behavior and current action majors were checked against
+the setup-node, pnpm/action-setup, and Bun documentation. Full validation
+covered the unit suite, Python compilation, diff checks, generated YAML for all
+Node managers, structured verification, receipt audit, the named validity gate,
+and Markdown reporting.
+
+The next run should publish and exercise hosted CI if Sam supplies the remote.
+If that remains blocked, benchmark exact Git fingerprinting with many and large
+untracked files and optimize the measured bottleneck without weakening drift
+detection.
