@@ -403,3 +403,33 @@ The next run should publish and exercise hosted CI if Sam supplies the remote.
 If that remains blocked, benchmark exact Git fingerprinting with many and large
 untracked files and optimize the measured bottleneck without weakening drift
 detection.
+
+## 2026-08-14 — Faster exact Git state inspection
+
+Continued ProofRun after a full repository, history, documentation, test, and
+active-message review. Sam's GitHub remote handoff remains unanswered, so the
+run completed the documented local performance task. A disposable benchmark
+with 4,002 untracked files totaling about 50 MB measured the old exact
+`git_state` implementation at 0.300 seconds best-of-four warm samples.
+
+The old path independently probed repository availability, head, branch,
+tracked paths, untracked paths, and dirty state, causing seven Git subprocesses
+even when no tracked file had changed. ProofRun now parses one NUL-delimited
+porcelain-v2 status snapshot for all of that metadata and path discovery.
+Per-file SHA-256 values and the aggregate fingerprint remain unchanged for
+normal filesystem paths. Untracked content is now read in 1 MiB chunks instead
+of allocating each complete file, and filesystem path bytes are hashed with
+the platform encoding so unusual names are handled safely.
+
+Added regressions proving the untracked-only path uses one Git call and retains
+an embedded newline in a filename, plus coverage for staged rename parsing and
+detached HEAD. A direct compatibility fixture confirmed identical tracked maps,
+untracked maps, and aggregate fingerprints across unstaged edits, staged edits,
+renames, and untracked files. The same benchmark reached 0.204 seconds after
+the change, a 32% reduction. The suite now has 46 passing tests and ProofRun is
+version 1.6.0.
+
+The next run should configure and validate hosted CI if Sam supplies the
+remote. Otherwise, it should benchmark repositories with many tracked changes:
+exact path-level patch hashing still launches two Git diff subprocesses per
+changed path and is now the clearest local fingerprint bottleneck.

@@ -43,6 +43,10 @@ applies, audit detects local receipt-chain damage, and report packages both
 views into a Markdown handoff.
 Human status and reports cap invalidating paths at 10 by default with explicit
 overflow counts; structured JSON remains complete.
+Git metadata, branch/head discovery, and changed-path enumeration now use one
+NUL-safe porcelain-v2 snapshot instead of multiple full-tree scans. Exact
+untracked content hashes are streamed in bounded-memory chunks; normal-path
+fingerprints remain byte-compatible with earlier receipts.
 The checked-in GitHub Actions workflow now exercises this full contract on
 pushes and pull requests: it preserves structured output and a Markdown report
 as run evidence, publishes the report as the job summary, and finishes with a
@@ -50,28 +54,30 @@ named validity gate.
 
 ## Completed today
 
-- Made generated GitHub Actions workflows provision automatically detected Node
-  runtimes and package managers before ProofRun runs the selected test script.
-- Added Node.js 24 setup for npm, pnpm, and Yarn; official setup actions for
-  pnpm and Bun; and an explicit Corepack enable step for Yarn.
-- Added dependency installation with strict lockfile modes (`npm ci`, frozen
-  pnpm/Yarn installs, and `bun ci`) plus install fallbacks for lockfile-less
-  projects.
-- Preserved package-manager versions from `packageManager` declarations where
-  the official setup action supports them; pnpm lockfile-only projects request
-  the setup action's current version explicitly.
-- Added the detected package manager to structured init previews.
-- Added a five-path workflow matrix regression, bringing the suite to 44 tests,
-  and bumped ProofRun to 1.5.0.
-- Checked `To-Sam/`; the existing remote request remains active and there is no
-  reply yet, so this run continued with a valuable local improvement.
+- Benchmarked exact Git state inspection with 4,002 untracked files totaling
+  about 50 MB; the pre-change best of four warm samples was 0.300 seconds.
+- Consolidated repository probing, head/branch discovery, dirty-state
+  detection, and tracked/untracked path enumeration into one NUL-safe
+  `git status --porcelain=v2` call.
+- Changed untracked-file SHA-256 calculation from whole-file allocation to
+  1 MiB streaming chunks and used filesystem-safe path encoding.
+- Verified fingerprint compatibility against the prior implementation across
+  unstaged edits, staged edits, staged renames, and untracked files.
+- Re-ran the benchmark at 0.204 seconds best-of-four, a 32% reduction, without
+  omitting any file contents from the exact fingerprint.
+- Added regressions for a single-scan untracked state, embedded-newline paths,
+  staged renames, and detached HEAD; the suite grew from 44 to 46 tests and the
+  package version is now 1.6.0.
+- Checked `To-Sam/`; no reply was present. Archived the July request and left a
+  dated second follow-up with the same optional GitHub remote handoff.
 
 ## Changed since the previous run
 
-Generated workflows are now runnable for conventionally detected Node projects
-instead of merely naming a package-manager command that may be absent or running
-before dependencies exist. Dry-run JSON exposes both the package-manager choice
-and the exact setup/install steps before any files are written.
+The common untracked-heavy state path now makes one Git subprocess instead of
+seven while retaining the same receipt fingerprint. Large files no longer need a
+single allocation equal to their size. Measured state-inspection latency on the
+documented fixture fell by roughly one third; pre/post verification benefits
+twice because each check snapshots both boundaries.
 
 ## Known issues and incomplete work
 
@@ -81,8 +87,11 @@ and the exact setup/install steps before any files are written.
 - Schema-v1/v2 receipts before the first sealed receipt remain unsealed legacy
   evidence; only the legacy tail referenced by the first sealed entry is
   directly protected from later modification.
-- Fingerprinting reads all untracked file contents and may be slow in large
-  repositories.
+- Exact fingerprinting still reads all untracked file contents and is linear in
+  their total byte size, although reads are now streamed in bounded memory.
+- Each tracked changed path still runs separate working-tree and staged binary
+  diff commands to preserve exact path-level hashes; repositories with many
+  tracked changes remain an unbenchmarked optimization opportunity.
 - Environment overrides are intentionally stored verbatim for reproducibility;
   users must not place secrets in manifests or publish reports containing them.
 - Output written directly by parallel child commands can interleave on the
@@ -93,8 +102,9 @@ and the exact setup/install steps before any files are written.
   check changed repository state during its execution window.
 - Structured verification intentionally preserves check standard error as live
   terminal output; parallel checks can still interleave those diagnostics.
-- Pre/post fingerprinting doubles the Git-state inspection work around each
-  check, which may be noticeable when many large untracked files are present.
+- Pre/post fingerprinting necessarily performs exact Git-state inspection at
+  both check boundaries; the metadata scans are consolidated, but content bytes
+  must still be read twice when large untracked inputs remain unchanged.
 - Mutation detection compares Git-visible state at check boundaries; ignored
   files and transient changes fully restored before exit are not detected.
 - The example workflow targets GitHub.com and current GitHub-hosted runners;
@@ -119,13 +129,17 @@ and the exact setup/install steps before any files are written.
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. If the remote remains unavailable, benchmark exact Git
-fingerprinting against repositories with many and large untracked files, then
-optimize the measured bottleneck without weakening drift detection.
+on hosted GitHub Actions. If the remote remains unavailable, benchmark many
+tracked changes and replace the current per-path Git subprocess pattern with a
+batched exact representation while retaining file-level invalidation details
+and fingerprint compatibility.
 
 ## Important decisions
 
 - Local-first and zero runtime dependencies remain the initial wedge.
+- Git porcelain v2 with `-z` is the single source for head, branch, dirty state,
+  and changed paths. Content hashing remains exact, uses filesystem byte
+  encoding for paths, and streams files rather than allocating them whole.
 - Bootstrap detection only succeeds for one recognized ecosystem; ambiguity or
   no match requires the user to state the verification command explicitly.
 - Node bootstrap requires a real `scripts.test`; `packageManager` is

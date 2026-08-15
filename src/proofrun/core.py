@@ -21,6 +21,7 @@ else:  # pragma: no cover - platform branch, locking behavior tested below
 
 SCHEMA_VERSION = 5
 DEFAULT_STORE = Path(".proofrun/receipts.jsonl")
+FILE_HASH_CHUNK_SIZE = 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,14 @@ class CheckDefinition:
     env: tuple[tuple[str, str], ...] = ()
 
 
+@dataclass(frozen=True)
+class _GitStatus:
+    head: str | None
+    branch: str | None
+    tracked_paths: tuple[str, ...]
+    untracked_paths: tuple[str, ...]
+
+
 def _git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
         ["git", *args],
@@ -52,47 +61,81 @@ def _git(cwd: Path, *args: str, check: bool = True) -> subprocess.CompletedProce
     )
 
 
-def _untracked_files(cwd: Path) -> list[Path]:
+def _git_status(cwd: Path) -> _GitStatus | None:
+    """Read repository metadata and changed paths in one NUL-safe Git call."""
     result = _git(
         cwd,
-        "ls-files",
-        "--others",
-        "--exclude-standard",
+        "status",
+        "--porcelain=v2",
+        "--branch",
+        "--untracked-files=all",
         "-z",
         check=False,
     )
     if result.returncode != 0:
-        return []
-    return [cwd / os.fsdecode(name) for name in result.stdout.split(b"\0") if name]
+        return None
 
-
-def _tracked_files(cwd: Path) -> list[str]:
-    paths: set[str] = set()
-    for args in (("diff", "--name-only", "-z"), ("diff", "--cached", "--name-only", "-z")):
-        result = _git(cwd, *args, check=False)
-        if result.returncode != 0:
+    head: str | None = None
+    branch: str | None = None
+    tracked_paths: set[str] = set()
+    untracked_paths: set[str] = set()
+    entries = result.stdout.split(b"\0")
+    index = 0
+    while index < len(entries):
+        entry = entries[index]
+        index += 1
+        if not entry:
             continue
-        for name in result.stdout.split(b"\0"):
-            if name:
-                paths.add(os.fsdecode(name))
-    return sorted(paths)
+        if entry.startswith(b"# branch.oid "):
+            value = entry.removeprefix(b"# branch.oid ")
+            head = None if value == b"(initial)" else value.decode("ascii")
+        elif entry.startswith(b"# branch.head "):
+            value = entry.removeprefix(b"# branch.head ")
+            branch = None if value == b"(detached)" else os.fsdecode(value)
+        elif entry.startswith(b"1 "):
+            tracked_paths.add(os.fsdecode(entry.split(b" ", 8)[8]))
+        elif entry.startswith(b"2 "):
+            tracked_paths.add(os.fsdecode(entry.split(b" ", 9)[9]))
+            # Rename/copy records are followed by the original path. The new
+            # path is the one emitted by the old `git diff --name-only` scan.
+            index += 1
+        elif entry.startswith(b"u "):
+            tracked_paths.add(os.fsdecode(entry.split(b" ", 10)[10]))
+        elif entry.startswith(b"? "):
+            untracked_paths.add(os.fsdecode(entry[2:]))
+
+    return _GitStatus(
+        head=head,
+        branch=branch,
+        tracked_paths=tuple(sorted(tracked_paths)),
+        untracked_paths=tuple(sorted(untracked_paths)),
+    )
 
 
 def _file_digest(path: Path, relative: str) -> str:
+    encoded_relative = os.fsencode(relative)
     digest = hashlib.sha256()
-    digest.update(relative.encode())
+    digest.update(encoded_relative)
     try:
-        digest.update(path.read_bytes())
+        with path.open("rb") as handle:
+            while chunk := handle.read(FILE_HASH_CHUNK_SIZE):
+                digest.update(chunk)
     except (OSError, IsADirectoryError):
+        # Discard any partial read so an unreadable file retains the exact
+        # sentinel digest used by earlier ProofRun releases.
+        digest = hashlib.sha256()
+        digest.update(encoded_relative)
         digest.update(b"<unreadable>")
     return digest.hexdigest()
 
 
-def _tracked_change_digests(cwd: Path) -> dict[str, str]:
+def _tracked_change_digests(
+    cwd: Path, relative_paths: Iterable[str]
+) -> dict[str, str]:
     digests: dict[str, str] = {}
-    for relative in _tracked_files(cwd):
+    for relative in relative_paths:
         digest = hashlib.sha256()
-        digest.update(relative.encode())
+        digest.update(os.fsencode(relative))
         for args in (
             ("diff", "--binary", "--", relative),
             ("diff", "--cached", "--binary", "--", relative),
@@ -104,11 +147,12 @@ def _tracked_change_digests(cwd: Path) -> dict[str, str]:
     return digests
 
 
-def _untracked_file_digests(cwd: Path) -> dict[str, str]:
+def _untracked_file_digests(
+    cwd: Path, relative_paths: Iterable[str]
+) -> dict[str, str]:
     digests: dict[str, str] = {}
-    for path in sorted(_untracked_files(cwd)):
-        relative = path.relative_to(cwd).as_posix()
-        digests[relative] = _file_digest(path, relative)
+    for relative in relative_paths:
+        digests[relative] = _file_digest(cwd / relative, relative)
     return digests
 
 
@@ -130,25 +174,19 @@ def _fingerprint_for_state(
 
 def git_state(cwd: Path) -> GitState:
     cwd = cwd.resolve()
-    probe = _git(cwd, "rev-parse", "--is-inside-work-tree", check=False)
-    if probe.returncode != 0 or probe.stdout.strip() != b"true":
+    status = _git_status(cwd)
+    if status is None:
         return GitState(False, None, None, False, None, {}, {})
 
-    head_result = _git(cwd, "rev-parse", "HEAD", check=False)
-    head = head_result.stdout.decode().strip() if head_result.returncode == 0 else None
-    branch_result = _git(cwd, "branch", "--show-current", check=False)
-    branch = branch_result.stdout.decode().strip() or None
-
-    tracked_changes = _tracked_change_digests(cwd)
-    untracked_files = _untracked_file_digests(cwd)
-    status = _git(cwd, "status", "--porcelain", "--untracked-files=all", check=False)
-    dirty = bool(status.stdout.strip())
+    tracked_changes = _tracked_change_digests(cwd, status.tracked_paths)
+    untracked_files = _untracked_file_digests(cwd, status.untracked_paths)
+    dirty = bool(tracked_changes or untracked_files)
     return GitState(
         True,
-        head,
-        branch,
+        status.head,
+        status.branch,
         dirty,
-        _fingerprint_for_state(head, tracked_changes, untracked_files),
+        _fingerprint_for_state(status.head, tracked_changes, untracked_files),
         tracked_changes,
         untracked_files,
     )

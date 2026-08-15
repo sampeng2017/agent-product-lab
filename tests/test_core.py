@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
+import proofrun.core
 from proofrun.cli import main
 from proofrun.core import (
     CheckDefinition,
@@ -73,6 +74,55 @@ class ProofRunTests(unittest.TestCase):
             [receipt], current=git_state(self.root), max_age_hours=24
         )
         self.assertEqual(assessed[0]["state"], "valid")
+
+    def test_git_state_uses_one_status_scan_for_untracked_files(self) -> None:
+        tracked = self.root / "tracked.py"
+        tracked.write_text("committed\n", encoding="utf-8")
+        subprocess.run(["git", "add", "tracked.py"], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "seed"], cwd=self.root, check=True)
+        unusual = self.root / "line\nbreak.txt"
+        unusual.write_text("untracked\n", encoding="utf-8")
+
+        with patch("proofrun.core._git", wraps=proofrun.core._git) as git:
+            state = git_state(self.root)
+
+        self.assertEqual(git.call_count, 1)
+        self.assertEqual(
+            git.call_args.args[1:],
+            (
+                "status",
+                "--porcelain=v2",
+                "--branch",
+                "--untracked-files=all",
+                "-z",
+            ),
+        )
+        self.assertTrue(state.dirty)
+        self.assertEqual(state.branch, "main")
+        self.assertEqual(state.tracked_changes, {})
+        self.assertEqual(set(state.untracked_files), {"line\nbreak.txt"})
+
+    def test_git_state_handles_staged_rename_and_detached_head(self) -> None:
+        original = self.root / "before name.txt"
+        original.write_text("same content\n", encoding="utf-8")
+        subprocess.run(["git", "add", original.name], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "seed"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "mv", original.name, "after name.txt"],
+            cwd=self.root,
+            check=True,
+        )
+
+        renamed = git_state(self.root)
+
+        self.assertEqual(set(renamed.tracked_changes), {"after name.txt"})
+        subprocess.run(["git", "commit", "-qm", "rename"], cwd=self.root, check=True)
+        subprocess.run(["git", "checkout", "-q", "--detach"], cwd=self.root, check=True)
+
+        detached = git_state(self.root)
+
+        self.assertIsNone(detached.branch)
+        self.assertFalse(detached.dirty)
 
     def test_passing_check_that_mutates_repository_is_rejected(self) -> None:
         tracked = self.root / "tracked.py"

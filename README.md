@@ -46,6 +46,11 @@ true:
 - the Git commit is unchanged;
 - tracked changes and untracked file contents are unchanged.
 
+Repository metadata and changed-path discovery use one NUL-safe Git status
+snapshot. Untracked contents are still hashed exactly, in bounded-memory
+chunks, so performance remains proportional to the bytes covered without
+weakening drift detection or changing existing receipt fingerprints.
+
 Use `--max-age-hours 0` to disable the age limit and `--json` for
 machine-readable output. When a receipt goes stale because the working tree
 drifted, `status` names up to 10 tracked and untracked paths that changed, then
@@ -190,7 +195,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.5.0"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.6.0"
 ```
 
 ProofRun validates the command choice and every selected destination before it

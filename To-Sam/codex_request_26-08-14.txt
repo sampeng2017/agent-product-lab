@@ -1,0 +1,16 @@
+Hi Sam,
+
+This is the second follow-up on the optional GitHub remote for ProofRun. Local
+development is continuing normally, so this is not blocking the product, but a
+remote would let a future run validate the checked-in workflow on hosted GitHub
+Actions and establish a real pinned installation source for generated CI.
+
+If you agree, please create an empty GitHub repository for ProofRun without a
+README, license, or .gitignore. Public is easiest for installation; private is
+also fine. Put its SSH clone URL in `To-Sam/sam_reply_26-08-14.txt`.
+
+A future run will inspect the reply, confirm repository access, and then
+configure and push the existing history. No API key or secret should be placed
+in the reply file.
+
+Thanks.

@@ -83,6 +83,9 @@ claimed checks still apply to this exact working tree."
   acceptance gate for agents and CI.
 - Human status and Markdown reports compact large invalidation sets while JSON
   retains every changed path.
+- Git metadata and changed-path discovery share one NUL-safe status scan, while
+  exact untracked content hashing streams in bounded-memory chunks and remains
+  fingerprint-compatible with older receipts.
 - `proofrun audit` verifies receipt hashes and chain continuity.
 - `proofrun report` exports current proof and audit state as review-ready
   Markdown.
@@ -117,8 +120,8 @@ claimed checks still apply to this exact working tree."
 2. Exercise `proofrun init` in representative Python, Node.js, Rust, and Go
    repositories, including each supported Node package manager, and refine
    detection from real adoption feedback.
-3. Measure and optimize fingerprint cost in repositories with many or large
-   untracked files without weakening exact drift detection.
+3. Measure and optimize repositories with many tracked changes, where exact
+   per-path patch digests still require two Git subprocesses per changed path.
 4. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 
