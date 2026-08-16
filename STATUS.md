@@ -47,6 +47,11 @@ Git metadata, branch/head discovery, and changed-path enumeration now use one
 NUL-safe porcelain-v2 snapshot instead of multiple full-tree scans. Exact
 untracked content hashes are streamed in bounded-memory chunks; normal-path
 fingerprints remain byte-compatible with earlier receipts.
+Tracked patch fingerprints are also batched: one patch and one NUL-safe name
+scan for each of the working tree and index replace two Git subprocesses per
+changed path. ProofRun splits the unchanged patch bytes back into per-file
+digests and retains the legacy path as a compatibility fallback when unusual
+Git output cannot be framed safely.
 The checked-in GitHub Actions workflow now exercises this full contract on
 pushes and pull requests: it preserves structured output and a Markdown report
 as run evidence, publishes the report as the job summary, and finishes with a
@@ -54,30 +59,29 @@ named validity gate.
 
 ## Completed today
 
-- Benchmarked exact Git state inspection with 4,002 untracked files totaling
-  about 50 MB; the pre-change best of four warm samples was 0.300 seconds.
-- Consolidated repository probing, head/branch discovery, dirty-state
-  detection, and tracked/untracked path enumeration into one NUL-safe
-  `git status --porcelain=v2` call.
-- Changed untracked-file SHA-256 calculation from whole-file allocation to
-  1 MiB streaming chunks and used filesystem-safe path encoding.
-- Verified fingerprint compatibility against the prior implementation across
-  unstaged edits, staged edits, staged renames, and untracked files.
-- Re-ran the benchmark at 0.204 seconds best-of-four, a 32% reduction, without
-  omitting any file contents from the exact fingerprint.
-- Added regressions for a single-scan untracked state, embedded-newline paths,
-  staged renames, and detached HEAD; the suite grew from 44 to 46 tests and the
-  package version is now 1.6.0.
-- Checked `To-Sam/`; no reply was present. Archived the July request and left a
-  dated second follow-up with the same optional GitHub remote handoff.
+- Checked Git history/status, all product and handoff documentation, tests,
+  implementation, automation memory, and `To-Sam/`; the optional remote request
+  remains unanswered and local work continued without blocking.
+- Benchmarked 400 modified tracked files. The prior algorithm took 15.443
+  seconds because it launched 800 per-path diff processes after the status scan.
+- Batched the working-tree and staged patch/name queries so normal tracked state
+  inspection now makes five total Git subprocesses independent of file count.
+- Preserved the exact prior per-path and aggregate fingerprints by splitting
+  raw patch blocks without rewriting bytes; added conservative per-scope
+  fallback for external diff drivers or unusual merge output.
+- Re-ran the same fixture at 0.218 seconds best-of-four, about 71 times faster,
+  with the complete old and new tracked digest maps equal.
+- Added regression coverage for unstaged, staged, mixed, renamed, and
+  embedded-newline paths plus the fixed subprocess bound. The suite grew from
+  46 to 47 tests and the package version is now 1.7.0.
 
 ## Changed since the previous run
 
-The common untracked-heavy state path now makes one Git subprocess instead of
-seven while retaining the same receipt fingerprint. Large files no longer need a
-single allocation equal to their size. Measured state-inspection latency on the
-documented fixture fell by roughly one third; pre/post verification benefits
-twice because each check snapshots both boundaries.
+The remaining measured fingerprint bottleneck is removed. A tracked-heavy
+snapshot no longer scales its Git process count as `1 + 2N`; it uses five calls
+in the normal case while retaining file-level invalidation and receipt
+compatibility. On the 400-file fixture this reduced latency from 15.443 to 0.218
+seconds. Every check benefits at both its pre- and post-command boundaries.
 
 ## Known issues and incomplete work
 
@@ -89,9 +93,10 @@ twice because each check snapshots both boundaries.
   directly protected from later modification.
 - Exact fingerprinting still reads all untracked file contents and is linear in
   their total byte size, although reads are now streamed in bounded memory.
-- Each tracked changed path still runs separate working-tree and staged binary
-  diff commands to preserve exact path-level hashes; repositories with many
-  tracked changes remain an unbenchmarked optimization opportunity.
+- Batched tracked diffing passes all changed paths as Git pathspec arguments;
+  extremely large path sets may approach the operating system command-line
+  length limit. The compatibility fallback also remains intentionally slower
+  for diff-driver or merge output that cannot be mapped one block per path.
 - Environment overrides are intentionally stored verbatim for reproducibility;
   users must not place secrets in manifests or publish reports containing them.
 - Output written directly by parallel child commands can interleave on the
@@ -129,10 +134,9 @@ twice because each check snapshots both boundaries.
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. If the remote remains unavailable, benchmark many
-tracked changes and replace the current per-path Git subprocess pattern with a
-batched exact representation while retaining file-level invalidation details
-and fingerprint compatibility.
+on hosted GitHub Actions. If the remote remains unavailable, exercise `init`
+and verification end to end in representative disposable Python, Node.js,
+Rust, and Go projects so the next improvements come from adoption behavior.
 
 ## Important decisions
 
@@ -140,6 +144,9 @@ and fingerprint compatibility.
 - Git porcelain v2 with `-z` is the single source for head, branch, dirty state,
   and changed paths. Content hashing remains exact, uses filesystem byte
   encoding for paths, and streams files rather than allocating them whole.
+- Tracked state uses batched patch plus NUL-safe name output for the working tree
+  and index. Patch blocks are hashed byte-for-byte in Git's matching name order;
+  a framing mismatch triggers the legacy per-path algorithm for that scope.
 - Bootstrap detection only succeeds for one recognized ecosystem; ambiguity or
   no match requires the user to state the verification command explicitly.
 - Node bootstrap requires a real `scripts.test`; `packageManager` is

@@ -433,3 +433,35 @@ The next run should configure and validate hosted CI if Sam supplies the
 remote. Otherwise, it should benchmark repositories with many tracked changes:
 exact path-level patch hashing still launches two Git diff subprocesses per
 changed path and is now the clearest local fingerprint bottleneck.
+
+## 2026-08-15 — Batched tracked-change fingerprints
+
+Continued ProofRun after inspecting Git state/history, the README, STATUS,
+DAILY_LOG, product documentation, tests, implementation, automation memory, and
+the active `To-Sam` folder. The optional GitHub remote handoff still has no Sam
+reply, so this run completed the documented local performance task rather than
+waiting.
+
+A disposable repository with 400 modified tracked files measured the old
+fingerprint implementation at 15.443 seconds for one state snapshot. The status
+scan was already consolidated, but exact tracked hashing still launched one
+working-tree and one staged diff process per path: 801 Git subprocesses total.
+
+ProofRun now retrieves each diff scope as one binary patch plus one NUL-safe
+name list, then splits the unchanged patch bytes into per-file blocks before
+feeding the existing SHA-256 construction. This reduces the normal snapshot to
+five Git calls regardless of the number of changed files while retaining exact
+file-level invalidation. If output from an external diff driver or unusual
+merge state cannot be paired one block per path, that scope conservatively
+falls back to the prior per-path algorithm.
+
+The same 400-file fixture completed in 0.218 seconds best-of-four, about 71
+times faster, and its complete tracked digest map matched the legacy result.
+Added regression coverage across unstaged, staged, mixed staged/unstaged,
+renamed, and embedded-newline paths, including an assertion on the fixed
+five-call bound. The suite now has 47 tests and ProofRun is version 1.7.0.
+
+The next run should publish and exercise hosted CI if Sam supplies the remote.
+Otherwise, it should exercise generated manifests and verification end to end
+in representative disposable Python, Node.js, Rust, and Go projects, then fix
+the highest-value adoption failure discovered.

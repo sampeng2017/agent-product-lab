@@ -132,19 +132,57 @@ def _file_digest(path: Path, relative: str) -> str:
 def _tracked_change_digests(
     cwd: Path, relative_paths: Iterable[str]
 ) -> dict[str, str]:
-    digests: dict[str, str] = {}
-    for relative in relative_paths:
-        digest = hashlib.sha256()
-        digest.update(os.fsencode(relative))
-        for args in (
-            ("diff", "--binary", "--", relative),
-            ("diff", "--cached", "--binary", "--", relative),
+    paths = tuple(relative_paths)
+    if not paths:
+        return {}
+    hashers = {relative: hashlib.sha256(os.fsencode(relative)) for relative in paths}
+    expected = set(paths)
+
+    for cached in (False, True):
+        prefix = ("diff", "--cached") if cached else ("diff",)
+        patch = _git(cwd, *prefix, "--binary", "--", *paths, check=False)
+        names = _git(
+            cwd, *prefix, "--name-only", "-z", "--", *paths, check=False
+        )
+        blocks = _split_diff_blocks(patch.stdout) if patch.returncode == 0 else []
+        changed_paths = [
+            os.fsdecode(raw) for raw in names.stdout.split(b"\0") if raw
+        ]
+
+        # Normal Git patches contain one `diff --git` block per name in the
+        # matching name-only output. If an external driver or unusual merge
+        # format breaks that contract, retain the older exact per-path path.
+        if (
+            names.returncode == 0
+            and len(changed_paths) == len(blocks)
+            and len(changed_paths) == len(set(changed_paths))
+            and set(changed_paths) <= expected
         ):
-            result = _git(cwd, *args, check=False)
+            for relative, block in zip(changed_paths, blocks):
+                hashers[relative].update(block)
+            continue
+
+        for relative in paths:
+            result = _git(cwd, *prefix, "--binary", "--", relative, check=False)
             if result.returncode == 0:
-                digest.update(result.stdout)
-        digests[relative] = digest.hexdigest()
-    return digests
+                hashers[relative].update(result.stdout)
+
+    return {relative: digest.hexdigest() for relative, digest in hashers.items()}
+
+
+def _split_diff_blocks(output: bytes) -> list[bytes]:
+    """Split a normal Git patch without changing any bytes in its file blocks."""
+    marker = b"diff --git "
+    starts: list[int] = []
+    offset = 0
+    for line in output.splitlines(keepends=True):
+        if line.startswith(marker):
+            starts.append(offset)
+        offset += len(line)
+    return [
+        output[start:end]
+        for start, end in zip(starts, starts[1:] + [len(output)])
+    ]
 
 
 def _untracked_file_digests(

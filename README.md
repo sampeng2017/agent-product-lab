@@ -50,6 +50,10 @@ Repository metadata and changed-path discovery use one NUL-safe Git status
 snapshot. Untracked contents are still hashed exactly, in bounded-memory
 chunks, so performance remains proportional to the bytes covered without
 weakening drift detection or changing existing receipt fingerprints.
+Tracked working-tree and staged patches are collected in batches and split into
+their original per-path byte ranges, reducing the normal tracked-change path to
+five Git subprocesses regardless of file count. If unusual Git output cannot be
+split safely, ProofRun falls back to exact per-path diffing.
 
 Use `--max-age-hours 0` to disable the age limit and `--json` for
 machine-readable output. When a receipt goes stale because the working tree
@@ -195,7 +199,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.6.0"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.7.0"
 ```
 
 ProofRun validates the command choice and every selected destination before it

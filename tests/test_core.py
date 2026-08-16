@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 import os
@@ -123,6 +124,47 @@ class ProofRunTests(unittest.TestCase):
 
         self.assertIsNone(detached.branch)
         self.assertFalse(detached.dirty)
+
+    def test_git_state_batches_tracked_diffs_without_changing_digests(self) -> None:
+        paths = ["unstaged.txt", "staged.txt", "both.txt", "old.txt", "line\nbreak"]
+        for path in paths:
+            (self.root / path).write_text("before\n", encoding="utf-8")
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", "seed"], cwd=self.root, check=True)
+
+        (self.root / "unstaged.txt").write_text("unstaged\n", encoding="utf-8")
+        (self.root / "staged.txt").write_text("staged\n", encoding="utf-8")
+        subprocess.run(["git", "add", "staged.txt"], cwd=self.root, check=True)
+        (self.root / "both.txt").write_text("staged both\n", encoding="utf-8")
+        subprocess.run(["git", "add", "both.txt"], cwd=self.root, check=True)
+        (self.root / "both.txt").write_text("unstaged both\n", encoding="utf-8")
+        subprocess.run(["git", "mv", "old.txt", "renamed.txt"], cwd=self.root, check=True)
+        (self.root / "line\nbreak").write_text("newline path\n", encoding="utf-8")
+
+        status = proofrun.core._git_status(self.root)
+        self.assertIsNotNone(status)
+        changed_paths = status.tracked_paths
+        expected: dict[str, str] = {}
+        for relative in changed_paths:
+            digest = hashlib.sha256(os.fsencode(relative))
+            for args in (
+                ("diff", "--binary", "--", relative),
+                ("diff", "--cached", "--binary", "--", relative),
+            ):
+                result = proofrun.core._git(self.root, *args, check=False)
+                if result.returncode == 0:
+                    digest.update(result.stdout)
+            expected[relative] = digest.hexdigest()
+
+        with patch("proofrun.core._git", wraps=proofrun.core._git) as git:
+            actual = git_state(self.root)
+
+        self.assertEqual(actual.tracked_changes, expected)
+        self.assertEqual(git.call_count, 5)
+
+        with patch("proofrun.core._split_diff_blocks", return_value=[]):
+            fallback = git_state(self.root)
+        self.assertEqual(fallback.tracked_changes, expected)
 
     def test_passing_check_that_mutates_repository_is_rejected(self) -> None:
         tracked = self.root / "tracked.py"

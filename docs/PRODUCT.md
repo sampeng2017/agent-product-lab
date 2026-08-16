@@ -85,7 +85,9 @@ claimed checks still apply to this exact working tree."
   retains every changed path.
 - Git metadata and changed-path discovery share one NUL-safe status scan, while
   exact untracked content hashing streams in bounded-memory chunks and remains
-  fingerprint-compatible with older receipts.
+  fingerprint-compatible with older receipts. Tracked patch hashing batches
+  working-tree and staged diffs into four Git calls, preserves the prior
+  per-path digests, and falls back when unusual output cannot be framed safely.
 - `proofrun audit` verifies receipt hashes and chain continuity.
 - `proofrun report` exports current proof and audit state as review-ready
   Markdown.
@@ -120,8 +122,9 @@ claimed checks still apply to this exact working tree."
 2. Exercise `proofrun init` in representative Python, Node.js, Rust, and Go
    repositories, including each supported Node package manager, and refine
    detection from real adoption feedback.
-3. Measure and optimize repositories with many tracked changes, where exact
-   per-path patch digests still require two Git subprocesses per changed path.
+3. Validate bootstrap and verification end to end in representative external
+   Python, Node.js, Rust, and Go repositories, then refine from adoption
+   failures rather than synthetic detection cases alone.
 4. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 
