@@ -19,7 +19,11 @@ installs dependencies, choosing a lockfile-strict install when possible. It
 preflights every target and refuses to overwrite existing configuration unless
 `--force` is explicit. A dry-run mode exposes the chosen command and
 create/overwrite actions without changing disk; its versioned JSON form also
-includes the exact generated content for agent inspection. Receipts
+includes the exact generated content for agent inspection. Detected Python
+scaffolds choose `python3` or `python` from the interpreter
+family running ProofRun, suppress bytecode writes, and disable pytest's cache
+provider so incidental test-runner artifacts do not invalidate fresh proof.
+Receipts
 stay in append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
 checks can run from distinct repository subdirectories with explicit
 environment overrides, sequentially or with bounded `--jobs N` concurrency.
@@ -62,26 +66,28 @@ named validity gate.
 - Checked Git history/status, all product and handoff documentation, tests,
   implementation, automation memory, and `To-Sam/`; the optional remote request
   remains unanswered and local work continued without blocking.
-- Benchmarked 400 modified tracked files. The prior algorithm took 15.443
-  seconds because it launched 800 per-path diff processes after the status scan.
-- Batched the working-tree and staged patch/name queries so normal tracked state
-  inspection now makes five total Git subprocesses independent of file count.
-- Preserved the exact prior per-path and aggregate fingerprints by splitting
-  raw patch blocks without rewriting bytes; added conservative per-scope
-  fallback for external diff drivers or unusual merge output.
-- Re-ran the same fixture at 0.218 seconds best-of-four, about 71 times faster,
-  with the complete old and new tracked digest maps equal.
-- Added regression coverage for unstaged, staged, mixed, renamed, and
-  embedded-newline paths plus the fixed subprocess bound. The suite grew from
-  46 to 47 tests and the package version is now 1.7.0.
+- Exercised first-run scaffolding and verification in disposable Python,
+  Node/npm, Go, and Rust fixtures. Node passed end to end; Go passed with its
+  cache redirected outside the sandbox; Rust detection succeeded but Cargo is
+  not installed on this host.
+- Reproduced two concrete Python adoption failures: generated manifests used
+  unavailable `python` on a `python3`-only host, then otherwise-passing unittest
+  created `__pycache__` and was rejected as a repository-mutating check.
+- Made detected Python commands follow the active interpreter launcher family,
+  run with `-B`, and disable pytest's cache provider. The same minimal fixture
+  now scaffolds, verifies, passes the named proof gate, and stays Git-clean.
+- Added launcher-family coverage for Unix, virtualenv, PyPy, and Windows-style
+  executable paths plus an actual scaffold-to-verification mutation regression.
+  The suite grew from 47 to 49 tests and the package version is now 1.7.1.
 
 ## Changed since the previous run
 
-The remaining measured fingerprint bottleneck is removed. A tracked-heavy
-snapshot no longer scales its Git process count as `1 + 2N`; it uses five calls
-in the normal case while retaining file-level invalidation and receipt
-compatibility. On the 400-file fixture this reduced latency from 15.443 to 0.218
-seconds. Every check benefits at both its pre- and post-command boundaries.
+Python bootstrap now produces a command that is runnable on the adopter's
+current launcher family and honors ProofRun's own no-mutation requirement in a
+minimal repository. Previously, first verification could fail before tests ran
+or could reject a passing suite solely because the interpreter created cache
+artifacts. This run also replaced detector-only confidence with an executable
+adoption regression.
 
 ## Known issues and incomplete work
 
@@ -120,6 +126,10 @@ seconds. Every check benefits at both its pre- and post-command boundaries.
   install source, so generated CI requires the adopter to pass `--ci-install`.
 - Project detection is intentionally narrow and has only local fixture coverage;
   real-world monorepos and nonstandard test layouts require an explicit command.
+- End-to-end Rust adoption remains unverified on this host because Cargo is not
+  installed. A Rust check may also create an unignored `target/` tree, which
+  ProofRun would correctly reject; generated Rust commands do not yet redirect
+  that output into ignored local storage.
 - Lockfile-only pnpm, Yarn, and Bun projects do not provide an exact
   package-manager version. Generated CI can provision them, but the setup tool's
   current default is used; add a `packageManager` declaration to pin the tool.
@@ -134,9 +144,9 @@ seconds. Every check benefits at both its pre- and post-command boundaries.
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. If the remote remains unavailable, exercise `init`
-and verification end to end in representative disposable Python, Node.js,
-Rust, and Go projects so the next improvements come from adoption behavior.
+on hosted GitHub Actions. If the remote remains unavailable, make generated
+Rust checks place build artifacts under ignored `.proofrun/` storage, add an
+end-to-end regression, and validate it when a Cargo runtime is available.
 
 ## Important decisions
 
@@ -149,6 +159,9 @@ Rust, and Go projects so the next improvements come from adoption behavior.
   a framing mismatch triggers the legacy per-path algorithm for that scope.
 - Bootstrap detection only succeeds for one recognized ecosystem; ambiguity or
   no match requires the user to state the verification command explicitly.
+- Detected Python bootstrap mirrors the running interpreter's portable launcher
+  family. `-B` prevents bytecode writes and pytest's cache provider is disabled
+  because generated verification must not make its own clean proof stale.
 - Node bootstrap requires a real `scripts.test`; `packageManager` is
   authoritative when present, one recognized lockfile family is the fallback,
   and conflicting lockfile families require an explicit command.

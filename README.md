@@ -180,7 +180,10 @@ The project uses only the Python standard library.
 
 `proofrun init` detects a single Python, Node.js, Rust, or Go project and writes
 a starter `proofrun.toml`. Python projects with pytest configuration use
-`python -m pytest`; other repositories with a `tests/` directory use unittest.
+pytest; other repositories with a `tests/` directory use unittest. The generated
+command matches the launcher family running ProofRun (`python3` or `python`),
+disables bytecode writes, and disables pytest's cache provider so a minimal
+project does not invalidate its own proof with interpreter-created files.
 For Node.js, ProofRun first requires a non-placeholder `scripts.test` entry,
 then honors the `packageManager` declaration or a single npm, pnpm, Yarn, or Bun
 lockfile. It defaults to npm only when no manager is declared or locked, and
@@ -199,7 +202,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.7.0"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.7.1"
 ```
 
 ProofRun validates the command choice and every selected destination before it

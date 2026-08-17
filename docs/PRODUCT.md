@@ -107,6 +107,8 @@ claimed checks still apply to this exact working tree."
 - `proofrun init` detects a single supported project type or accepts an explicit
   command, creates a starter manifest without overwriting files, and can add the
   proven GitHub Actions workflow when given a concrete ProofRun install source.
+  Detected Python checks use the available portable launcher family and suppress
+  bytecode and pytest-cache writes so a clean minimal repository remains clean.
   Node detection validates the test script and selects npm, pnpm, Yarn, or Bun
   from the repository's declaration or unambiguous lockfile evidence. Generated
   CI for detected Node projects provisions that tool and installs dependencies,
@@ -119,12 +121,11 @@ claimed checks still apply to this exact working tree."
 
 1. Establish a remote, tagged install source and validate both the checked-in
    and generated workflows on hosted GitHub Actions.
-2. Exercise `proofrun init` in representative Python, Node.js, Rust, and Go
-   repositories, including each supported Node package manager, and refine
-   detection from real adoption feedback.
-3. Validate bootstrap and verification end to end in representative external
-   Python, Node.js, Rust, and Go repositories, then refine from adoption
-   failures rather than synthetic detection cases alone.
+2. Complete end-to-end adoption coverage for Rust and pytest projects, then
+   extend the fixture matrix to pnpm, Yarn, and Bun as those runtimes are
+   available.
+3. Make generated Rust verification mutation-safe even when the adopter has no
+   pre-existing `target/` ignore rule.
 4. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 

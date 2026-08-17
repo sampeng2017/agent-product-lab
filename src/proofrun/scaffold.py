@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import shlex
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -53,6 +54,12 @@ NODE_LOCKFILES = {
 }
 
 
+def _python_launcher() -> str:
+    """Choose a portable launcher matching the interpreter running ProofRun."""
+    executable = sys.executable.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    return "python3" if executable.startswith(("python3", "pypy3")) else "python"
+
+
 def _python_preset(root: Path) -> ProjectPreset | None:
     tests = root / "tests"
     if not tests.is_dir():
@@ -69,10 +76,22 @@ def _python_preset(root: Path) -> ProjectPreset | None:
         if "pytest" in config_text:
             pytest_markers.append(config)
     if any(path.exists() for path in pytest_markers):
-        return ProjectPreset("Python (pytest)", ("python", "-m", "pytest"))
+        return ProjectPreset(
+            "Python (pytest)",
+            (_python_launcher(), "-B", "-m", "pytest", "-p", "no:cacheprovider"),
+        )
     return ProjectPreset(
         "Python (unittest)",
-        ("python", "-m", "unittest", "discover", "-s", "tests", "-v"),
+        (
+            _python_launcher(),
+            "-B",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests",
+            "-v",
+        ),
     )
 
 

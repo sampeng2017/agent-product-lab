@@ -465,3 +465,35 @@ The next run should publish and exercise hosted CI if Sam supplies the remote.
 Otherwise, it should exercise generated manifests and verification end to end
 in representative disposable Python, Node.js, Rust, and Go projects, then fix
 the highest-value adoption failure discovered.
+
+## 2026-08-16 — Mutation-safe Python bootstrap
+
+Continued ProofRun after inspecting Git state and history, all product and
+handoff documentation, the implementation, tests, automation memory, and the
+active `To-Sam` request. Sam's optional GitHub remote handoff remains
+unanswered, so this run followed the documented local adoption path.
+
+Disposable first-run fixtures exercised Python/unittest, Node/npm, Go, and Rust
+project detection. Node initialized and verified end to end. Go initialized and
+verified after redirecting its host cache into sandbox-writable temporary
+storage. Rust detection generated the intended `cargo test` manifest, but Cargo
+is not installed on this host. Python exposed two real bootstrap failures: the
+generated `python` launcher did not exist on this `python3`-only machine, and a
+passing unittest run then created `__pycache__`, causing ProofRun's mutation
+guard to reject its own generated check.
+
+Detected Python presets now choose `python3` or `python` from the interpreter
+family running ProofRun. They invoke Python with `-B`, and pytest presets also
+disable the cache provider, keeping minimal repositories clean without weakening
+mutation detection. Added Unix, PyPy, virtualenv, and Windows-style launcher
+coverage plus a real init, commit, verify, and clean-worktree regression. The
+same external Python fixture now passes verification and the named proof gate.
+ProofRun is version 1.7.1 and the suite grew from 47 to 49 tests.
+
+Validation covered the 49-test suite directly and through structured ProofRun
+verification, compileall with external bytecode storage, diff checks, JSON init
+preview parsing, workflow YAML parsing, receipt-chain audit, the named validity
+gate, Markdown reporting, version inspection, and the Python, Node, and Go
+adoption gates. The next local task, if the remote is still unavailable, should
+redirect detected Rust build output into ignored `.proofrun/` storage and add a
+mutation-safe end-to-end regression that can run when Cargo is available.

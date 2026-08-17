@@ -715,9 +715,13 @@ command = ["python3", "-c", "print('lint')"]
                 self.assertEqual(main(["init"]), 0)
 
         manifest = self.root / "proofrun.toml"
+        launcher = (
+            "python3" if Path(sys.executable).name.startswith("python3") else "python"
+        )
         expected = (
             "[checks.test]\n"
-            'command = ["python", "-m", "unittest", "discover", "-s", "tests", "-v"]\n'
+            f'command = ["{launcher}", "-B", "-m", "unittest", '
+            '"discover", "-s", "tests", "-v"]\n'
         )
         self.assertEqual(manifest.read_text(encoding="utf-8"), expected)
         self.assertIn("detected Python (unittest)", output.getvalue())
@@ -744,11 +748,14 @@ command = ["python3", "-c", "print('lint')"]
         )
 
     def test_init_detects_supported_projects_and_rejects_ambiguity(self) -> None:
+        launcher = (
+            "python3" if Path(sys.executable).name.startswith("python3") else "python"
+        )
         cases = [
             (
                 "pytest",
                 (("tests/conftest.py", ""),),
-                ("python", "-m", "pytest"),
+                (launcher, "-B", "-m", "pytest", "-p", "no:cacheprovider"),
             ),
             (
                 "node",
@@ -775,6 +782,54 @@ command = ["python3", "-c", "print('lint')"]
         (mixed / "go.mod").write_text("module example.test/mixed\n", encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "multiple project types detected"):
             detect_project_preset(mixed)
+
+    def test_init_python_launcher_matches_running_interpreter_family(self) -> None:
+        tests = self.root / "tests"
+        tests.mkdir()
+
+        cases = [
+            ("/usr/local/bin/python3.14", "python3"),
+            ("/opt/pypy3/bin/pypy3", "python3"),
+            (r"C:\\Python312\\python.exe", "python"),
+            ("/workspace/.venv/bin/python", "python"),
+        ]
+        for executable, expected in cases:
+            with self.subTest(executable=executable):
+                with patch("proofrun.scaffold.sys.executable", executable):
+                    preset = detect_project_preset(self.root)
+                self.assertEqual(preset.command[0], expected)
+
+    def test_init_python_unittest_scaffold_verifies_without_mutation(self) -> None:
+        tests = self.root / "tests"
+        tests.mkdir()
+        (tests / "test_smoke.py").write_text(
+            "import unittest\n\n"
+            "class SmokeTest(unittest.TestCase):\n"
+            "    def test_ok(self):\n"
+            "        self.assertTrue(True)\n",
+            encoding="utf-8",
+        )
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["init"]), 0)
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "python fixture"], cwd=self.root, check=True
+        )
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(main(["verify"]), 0)
+
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(status.stdout, "")
 
     def test_init_uses_declared_or_locked_node_package_manager(self) -> None:
         cases = [
