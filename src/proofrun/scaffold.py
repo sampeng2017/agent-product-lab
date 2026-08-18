@@ -18,6 +18,7 @@ CHECK_NAME_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 class ProjectPreset:
     label: str
     command: tuple[str, ...]
+    env: tuple[tuple[str, str], ...] = ()
     package_manager: str | None = None
     package_manager_declared: bool = False
     has_lockfile: bool = False
@@ -169,7 +170,11 @@ def detect_project_preset(root: Path) -> ProjectPreset:
         for preset in (
             _python_preset(root),
             _node_preset(root),
-            ProjectPreset("Rust", ("cargo", "test"))
+            ProjectPreset(
+                "Rust",
+                ("cargo", "test"),
+                env=(("CARGO_TARGET_DIR", ".proofrun/cargo-target"),),
+            )
             if (root / "Cargo.toml").is_file()
             else None,
             ProjectPreset("Go", ("go", "test", "./..."))
@@ -191,9 +196,20 @@ def detect_project_preset(root: Path) -> ProjectPreset:
     return candidates[0]
 
 
-def _manifest_text(check_name: str, command: Sequence[str]) -> str:
+def _manifest_text(
+    check_name: str,
+    command: Sequence[str],
+    env: Sequence[tuple[str, str]] = (),
+) -> str:
     serialized = ", ".join(json.dumps(part, ensure_ascii=False) for part in command)
-    return f"[checks.{check_name}]\ncommand = [{serialized}]\n"
+    lines = [f"[checks.{check_name}]", f"command = [{serialized}]"]
+    if env:
+        lines.extend(("", f"[checks.{check_name}.env]"))
+        lines.extend(
+            f"{key} = {json.dumps(value, ensure_ascii=False)}"
+            for key, value in sorted(env)
+        )
+    return "\n".join(lines) + "\n"
 
 
 def _node_workflow_steps(preset: ProjectPreset | None) -> str:
@@ -345,7 +361,14 @@ def plan_repository_initialization(
         raise ValueError("the check command must contain non-empty arguments")
 
     target_contents: list[tuple[Path, str]] = [
-        (root / MANIFEST_PATH, _manifest_text(check_name, selected_command))
+        (
+            root / MANIFEST_PATH,
+            _manifest_text(
+                check_name,
+                selected_command,
+                preset.env if preset is not None else (),
+            ),
+        )
     ]
     if github_actions:
         assert ci_install is not None

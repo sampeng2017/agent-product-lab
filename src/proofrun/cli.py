@@ -294,6 +294,7 @@ def _init_preview(
             "package_manager": (
                 preset.package_manager if preset is not None else None
             ),
+            "env": dict(preset.env) if preset is not None else {},
         },
         "targets": [
             {

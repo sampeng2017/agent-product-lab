@@ -497,3 +497,37 @@ gate, Markdown reporting, version inspection, and the Python, Node, and Go
 adoption gates. The next local task, if the remote is still unavailable, should
 redirect detected Rust build output into ignored `.proofrun/` storage and add a
 mutation-safe end-to-end regression that can run when Cargo is available.
+
+## 2026-08-17 — Mutation-safe Rust build output
+
+Continued ProofRun after inspecting Git status and history, repository and
+automation-memory handoffs, all product documentation, the implementation,
+tests, and `To-Sam/`. The second optional request for a GitHub remote remains
+unanswered, so local product work continued with the next documented Rust
+adoption gap. Cargo is still not installed on this host.
+
+Detected presets can now carry environment overrides into the generated
+manifest. The Rust preset sets `CARGO_TARGET_DIR` to
+`.proofrun/cargo-target`, which is covered by ProofRun's runtime-local
+`.proofrun/.gitignore`. As a result, ordinary Cargo build output cannot cause a
+passing generated check to be rejected as a repository mutator merely because
+the adopter lacks a root `target/` ignore rule. The exact detected environment
+is also present in structured init previews and remains recorded in receipts.
+
+Added an executable adoption regression that creates a Rust-shaped repository,
+runs `proofrun init`, commits the scaffold, invokes verification through a
+deterministic Cargo stand-in, enforces the named proof gate, inspects the
+receipt environment, and confirms the worktree stays clean while the fake
+build artifact exists under `.proofrun/cargo-target`. This verifies the whole
+ProofRun integration without pretending native Rust compilation ran. Cargo can
+still create or update `Cargo.lock`; that file is meaningful verification input
+and intentionally remains visible to mutation detection, so adopters should
+stabilize it before verification.
+
+ProofRun is version 1.7.2 and the suite grew from 49 to 50 tests. Validation
+covered the full suite, compilation, whitespace checks, structured init preview,
+workflow YAML parsing, manifest-driven structured verification, receipt audit,
+the named validity gate, Markdown reporting, and version output. The next local
+task, if hosted CI remains unavailable, should run this fixture with native
+Cargo when a runtime becomes available; otherwise add a real pytest adoption
+fixture and fix the highest-value failure it exposes.

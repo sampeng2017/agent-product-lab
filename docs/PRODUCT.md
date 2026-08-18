@@ -109,6 +109,8 @@ claimed checks still apply to this exact working tree."
   proven GitHub Actions workflow when given a concrete ProofRun install source.
   Detected Python checks use the available portable launcher family and suppress
   bytecode and pytest-cache writes so a clean minimal repository remains clean.
+  Detected Rust checks redirect Cargo build output into ignored `.proofrun/`
+  storage so `target/` artifacts cannot invalidate their own proof.
   Node detection validates the test script and selects npm, pnpm, Yarn, or Bun
   from the repository's declaration or unambiguous lockfile evidence. Generated
   CI for detected Node projects provisions that tool and installs dependencies,
@@ -121,12 +123,10 @@ claimed checks still apply to this exact working tree."
 
 1. Establish a remote, tagged install source and validate both the checked-in
    and generated workflows on hosted GitHub Actions.
-2. Complete end-to-end adoption coverage for Rust and pytest projects, then
-   extend the fixture matrix to pnpm, Yarn, and Bun as those runtimes are
+2. Validate the mutation-safe Rust scaffold with a native Cargo runtime, then
+   complete pytest, pnpm, Yarn, and Bun adoption fixtures as those runtimes are
    available.
-3. Make generated Rust verification mutation-safe even when the adopter has no
-   pre-existing `target/` ignore rule.
-4. Consider authenticated or externally checkpointed receipt chains after
+3. Consider authenticated or externally checkpointed receipt chains after
    validating demand for shareable reports.
 
 ## Success signals

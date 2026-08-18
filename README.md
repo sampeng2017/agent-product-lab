@@ -187,8 +187,13 @@ project does not invalidate its own proof with interpreter-created files.
 For Node.js, ProofRun first requires a non-placeholder `scripts.test` entry,
 then honors the `packageManager` declaration or a single npm, pnpm, Yarn, or Bun
 lockfile. It defaults to npm only when no manager is declared or locked, and
-rejects conflicting lockfiles instead of guessing. Mixed, ambiguous, or
-unrecognized repositories must provide the intended command explicitly:
+rejects conflicting lockfiles instead of guessing. Rust scaffolds set
+`CARGO_TARGET_DIR = ".proofrun/cargo-target"`, keeping Cargo build output in
+ProofRun's ignored local storage instead of requiring an existing `target/`
+ignore rule. Commit or otherwise stabilize `Cargo.lock` before verification if
+Cargo would create or update it; lockfile changes remain intentionally visible
+to mutation detection. Mixed, ambiguous, or unrecognized repositories must
+provide the intended command explicitly:
 
 ```bash
 proofrun init --check-name unit -- python -m pytest -q
@@ -202,7 +207,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.7.1"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.7.2"
 ```
 
 ProofRun validates the command choice and every selected destination before it
@@ -232,7 +237,7 @@ proofrun init --dry-run --json -- python -m pytest -q
 
 The human preview reports the detected or explicit command and whether each
 target would be created or overwritten. The versioned JSON preview also includes
-the exact generated content, making it suitable for agent review. `--force`
-still controls whether existing targets may be previewed as overwrites, and
-`--json` is accepted only with `--dry-run`, so structured preview cannot be
-mistaken for an applied scaffold.
+the detected execution environment and exact generated content, making it
+suitable for agent review. `--force` still controls whether existing targets
+may be previewed as overwrites, and `--json` is accepted only with `--dry-run`,
+so structured preview cannot be mistaken for an applied scaffold.

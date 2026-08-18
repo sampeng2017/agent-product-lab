@@ -774,6 +774,12 @@ command = ["python3", "-c", "print('lint')"]
                     path.write_text(content, encoding="utf-8")
                 self.assertEqual(detect_project_preset(root).command, expected)
 
+        rust_preset = detect_project_preset(self.root / "rust")
+        self.assertEqual(
+            rust_preset.env,
+            (("CARGO_TARGET_DIR", ".proofrun/cargo-target"),),
+        )
+
         mixed = self.root / "mixed"
         mixed.mkdir()
         (mixed / "package.json").write_text(
@@ -822,6 +828,71 @@ command = ["python3", "-c", "print('lint')"]
             with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
                 self.assertEqual(main(["verify"]), 0)
 
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(status.stdout, "")
+
+    def test_init_rust_scaffold_redirects_build_output_without_mutation(self) -> None:
+        (self.root / "Cargo.toml").write_text(
+            '[package]\nname = "proofrun-fixture"\nversion = "0.1.0"\n',
+            encoding="utf-8",
+        )
+        source = self.root / "src"
+        source.mkdir()
+        (source / "lib.rs").write_text(
+            "pub fn answer() -> u8 { 42 }\n", encoding="utf-8"
+        )
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["init"]), 0)
+
+        manifest = self.root / "proofrun.toml"
+        self.assertEqual(
+            manifest.read_text(encoding="utf-8"),
+            '[checks.test]\ncommand = ["cargo", "test"]\n\n'
+            '[checks.test.env]\n'
+            'CARGO_TARGET_DIR = ".proofrun/cargo-target"\n',
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "rust fixture"], cwd=self.root, check=True
+        )
+
+        with tempfile.TemporaryDirectory() as bin_directory:
+            fake_cargo = Path(bin_directory) / "cargo"
+            fake_cargo.write_text(
+                f"#!{sys.executable}\n"
+                "import os, pathlib, sys\n"
+                "assert sys.argv[1:] == ['test']\n"
+                "target = pathlib.Path(os.environ['CARGO_TARGET_DIR'])\n"
+                "target.mkdir(parents=True, exist_ok=True)\n"
+                "(target / 'fixture-artifact').write_text('built\\n')\n",
+                encoding="utf-8",
+            )
+            fake_cargo.chmod(0o755)
+            path = f"{bin_directory}{os.pathsep}{os.environ.get('PATH', '')}"
+            with patch.dict(os.environ, {"PATH": path}):
+                with patch("proofrun.cli.Path.cwd", return_value=self.root):
+                    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                        self.assertEqual(main(["verify"]), 0)
+                        self.assertEqual(
+                            main(["status", "--require-valid", "test"]), 0
+                        )
+
+        self.assertTrue(
+            (self.root / ".proofrun" / "cargo-target" / "fixture-artifact").is_file()
+        )
+        receipt = load_receipts(self.root / ".proofrun" / "receipts.jsonl")[-1]
+        self.assertEqual(
+            receipt["context"]["env"],
+            {"CARGO_TARGET_DIR": ".proofrun/cargo-target"},
+        )
         status = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=self.root,

@@ -23,6 +23,9 @@ includes the exact generated content for agent inspection. Detected Python
 scaffolds choose `python3` or `python` from the interpreter
 family running ProofRun, suppress bytecode writes, and disable pytest's cache
 provider so incidental test-runner artifacts do not invalidate fresh proof.
+Detected Rust scaffolds route Cargo build output to
+`.proofrun/cargo-target` through a recorded manifest environment override, so a
+repository does not need to ignore `target/` before its first verification.
 Receipts
 stay in append-only JSON Lines under the ignored `.proofrun/` directory. Manifest
 checks can run from distinct repository subdirectories with explicit
@@ -66,28 +69,26 @@ named validity gate.
 - Checked Git history/status, all product and handoff documentation, tests,
   implementation, automation memory, and `To-Sam/`; the optional remote request
   remains unanswered and local work continued without blocking.
-- Exercised first-run scaffolding and verification in disposable Python,
-  Node/npm, Go, and Rust fixtures. Node passed end to end; Go passed with its
-  cache redirected outside the sandbox; Rust detection succeeded but Cargo is
-  not installed on this host.
-- Reproduced two concrete Python adoption failures: generated manifests used
-  unavailable `python` on a `python3`-only host, then otherwise-passing unittest
-  created `__pycache__` and was rejected as a repository-mutating check.
-- Made detected Python commands follow the active interpreter launcher family,
-  run with `-B`, and disable pytest's cache provider. The same minimal fixture
-  now scaffolds, verifies, passes the named proof gate, and stays Git-clean.
-- Added launcher-family coverage for Unix, virtualenv, PyPy, and Windows-style
-  executable paths plus an actual scaffold-to-verification mutation regression.
-  The suite grew from 47 to 49 tests and the package version is now 1.7.1.
+- Extended detected project presets with manifest environment overrides and set
+  Rust's `CARGO_TARGET_DIR` to ignored `.proofrun/cargo-target` storage. Cargo's
+  normal build artifacts can no longer invalidate the proof they just produced.
+- Included detected environment overrides in structured `init --dry-run --json`
+  output, preserving the preview's exact account of generated execution context.
+- Added a full init, commit, verify, named-validity-gate, receipt-context, and
+  clean-worktree Rust regression. A deterministic Cargo stand-in exercised the
+  generated environment and wrote a build artifact to the redirected location.
+- Confirmed Cargo is still unavailable on this host, so native compilation
+  remains an explicit follow-up rather than an overstated validation claim.
+  The suite grew from 49 to 50 tests and the package version is now 1.7.2.
 
 ## Changed since the previous run
 
-Python bootstrap now produces a command that is runnable on the adopter's
-current launcher family and honors ProofRun's own no-mutation requirement in a
-minimal repository. Previously, first verification could fail before tests ran
-or could reject a passing suite solely because the interpreter created cache
-artifacts. This run also replaced detector-only confidence with an executable
-adoption regression.
+Rust bootstrap now produces a manifest that keeps Cargo's potentially large
+`target/` tree in ProofRun's already ignored runtime directory. Previously, a
+passing `cargo test` could be rejected solely because the adopter had not yet
+added `target/` to `.gitignore`. Preset environment data now flows through
+manifest rendering and JSON preview rather than being special-cased in command
+shell syntax.
 
 ## Known issues and incomplete work
 
@@ -126,10 +127,11 @@ adoption regression.
   install source, so generated CI requires the adopter to pass `--ci-install`.
 - Project detection is intentionally narrow and has only local fixture coverage;
   real-world monorepos and nonstandard test layouts require an explicit command.
-- End-to-end Rust adoption remains unverified on this host because Cargo is not
-  installed. A Rust check may also create an unignored `target/` tree, which
-  ProofRun would correctly reject; generated Rust commands do not yet redirect
-  that output into ignored local storage.
+- Native Rust adoption remains unverified on this host because Cargo is not
+  installed. The generated build-output redirect has executable integration
+  coverage using a deterministic Cargo stand-in. Cargo may still create or
+  update `Cargo.lock`; adopters should stabilize that Git-visible input before
+  verification rather than having ProofRun hide it.
 - Lockfile-only pnpm, Yarn, and Bun projects do not provide an exact
   package-manager version. Generated CI can provision them, but the setup tool's
   current default is used; add a `packageManager` declaration to pin the tool.
@@ -144,9 +146,10 @@ adoption regression.
 
 After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
-on hosted GitHub Actions. If the remote remains unavailable, make generated
-Rust checks place build artifacts under ignored `.proofrun/` storage, add an
-end-to-end regression, and validate it when a Cargo runtime is available.
+on hosted GitHub Actions. If the remote remains unavailable, run the Rust
+adoption fixture with a native Cargo runtime when one becomes available;
+otherwise complete a real pytest adoption fixture and fix its highest-value
+failure.
 
 ## Important decisions
 
@@ -162,6 +165,10 @@ end-to-end regression, and validate it when a Cargo runtime is available.
 - Detected Python bootstrap mirrors the running interpreter's portable launcher
   family. `-B` prevents bytecode writes and pytest's cache provider is disabled
   because generated verification must not make its own clean proof stale.
+- Detected preset environment overrides are rendered as manifest env tables and
+  exposed in structured previews. Rust uses this path for `CARGO_TARGET_DIR`,
+  while `Cargo.lock` stays Git-visible because it is verification input rather
+  than disposable build output.
 - Node bootstrap requires a real `scripts.test`; `packageManager` is
   authoritative when present, one recognized lockfile family is the fallback,
   and conflicting lockfile families require an explicit command.
