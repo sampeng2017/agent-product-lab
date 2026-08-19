@@ -23,6 +23,9 @@ includes the exact generated content for agent inspection. Detected Python
 scaffolds choose `python3` or `python` from the interpreter
 family running ProofRun, suppress bytecode writes, and disable pytest's cache
 provider so incidental test-runner artifacts do not invalidate fresh proof.
+Generated Python CI installs detected `requirements.txt`,
+`requirements-dev.txt`, and `requirements-test.txt` inputs, plus pytest when
+that runner is selected, before ProofRun snapshots repository state.
 Detected Rust scaffolds route Cargo build output to
 `.proofrun/cargo-target` through a recorded manifest environment override, so a
 repository does not need to ignore `target/` before its first verification.
@@ -69,26 +72,23 @@ named validity gate.
 - Checked Git history/status, all product and handoff documentation, tests,
   implementation, automation memory, and `To-Sam/`; the optional remote request
   remains unanswered and local work continued without blocking.
-- Extended detected project presets with manifest environment overrides and set
-  Rust's `CARGO_TARGET_DIR` to ignored `.proofrun/cargo-target` storage. Cargo's
-  normal build artifacts can no longer invalidate the proof they just produced.
-- Included detected environment overrides in structured `init --dry-run --json`
-  output, preserving the preview's exact account of generated execution context.
-- Added a full init, commit, verify, named-validity-gate, receipt-context, and
-  clean-worktree Rust regression. A deterministic Cargo stand-in exercised the
-  generated environment and wrote a build artifact to the redirected location.
-- Confirmed Cargo is still unavailable on this host, so native compilation
-  remains an explicit follow-up rather than an overstated validation claim.
-  The suite grew from 49 to 50 tests and the package version is now 1.7.2.
+- Provisioned a disposable pytest 9.1.1 runtime and exercised an actual detected
+  pytest repository from `init` through commit, verification, named validity
+  gating, and a clean post-run worktree.
+- Fixed the generated Python workflow gap exposed by that fixture: detected
+  workflows now install conventional base, development, and test requirements
+  and ensure pytest is present before verification starts.
+- Added workflow matrices for minimal pytest, multi-requirement pytest, and
+  unittest-with-requirements projects, plus the real pytest adoption regression.
+  The suite grew from 50 to 52 tests and the package version is now 1.8.0.
 
 ## Changed since the previous run
 
-Rust bootstrap now produces a manifest that keeps Cargo's potentially large
-`target/` tree in ProofRun's already ignored runtime directory. Previously, a
-passing `cargo test` could be rejected solely because the adopter had not yet
-added `target/` to `.gitignore`. Preset environment data now flows through
-manifest rendering and JSON preview rather than being special-cased in command
-shell syntax.
+Generated Python CI is now runnable for the common layouts ProofRun detects.
+Previously, it installed ProofRun itself but could immediately fail because
+pytest or repository test dependencies were absent. Dependency installation
+still occurs before verification, so setup cannot contaminate the Git snapshots
+that form the proof.
 
 ## Known issues and incomplete work
 
@@ -132,6 +132,11 @@ shell syntax.
   coverage using a deterministic Cargo stand-in. Cargo may still create or
   update `Cargo.lock`; adopters should stabilize that Git-visible input before
   verification rather than having ProofRun hide it.
+- Python workflow dependency discovery intentionally recognizes only
+  `requirements.txt`, `requirements-dev.txt`, and `requirements-test.txt`.
+  Projects using extras, lock tools, or nonstandard files still need a manually
+  tailored workflow after scaffolding. Minimal pytest workflows without a
+  requirements constraint install the current pytest release.
 - Lockfile-only pnpm, Yarn, and Bun projects do not provide an exact
   package-manager version. Generated CI can provision them, but the setup tool's
   current default is used; add a `packageManager` declaration to pin the tool.
@@ -148,8 +153,8 @@ After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
 on hosted GitHub Actions. If the remote remains unavailable, run the Rust
 adoption fixture with a native Cargo runtime when one becomes available;
-otherwise complete a real pytest adoption fixture and fix its highest-value
-failure.
+otherwise exercise generated pnpm, Yarn, and Bun workflows end to end and fix
+the highest-value failure found.
 
 ## Important decisions
 
@@ -165,6 +170,10 @@ failure.
 - Detected Python bootstrap mirrors the running interpreter's portable launcher
   family. `-B` prevents bytecode writes and pytest's cache provider is disabled
   because generated verification must not make its own clean proof stale.
+- Generated Python workflows install conventional requirements files in stable
+  base/development/test order and explicitly install pytest for a detected
+  pytest preset. Setup remains outside ProofRun verification, and unfamiliar
+  Python dependency conventions are not guessed.
 - Detected preset environment overrides are rendered as manifest env tables and
   exposed in structured previews. Rust uses this path for `CARGO_TARGET_DIR`,
   while `Cargo.lock` stays Git-visible because it is verification input rather

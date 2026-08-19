@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import io
 import json
 import os
@@ -837,6 +838,66 @@ command = ["python3", "-c", "print('lint')"]
         )
         self.assertEqual(status.stdout, "")
 
+    def test_init_pytest_scaffold_verifies_without_mutation(self) -> None:
+        if importlib.util.find_spec("pytest") is None:
+            self.skipTest("real pytest runtime is not installed")
+
+        tests = self.root / "tests"
+        tests.mkdir()
+        (tests / "test_smoke.py").write_text(
+            "def test_ok():\n"
+            "    assert 6 * 7 == 42\n",
+            encoding="utf-8",
+        )
+        (self.root / "pyproject.toml").write_text(
+            "[tool.pytest.ini_options]\naddopts = [\"-q\"]\n",
+            encoding="utf-8",
+        )
+        (self.root / "requirements-test.txt").write_text(
+            "pytest>=8\n", encoding="utf-8"
+        )
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    main(
+                        [
+                            "init",
+                            "--github-actions",
+                            "--ci-install",
+                            "proofrun @ git+https://example.test/proofrun.git@v1.8.0",
+                        ]
+                    ),
+                    0,
+                )
+
+        workflow = (
+            self.root / ".github" / "workflows" / "proofrun.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "python -m pip install -r requirements-test.txt pytest", workflow
+        )
+        subprocess.run(["git", "add", "."], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-qm", "pytest fixture"], cwd=self.root, check=True
+        )
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(main(["verify"]), 0)
+                self.assertEqual(main(["status", "--require-valid", "test"]), 0)
+
+        self.assertFalse((self.root / ".pytest_cache").exists())
+        self.assertFalse(any(self.root.rglob("__pycache__")))
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(status.stdout, "")
+
     def test_init_rust_scaffold_redirects_build_output_without_mutation(self) -> None:
         (self.root / "Cargo.toml").write_text(
             '[package]\nname = "proofrun-fixture"\nversion = "0.1.0"\n',
@@ -1091,6 +1152,54 @@ command = ["python3", "-c", "print('lint')"]
                     self.assertIn(marker, workflow)
                 for marker in absent:
                     self.assertNotIn(marker, workflow)
+
+    def test_init_generated_workflow_bootstraps_python_test_dependencies(self) -> None:
+        cases = [
+            (
+                "pytest-minimal",
+                ("tests/conftest.py",),
+                "python -m pip install pytest",
+            ),
+            (
+                "pytest-requirements",
+                (
+                    "tests/conftest.py",
+                    "requirements.txt",
+                    "requirements-dev.txt",
+                    "requirements-test.txt",
+                ),
+                (
+                    "python -m pip install -r requirements.txt "
+                    "-r requirements-dev.txt -r requirements-test.txt pytest"
+                ),
+            ),
+            (
+                "unittest-requirements",
+                ("tests/test_smoke.py", "requirements.txt"),
+                "python -m pip install -r requirements.txt",
+            ),
+        ]
+        for name, files, expected in cases:
+            with self.subTest(name=name):
+                root = self.root / name
+                for relative in files:
+                    path = root / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("", encoding="utf-8")
+
+                plan = plan_repository_initialization(
+                    root,
+                    check_name="test",
+                    command=None,
+                    github_actions=True,
+                    ci_install=(
+                        "proofrun @ git+https://example.test/proofrun.git@v1.8.0"
+                    ),
+                    force=False,
+                )
+                workflow = plan.targets[1].content
+
+                self.assertIn(expected, workflow)
 
     def test_init_requires_explicit_ci_install_source(self) -> None:
         error = io.StringIO()

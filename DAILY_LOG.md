@@ -531,3 +531,35 @@ the named validity gate, Markdown reporting, and version output. The next local
 task, if hosted CI remains unavailable, should run this fixture with native
 Cargo when a runtime becomes available; otherwise add a real pytest adoption
 fixture and fix the highest-value failure it exposes.
+
+## 2026-08-18 — Runnable Python CI scaffolds
+
+Continued ProofRun after inspecting Git state and history, automation memory,
+all product and handoff documentation, tests, implementation, and `To-Sam/`.
+The optional GitHub remote request remains unanswered. Cargo is unavailable,
+so this run followed the documented pytest adoption path.
+
+The host interpreter did not include pytest. A disposable `uv` environment
+provisioned pytest 9.1.1 and exercised a real pytest-shaped repository through
+automatic detection, manifest and workflow creation, commit, verification,
+named proof gating, and a clean final Git state. The mutation-safe command
+worked as intended: `-B` suppressed bytecode and `-p no:cacheprovider`
+suppressed `.pytest_cache`.
+
+The exercise highlighted a larger first-run gap in generated CI: Python
+workflows installed ProofRun but did not install pytest or project test
+requirements. Detected Python presets now retain the conventional requirements
+files present in the repository. Generated workflows install
+`requirements.txt`, `requirements-dev.txt`, and `requirements-test.txt` in a
+stable order, then explicitly add pytest when that runner was selected. This
+setup runs before ProofRun verification, so dependency installation is outside
+the repository snapshots that form evidence. Nonstandard dependency managers
+and optional extras remain deliberately outside narrow automatic detection.
+
+Added workflow regressions for minimal pytest, all three requirements files,
+and unittest with requirements, plus the real pytest init-to-gate fixture. The
+dependency-free suite now has 52 tests with the real-runner fixture skipped when
+pytest is absent; all 52 execute in the disposable pytest environment. ProofRun
+is version 1.8.0. The next local task, if hosted CI and native Cargo remain
+unavailable, should exercise pnpm, Yarn, and Bun generated workflows end to end
+and fix the highest-value failure found.

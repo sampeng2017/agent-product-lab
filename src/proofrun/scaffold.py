@@ -22,6 +22,8 @@ class ProjectPreset:
     package_manager: str | None = None
     package_manager_declared: bool = False
     has_lockfile: bool = False
+    python_runner: str | None = None
+    python_requirements: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -54,6 +56,12 @@ NODE_LOCKFILES = {
     "bun": ("bun.lock", "bun.lockb"),
 }
 
+PYTHON_REQUIREMENT_FILES = (
+    "requirements.txt",
+    "requirements-dev.txt",
+    "requirements-test.txt",
+)
+
 
 def _python_launcher() -> str:
     """Choose a portable launcher matching the interpreter running ProofRun."""
@@ -76,10 +84,15 @@ def _python_preset(root: Path) -> ProjectPreset | None:
             continue
         if "pytest" in config_text:
             pytest_markers.append(config)
+    requirements = tuple(
+        name for name in PYTHON_REQUIREMENT_FILES if (root / name).is_file()
+    )
     if any(path.exists() for path in pytest_markers):
         return ProjectPreset(
             "Python (pytest)",
             (_python_launcher(), "-B", "-m", "pytest", "-p", "no:cacheprovider"),
+            python_runner="pytest",
+            python_requirements=requirements,
         )
     return ProjectPreset(
         "Python (unittest)",
@@ -93,6 +106,8 @@ def _python_preset(root: Path) -> ProjectPreset | None:
             "tests",
             "-v",
         ),
+        python_runner="unittest",
+        python_requirements=requirements,
     )
 
 
@@ -268,9 +283,31 @@ def _node_workflow_steps(preset: ProjectPreset | None) -> str:
 """
 
 
+def _python_workflow_steps(preset: ProjectPreset | None) -> str:
+    if preset is None or preset.python_runner is None:
+        return ""
+
+    arguments = [
+        argument
+        for requirement in preset.python_requirements
+        for argument in ("-r", requirement)
+    ]
+    if preset.python_runner == "pytest":
+        arguments.append("pytest")
+    if not arguments:
+        return ""
+
+    install_arguments = " ".join(shlex.quote(argument) for argument in arguments)
+    return f"""
+      - name: Install project test dependencies
+        run: python -m pip install {install_arguments}
+"""
+
+
 def _workflow_text(ci_install: str, preset: ProjectPreset | None) -> str:
     install_requirement = shlex.quote(ci_install)
-    project_setup = _node_workflow_steps(preset)
+    node_setup = _node_workflow_steps(preset)
+    python_setup = _python_workflow_steps(preset)
     return f"""name: ProofRun evidence
 
 on:
@@ -287,12 +324,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
-{project_setup}
+{node_setup}
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: \"3.12\"
+{python_setup}
 
       - name: Install ProofRun
         run: python -m pip install {install_requirement}
