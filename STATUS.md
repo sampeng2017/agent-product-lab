@@ -72,23 +72,26 @@ named validity gate.
 - Checked Git history/status, all product and handoff documentation, tests,
   implementation, automation memory, and `To-Sam/`; the optional remote request
   remains unanswered and local work continued without blocking.
-- Provisioned a disposable pytest 9.1.1 runtime and exercised an actual detected
-  pytest repository from `init` through commit, verification, named validity
-  gating, and a clean post-run worktree.
-- Fixed the generated Python workflow gap exposed by that fixture: detected
-  workflows now install conventional base, development, and test requirements
-  and ensure pytest is present before verification starts.
-- Added workflow matrices for minimal pytest, multi-requirement pytest, and
-  unittest-with-requirements projects, plus the real pytest adoption regression.
-  The suite grew from 50 to 52 tests and the package version is now 1.8.0.
+- Attempted native pnpm and Yarn workflow adoption through the installed
+  Corepack runtime. Both package-manager downloads were blocked by the host's
+  registry certificate chain, while the installed Bun runtime remained usable.
+- Inspected the current official pnpm setup contract and active v6 regressions,
+  finding that generated workflows relied on action-side inference that can
+  ignore a repository's declared pnpm version.
+- Parsed and retained declared Node package-manager versions, rejected malformed
+  declarations without `manager@version`, and made generated pnpm setup pass the
+  declared version explicitly. Structured init previews now expose the version.
+- Added declared-version, integrity-suffix, malformed-declaration, workflow, and
+  preview regressions. The suite grew from 52 to 53 tests and the package
+  version is now 1.8.1.
 
 ## Changed since the previous run
 
-Generated Python CI is now runnable for the common layouts ProofRun detects.
-Previously, it installed ProofRun itself but could immediately fail because
-pytest or repository test dependencies were absent. Dependency installation
-still occurs before verification, so setup cannot contaminate the Git snapshots
-that form the proof.
+Generated pnpm CI now deterministically honors the version already declared by
+the adopter. Previously, ProofRun omitted the setup action's version input for a
+declared project and trusted action-side inference; current upstream v6 issues
+show that inference can select the wrong pnpm release. Lockfile-only pnpm
+projects retain the documented explicit `latest` fallback.
 
 ## Known issues and incomplete work
 
@@ -140,6 +143,9 @@ that form the proof.
 - Lockfile-only pnpm, Yarn, and Bun projects do not provide an exact
   package-manager version. Generated CI can provision them, but the setup tool's
   current default is used; add a `packageManager` declaration to pin the tool.
+- Native pnpm and Yarn end-to-end adoption remain unverified on this host because
+  Corepack cannot validate the local registry certificate chain. Workflow
+  rendering and package-manager selection remain covered without downloads.
 - Package-manager setup is inferred only for automatically detected Node
   presets. Explicit custom commands are intentionally opaque, so adopters must
   add any required runtime/dependency setup to the generated workflow.
@@ -153,8 +159,8 @@ After Sam provides the requested remote, configure it, push the repository,
 create a versioned installation reference, and validate the checked-in workflow
 on hosted GitHub Actions. If the remote remains unavailable, run the Rust
 adoption fixture with a native Cargo runtime when one becomes available;
-otherwise exercise generated pnpm, Yarn, and Bun workflows end to end and fix
-the highest-value failure found.
+otherwise complete native pnpm and Yarn fixtures when their runtimes can be
+provisioned, then add a real Bun init-to-proof fixture with the installed runtime.
 
 ## Important decisions
 
@@ -180,11 +186,16 @@ the highest-value failure found.
   than disposable build output.
 - Node bootstrap requires a real `scripts.test`; `packageManager` is
   authoritative when present, one recognized lockfile family is the fallback,
-  and conflicting lockfile families require an explicit command.
+  and conflicting lockfile families require an explicit command. Declarations
+  must use `manager@version`; an integrity suffix is retained in `package.json`
+  but omitted from the setup action's semantic version input.
 - Automatically detected Node presets carry package-manager and lockfile
   metadata into workflow rendering. Generated CI provisions the corresponding
   tool and installs dependencies before ProofRun snapshots verification state;
   explicit commands do not trigger inferred setup.
+- Declared pnpm versions are sent to `pnpm/action-setup` explicitly rather than
+  relying on its package metadata inference; lockfile-only projects request
+  `latest` because no authoritative version is available.
 - Detected Node workflows pin Node.js 24 and action majors. Lockfiles select
   strict installs; without a lockfile, normal install semantics are explicit.
 - Scaffold target conflicts are checked as a group before any write. Existing

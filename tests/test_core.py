@@ -987,6 +987,8 @@ command = ["python3", "-c", "print('lint')"]
                 preset = detect_project_preset(root)
                 self.assertEqual(preset.command, expected)
                 self.assertIn(expected[0], preset.label)
+                if name == "declared-pnpm":
+                    self.assertEqual(preset.package_manager_version, "10.0.0")
 
     def test_init_rejects_unrunnable_or_ambiguous_node_projects(self) -> None:
         cases = [
@@ -994,6 +996,13 @@ command = ["python3", "-c", "print('lint')"]
             (
                 "placeholder",
                 {"scripts": {"test": 'echo "Error: no test specified" && exit 1'}},
+            ),
+            (
+                "unversioned-manager",
+                {
+                    "scripts": {"test": "node --test"},
+                    "packageManager": "pnpm",
+                },
             ),
         ]
         for name, package in cases:
@@ -1003,7 +1012,12 @@ command = ["python3", "-c", "print('lint')"]
                 (root / "package.json").write_text(
                     json.dumps(package), encoding="utf-8"
                 )
-                with self.assertRaisesRegex(ValueError, "provide a command after --"):
+                error = (
+                    "manager@version"
+                    if name == "unversioned-manager"
+                    else "provide a command after --"
+                )
+                with self.assertRaisesRegex(ValueError, error):
                     detect_project_preset(root)
 
         ambiguous = self.root / "ambiguous-locks"
@@ -1091,7 +1105,12 @@ command = ["python3", "-c", "print('lint')"]
                 "pnpm-declared",
                 {"packageManager": "pnpm@10.0.0"},
                 None,
-                ("actions/setup-node@v6", "pnpm/action-setup@v6", "pnpm install"),
+                (
+                    "actions/setup-node@v6",
+                    "pnpm/action-setup@v6",
+                    'version: "10.0.0"',
+                    "pnpm install",
+                ),
                 ("version: latest", "setup-bun", "corepack enable"),
             ),
             (
@@ -1227,6 +1246,27 @@ command = ["python3", "-c", "print('lint')"]
         preview = output.getvalue()
         self.assertIn("detected Python (unittest)", preview)
         self.assertIn("would create proofrun.toml", preview)
+
+    def test_init_json_preview_exposes_declared_package_manager_version(self) -> None:
+        (self.root / "package.json").write_text(
+            json.dumps(
+                {
+                    "packageManager": "pnpm@10.28.1+sha512.fixture",
+                    "scripts": {"test": "node --test"},
+                }
+            ),
+            encoding="utf-8",
+        )
+        output = io.StringIO()
+
+        with patch("proofrun.cli.Path.cwd", return_value=self.root):
+            with redirect_stdout(output):
+                self.assertEqual(main(["init", "--dry-run", "--json"]), 0)
+
+        preview = json.loads(output.getvalue())
+        self.assertEqual(preview["check"]["package_manager"], "pnpm")
+        self.assertEqual(preview["check"]["package_manager_version"], "10.28.1")
+        self.assertFalse((self.root / "proofrun.toml").exists())
 
     def test_init_json_preview_includes_exact_targets_without_writing(self) -> None:
         output = io.StringIO()

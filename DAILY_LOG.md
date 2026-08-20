@@ -563,3 +563,33 @@ pytest is absent; all 52 execute in the disposable pytest environment. ProofRun
 is version 1.8.0. The next local task, if hosted CI and native Cargo remain
 unavailable, should exercise pnpm, Yarn, and Bun generated workflows end to end
 and fix the highest-value failure found.
+
+## 2026-08-19 — Deterministic pnpm setup versions
+
+Continued ProofRun after inspecting Git state and history, automation memory,
+the README, STATUS, DAILY_LOG, product documentation, tests, implementation,
+and the active `To-Sam/` request. Sam's optional GitHub remote handoff remains
+unanswered, so the run followed the documented local Node adoption path.
+
+Native pnpm and Yarn probes reached the installed Corepack runtime but could not
+download their package managers because the host registry certificate chain was
+not accepted. The installed Bun runtime remained available. Current official
+pnpm action documentation and active upstream v6 regressions exposed a concrete
+generated-workflow risk: ProofRun omitted `with.version` when `packageManager`
+declared pnpm, leaving the setup action to infer a version even though v6 has
+been reported selecting a different release.
+
+Detected Node presets now parse and retain the declared package-manager version,
+remove the optional Corepack integrity suffix only for the setup-action input,
+and reject malformed declarations that do not use `manager@version`. Generated
+pnpm workflows pass that version explicitly; lockfile-only projects still use
+the explicit `latest` fallback because their repository contains no
+authoritative tool version. Structured dry-run JSON now exposes the parsed
+version for agent review.
+
+Added regressions for version retention, integrity suffixes, malformed
+declarations, generated workflow input, and structured previews. ProofRun is
+version 1.8.1 and the suite has 53 tests. The next local task, if hosted CI and
+native Cargo remain unavailable, should complete native pnpm/Yarn fixtures when
+the certificate path is repaired, or add a real Bun init-to-proof fixture using
+the installed runtime.

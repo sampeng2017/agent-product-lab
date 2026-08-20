@@ -117,7 +117,9 @@ claimed checks still apply to this exact working tree."
   Node detection validates the test script and selects npm, pnpm, Yarn, or Bun
   from the repository's declaration or unambiguous lockfile evidence. Generated
   CI for detected Node projects provisions that tool and installs dependencies,
-  using lockfile-strict installation when a lockfile exists.
+  using lockfile-strict installation when a lockfile exists. Declared pnpm
+  versions are passed explicitly to the setup action so the workflow does not
+  depend on action-side package metadata inference.
 - `proofrun init --dry-run` exercises the same validation and overwrite rules
   without writing. Its versioned JSON form exposes the chosen command, target
   actions, and exact file contents for agent inspection.
@@ -127,7 +129,7 @@ claimed checks still apply to this exact working tree."
 1. Establish a remote, tagged install source and validate both the checked-in
    and generated workflows on hosted GitHub Actions.
 2. Validate the mutation-safe Rust scaffold with a native Cargo runtime, then
-   complete pnpm, Yarn, and Bun adoption fixtures as those runtimes are
+   complete native pnpm and Yarn adoption fixtures as those runtimes are
    available. Extend Python dependency detection only in response to concrete
    project layouts rather than guessing optional-dependency conventions.
 3. Consider authenticated or externally checkpointed receipt chains after

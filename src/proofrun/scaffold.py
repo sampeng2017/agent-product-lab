@@ -20,7 +20,7 @@ class ProjectPreset:
     command: tuple[str, ...]
     env: tuple[tuple[str, str], ...] = ()
     package_manager: str | None = None
-    package_manager_declared: bool = False
+    package_manager_version: str | None = None
     has_lockfile: bool = False
     python_runner: str | None = None
     python_requirements: tuple[str, ...] = ()
@@ -111,21 +111,34 @@ def _python_preset(root: Path) -> ProjectPreset | None:
     )
 
 
-def _declared_node_package_manager(package: dict[str, object]) -> str | None:
+def _declared_node_package_manager(
+    package: dict[str, object],
+) -> tuple[str, str] | None:
     declaration = package.get("packageManager")
     if declaration is None:
         return None
     if not isinstance(declaration, str) or not declaration.strip():
         raise ValueError("package.json packageManager must be a non-empty string")
 
-    manager = declaration.strip().partition("@")[0]
+    manager, separator, version = declaration.strip().partition("@")
     if manager not in NODE_COMMANDS:
         supported = ", ".join(NODE_COMMANDS)
         raise ValueError(
             f"unsupported Node package manager {manager!r}; supported: {supported}; "
             "or provide a command after --"
         )
-    return manager
+    if not separator or not version or version != version.strip():
+        raise ValueError(
+            "package.json packageManager must use a supported manager@version "
+            "declaration"
+        )
+    setup_version = version.partition("+")[0]
+    if not setup_version:
+        raise ValueError(
+            "package.json packageManager must use a supported manager@version "
+            "declaration"
+        )
+    return manager, setup_version
 
 
 def _locked_node_package_manager(root: Path) -> str | None:
@@ -165,7 +178,9 @@ def _node_preset(root: Path) -> ProjectPreset | None:
             "provide a command after --"
         )
 
-    declared_manager = _declared_node_package_manager(package)
+    declaration = _declared_node_package_manager(package)
+    declared_manager = declaration[0] if declaration is not None else None
+    declared_version = declaration[1] if declaration is not None else None
     manager = declared_manager or _locked_node_package_manager(root) or "npm"
     has_lockfile = any(
         (root / name).is_file() for name in NODE_LOCKFILES[manager]
@@ -174,7 +189,7 @@ def _node_preset(root: Path) -> ProjectPreset | None:
         f"Node.js ({manager})",
         NODE_COMMANDS[manager],
         package_manager=manager,
-        package_manager_declared=declared_manager is not None,
+        package_manager_version=declared_version,
         has_lockfile=has_lockfile,
     )
 
@@ -261,7 +276,11 @@ def _node_workflow_steps(preset: ProjectPreset | None) -> str:
       - name: Set up pnpm
         uses: pnpm/action-setup@v6
 """
-        if not preset.package_manager_declared:
+        if preset.package_manager_version is not None:
+            manager_setup += f"""        with:
+          version: {json.dumps(preset.package_manager_version)}
+"""
+        else:
             manager_setup += """        with:
           version: latest
 """

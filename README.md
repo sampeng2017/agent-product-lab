@@ -190,7 +190,8 @@ ensures pytest is installed for detected pytest projects before verification.
 For Node.js, ProofRun first requires a non-placeholder `scripts.test` entry,
 then honors the `packageManager` declaration or a single npm, pnpm, Yarn, or Bun
 lockfile. It defaults to npm only when no manager is declared or locked, and
-rejects conflicting lockfiles instead of guessing. Rust scaffolds set
+rejects conflicting lockfiles instead of guessing. A declaration must use the
+standard `manager@version` form. Rust scaffolds set
 `CARGO_TARGET_DIR = ".proofrun/cargo-target"`, keeping Cargo build output in
 ProofRun's ignored local storage instead of requiring an existing `target/`
 ignore rule. Commit or otherwise stabilize `Cargo.lock` before verification if
@@ -210,7 +211,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.8.0"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.8.1"
 ```
 
 ProofRun validates the command choice and every selected destination before it
@@ -225,6 +226,10 @@ verification: Node.js 24 for npm, pnpm, and Yarn; the official pnpm setup action
 Corepack for Yarn; or the official Bun setup action. Existing lockfiles select
 strict install modes such as `npm ci`, `pnpm install --frozen-lockfile`,
 `yarn install --frozen-lockfile`, and `bun ci`.
+
+For declared pnpm projects, the workflow passes the declared version directly
+to the setup action instead of relying on action-side inference. Lockfile-only
+pnpm projects continue to request the current release explicitly.
 
 Review the detected command and pin the ProofRun install requirement to a tag or
 commit before committing the generated files. Commit dependency constraints to
@@ -244,7 +249,8 @@ proofrun init --dry-run --json -- python -m pytest -q
 
 The human preview reports the detected or explicit command and whether each
 target would be created or overwritten. The versioned JSON preview also includes
-the detected execution environment and exact generated content, making it
+the detected package-manager version, execution environment, and exact generated
+content, making it
 suitable for agent review. `--force` still controls whether existing targets
 may be previewed as overwrites, and `--json` is accepted only with `--dry-run`,
 so structured preview cannot be mistaken for an applied scaffold.
