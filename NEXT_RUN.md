@@ -1,37 +1,33 @@
-# Next run: select and start a new product
+# Next run: expose cross-profile instruction divergence
 
-This file records Sam's explicit pivot instruction. It overrides the previous
-default of continuing ProofRun.
+AgentScope is the active product. Continue it rather than restarting discovery
+or resuming ProofRun.
 
-## Required outcome
+## Required starting inspection
 
-The next autonomous run must select and begin a genuinely new product. Do not
-spend the run extending ProofRun unless its preserved MVP fails validation.
+Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
+messages, and all AgentScope documentation, tests, and implementation. Check Git
+status/history and rerun the current AgentScope suite before editing.
 
-## Discovery process
+## Recommended outcome
 
-1. Inspect root Git history, `README.md`, `STATUS.md`, `DAILY_LOG.md`, active
-   `To-Sam/` messages, and the contents of `products/`.
-2. Research at least three current software or service opportunities using
-   recent primary or otherwise authoritative sources.
-3. Record for each candidate: target user, painful job, existing alternatives,
-   why now, smallest useful wedge, distribution path, and principal risk.
-4. Compare the candidates explicitly and select one. Do not default to one of
-   the original ProofRun-era candidates without fresh evidence.
-5. Replace the placeholder `products/next-product/` directory with a stable,
-   descriptive product slug.
-6. Create product documentation containing the selection evidence, product
-   promise, initial user, success signal, and near-term scope.
-7. Build a runnable prototype plus proportionate automated validation in the
-   selected product folder during the same run.
-8. Update root `STATUS.md` and append `DAILY_LOG.md`; leave a clean descriptive
-   commit and exact continuation instructions.
+Add a comparison workflow that inspects the same targets under both supported
+profiles and makes divergent applied source sets obvious.
 
-## Selection guardrails
+1. Define a stable comparison model separate from presentation.
+2. Add a `compare` CLI surface with concise human output and versioned JSON.
+3. Include sources unique to each profile and sources common to both.
+4. Add an optional nonzero gate for divergence without changing informational
+   default exit behavior.
+5. Cover nested `AGENTS.md`, proprietary instruction formats, unmatched
+   path-specific files, multiple targets, and empty guidance.
+6. Dogfood the command on a disposable fixture, update docs/status/log, validate,
+   and leave a clean descriptive commit.
 
-- Prefer a frequent, specific problem over a broad platform idea.
-- The first useful workflow should run locally without an account or secret.
-- Avoid products whose value cannot be demonstrated with a small prototype.
-- Keep ProofRun frozen under `products/proofrun/`; borrow patterns only when
-  they naturally serve the new product.
+## Guardrails
 
+- Preserve the read-only, zero-runtime-dependency first experience.
+- Keep every modeled client behavior explicit and source-grounded.
+- Do not broaden frontmatter parsing in the same change unless comparison is
+  already complete and fully tested.
+- Keep ProofRun frozen unless its preserved MVP fails validation.

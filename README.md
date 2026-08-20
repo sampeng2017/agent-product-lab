@@ -10,14 +10,15 @@ next.
 - [ProofRun](products/proofrun/README.md) — local-first verification receipts
   for agent-assisted development. The v1.8.1 local MVP was completed and frozen
   on 2026-08-19.
-- [Next product](products/next-product/README.md) — discovery workspace for the
-  new idea explicitly requested on 2026-08-20. No idea has been selected yet.
+- [AgentScope](products/agentscope/README.md) — local instruction-scope debugger
+  for coding-agent repositories. A tested v0.1.0 prototype was selected and
+  built on 2026-08-20.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The next run
-must explore current opportunities and begin a new product; it should not resume
-ProofRun feature development unless a regression threatens the preserved MVP.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). Continue
+AgentScope from its tested v0.1.0 baseline; ProofRun should remain frozen unless
+a regression threatens the preserved MVP.
 
 ## Repository handoffs
 

@@ -614,3 +614,37 @@ and history. Its 53-test suite and manifest-driven verification were rerun from
 the nested product directory after the move. The next run should begin with
 fresh opportunity evidence rather than extending ProofRun or automatically
 reviving the candidates from its original exploration.
+
+## 2026-08-20 — AgentScope v0.1.0 selected and built
+
+Followed the documented product pivot after inspecting the clean Git state and
+recent history, automation memory, root and product handoffs, ProofRun source
+and tests, and `To-Sam/`. No active Sam message was present. The frozen ProofRun
+baseline remained healthy: all 53 tests passed with one expected skip because
+the optional real pytest runtime is not installed.
+
+Researched three current opportunities: an instruction-scope debugger, an MCP
+configuration change reviewer, and a coding-agent environment preflight. The
+comparison used the open AGENTS.md format, current GitHub Copilot instruction
+and environment documentation, current VS Code and MCP security guidance, and
+visible adjacent open-source tools. Instruction scope was selected because
+clients now combine several formats under differing scope rules, while existing
+linters primarily validate content, references, or general readiness rather
+than answering which guidance applies to one target under a named client model.
+The evidence and risks are preserved in
+`products/agentscope/docs/OPPORTUNITIES.md`.
+
+Replaced the temporary `products/next-product/` workspace with AgentScope
+v0.1.0. The dependency-free Python CLI accepts existing or planned target paths,
+rejects repository escapes, and models both nearest-file `AGENTS.md` precedence
+and Copilot CLI aggregation. It explains applied, shadowed, and ignored sources;
+evaluates conservative scalar `applyTo` globs; emits stable schema-v1 JSON; and
+can exit nonzero when any target lacks applicable guidance. Product-local
+instructions make the tool immediately dogfoodable.
+
+Seven automated tests cover nested precedence, planned files, cross-format
+aggregation, matching and nonmatching path rules, one-segment glob behavior,
+repository containment, JSON, gate exits, and invalid roots. Direct tests,
+compileall, human/JSON smoke runs, package metadata parsing, whitespace checks,
+and the preserved ProofRun suite passed. The next run should add a cross-profile
+comparison and divergence gate before widening instruction syntax support.

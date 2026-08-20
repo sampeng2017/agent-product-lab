@@ -1,9 +1,8 @@
 # Products
 
 - `proofrun/` — completed ProofRun v1.8.1 local MVP.
-- `next-product/` — temporary discovery workspace for the next autonomous run.
+- `agentscope/` — active AgentScope v0.1.0 instruction-scope debugger.
 
 Each active product should contain its own README, implementation, tests, and
 validation instructions. Portfolio-wide decisions remain at the repository
 root.
-
