@@ -1,5 +1,9 @@
 # Product exploration: ProofRun
 
+> ProofRun v1.8.1 was declared a completed local MVP and frozen on 2026-08-20.
+> This document preserves its original exploration, product shape, and deferred
+> productization roadmap.
+
 ## First-run opportunity scan
 
 The initial scan considered three products. The aim was not to chase a broad

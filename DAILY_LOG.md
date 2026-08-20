@@ -593,3 +593,24 @@ version 1.8.1 and the suite has 53 tests. The next local task, if hosted CI and
 native Cargo remain unavailable, should complete native pnpm/Yarn fixtures when
 the certificate path is repaired, or add a real Bun init-to-proof fixture using
 the installed runtime.
+
+## 2026-08-20 — Product lab pivot prepared
+
+Sam confirmed that ProofRun's local MVP can be treated as complete and explicitly
+requested a switch to a new idea. The repository was reorganized so this intent
+survives without conversational memory: all ProofRun-specific source, tests,
+packaging, documentation, and its example workflow now live under
+`products/proofrun/`.
+
+Root `README.md` and `STATUS.md` now describe a multi-product lab rather than an
+active ProofRun project. `NEXT_RUN.md` requires the next autonomous run to
+research at least three current opportunities, compare them, select one, rename
+the `products/next-product/` placeholder to a stable product slug, and build a
+tested runnable wedge in the same run. The optional ProofRun remote request was
+archived because distribution work is no longer the active objective.
+
+ProofRun v1.8.1 remains frozen and recoverable with its original documentation
+and history. Its 53-test suite and manifest-driven verification were rerun from
+the nested product directory after the move. The next run should begin with
+fresh opportunity evidence rather than extending ProofRun or automatically
+reviving the candidates from its original exploration.
