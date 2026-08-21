@@ -12,13 +12,20 @@ AgentScope requires Python 3.10 or newer and has no runtime dependencies.
 cd products/agentscope
 PYTHONPATH=src python3 -m agentscope --root ../.. products/agentscope/src/agentscope/core.py
 PYTHONPATH=src python3 -m agentscope --profile copilot-cli --root ../.. --json products/agentscope
+PYTHONPATH=src python3 -m agentscope compare --root ../.. products/agentscope/src/agentscope/core.py
 ```
 
 Use `--require-instructions` to turn missing applicable guidance into exit 1;
 invalid input exits 2. Without the gate, inspection is informational and exits
 0. Multiple target paths can be inspected in one invocation.
 
-## Profiles in v0.1.0
+Use `compare` to evaluate every target under both profiles. It reports common
+and profile-only applied source paths in human or schema-v1 JSON form. Comparison
+is informational by default; `--fail-on-divergence` exits 1 when any target has
+a source applied by only one profile. This makes the command suitable for a CI
+policy without treating shared guidance or unmatched path rules as divergence.
+
+## Profiles in v0.2.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -44,6 +51,18 @@ packages/api/src/app.py: 1 applied
   APPLIED  packages/api/AGENTS.md [agents-md] — nearest AGENTS.md for target
 ```
 
+```text
+AgentScope comparison in /repo
+
+packages/api/src/app.py: DIVERGENT
+  COMMON (1)
+    packages/api/AGENTS.md
+  agents-md ONLY (0)
+  copilot-cli ONLY (2)
+    AGENTS.md
+    packages/api/CLAUDE.md
+```
+
 ## Validate
 
 ```bash
@@ -65,7 +84,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, add a `compare` view that displays `agents-md` and `copilot-cli` results
-side by side and flags sources applied by only one profile. Then make glob
-matching conform to GitHub's documented semantics and add `@` reference
-resolution with cycle and repository-escape detection.
+Next, make path-specific glob matching conform to GitHub's documented semantics
+with a focused compatibility matrix. Then add `@` reference resolution with
+cycle and repository-escape detection.

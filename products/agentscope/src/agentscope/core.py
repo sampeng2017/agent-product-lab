@@ -40,6 +40,41 @@ class TargetInspection:
         }
 
 
+@dataclass(frozen=True)
+class ProfileSourceComparison:
+    profile: str
+    applied_sources: tuple[str, ...]
+    unique_sources: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "applied_source_count": len(self.applied_sources),
+            "applied_sources": list(self.applied_sources),
+            "unique_sources": list(self.unique_sources),
+        }
+
+
+@dataclass(frozen=True)
+class TargetComparison:
+    target: str
+    common_sources: tuple[str, ...]
+    profiles: tuple[ProfileSourceComparison, ...]
+
+    @property
+    def divergent(self) -> bool:
+        return any(profile.unique_sources for profile in self.profiles)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "target": self.target,
+            "divergent": self.divergent,
+            "common_sources": list(self.common_sources),
+            "profiles": {
+                profile.profile: profile.to_dict() for profile in self.profiles
+            },
+        }
+
+
 def inspect_targets(
     root: Path,
     targets: Sequence[str | Path],
@@ -59,6 +94,53 @@ def inspect_targets(
         _inspect_target(resolved_root, Path(target), profile=profile)
         for target in requested
     ]
+
+
+def compare_targets(
+    root: Path, targets: Sequence[str | Path]
+) -> list[TargetComparison]:
+    """Compare applied instruction paths across all supported profiles."""
+    inspected_by_profile = {
+        profile: inspect_targets(root, targets, profile=profile) for profile in PROFILES
+    }
+    comparisons: list[TargetComparison] = []
+
+    for index in range(len(inspected_by_profile[PROFILES[0]])):
+        inspections = {
+            profile: inspected_by_profile[profile][index] for profile in PROFILES
+        }
+        applied_by_profile = {
+            profile: tuple(
+                source.path
+                for source in inspection.sources
+                if source.state == "applied"
+            )
+            for profile, inspection in inspections.items()
+        }
+        common = set(applied_by_profile[PROFILES[0]])
+        for profile in PROFILES[1:]:
+            common.intersection_update(applied_by_profile[profile])
+
+        profile_results = tuple(
+            ProfileSourceComparison(
+                profile=profile,
+                applied_sources=applied_by_profile[profile],
+                unique_sources=tuple(
+                    path for path in applied_by_profile[profile] if path not in common
+                ),
+            )
+            for profile in PROFILES
+        )
+        comparisons.append(
+            TargetComparison(
+                target=inspections[PROFILES[0]].target,
+                common_sources=tuple(
+                    path for path in applied_by_profile[PROFILES[0]] if path in common
+                ),
+                profiles=profile_results,
+            )
+        )
+    return comparisons
 
 
 def _inspect_target(root: Path, target: Path, *, profile: str) -> TargetInspection:

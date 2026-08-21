@@ -11,13 +11,13 @@ next.
   for agent-assisted development. The v1.8.1 local MVP was completed and frozen
   on 2026-08-19.
 - [AgentScope](products/agentscope/README.md) — local instruction-scope debugger
-  for coding-agent repositories. A tested v0.1.0 prototype was selected and
-  built on 2026-08-20.
+  for coding-agent repositories. Version 0.2.0 compares named client profiles
+  and can gate automation on divergent applied guidance.
 
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). Continue
-AgentScope from its tested v0.1.0 baseline; ProofRun should remain frozen unless
+AgentScope from its tested v0.2.0 baseline; ProofRun should remain frozen unless
 a regression threatens the preserved MVP.
 
 ## Repository handoffs

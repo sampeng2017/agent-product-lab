@@ -8,7 +8,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from agentscope.cli import main
-from agentscope.core import inspect_targets
+from agentscope.core import compare_targets, inspect_targets
 
 
 class AgentScopeTests(unittest.TestCase):
@@ -136,6 +136,102 @@ class AgentScopeTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 2)
         self.assertIn("repository root is not a directory", errors.getvalue())
+
+    def test_compare_finds_common_and_profile_specific_nested_sources(self) -> None:
+        self.write("AGENTS.md")
+        self.write("packages/api/AGENTS.md")
+        self.write("packages/api/CLAUDE.md")
+        self.write("packages/api/app.py", "")
+
+        comparison = compare_targets(self.root, ["packages/api/app.py"])[0]
+
+        self.assertTrue(comparison.divergent)
+        self.assertEqual(comparison.common_sources, ("packages/api/AGENTS.md",))
+        by_profile = {profile.profile: profile for profile in comparison.profiles}
+        self.assertEqual(by_profile["agents-md"].unique_sources, ())
+        self.assertEqual(
+            by_profile["copilot-cli"].unique_sources,
+            ("AGENTS.md", "packages/api/CLAUDE.md"),
+        )
+
+    def test_compare_ignores_unmatched_path_rules_and_preserves_target_order(self) -> None:
+        self.write("AGENTS.md")
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "src/**/*.py"\n---\nUse Python.\n',
+        )
+
+        comparisons = compare_targets(self.root, ["docs/readme.md", "src/app.py"])
+
+        self.assertEqual(
+            [comparison.target for comparison in comparisons],
+            ["docs/readme.md", "src/app.py"],
+        )
+        self.assertFalse(comparisons[0].divergent)
+        self.assertTrue(comparisons[1].divergent)
+        python_profile = comparisons[1].profiles[1]
+        self.assertEqual(
+            python_profile.unique_sources,
+            (".github/instructions/python.instructions.md",),
+        )
+
+    def test_compare_empty_guidance_is_consistent(self) -> None:
+        comparison = compare_targets(self.root, ["planned/new.py"])[0]
+
+        self.assertFalse(comparison.divergent)
+        self.assertEqual(comparison.common_sources, ())
+        self.assertTrue(
+            all(not profile.applied_sources for profile in comparison.profiles)
+        )
+
+    def test_compare_cli_json_contract_and_divergence_gate(self) -> None:
+        self.write("CLAUDE.md")
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-divergence",
+                    "src/app.py",
+                ]
+            )
+
+        payload = json.loads(output.getvalue())
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["profiles"], ["agents-md", "copilot-cli"])
+        self.assertEqual(payload["divergent_target_count"], 1)
+        target = payload["targets"][0]
+        self.assertTrue(target["divergent"])
+        self.assertEqual(
+            target["profiles"]["copilot-cli"]["unique_sources"],
+            ["CLAUDE.md"],
+        )
+
+    def test_compare_cli_human_output_covers_divergent_and_empty_targets(self) -> None:
+        self.write("CLAUDE.md")
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                ["compare", "--root", str(self.root), "src/app.py"]
+            )
+        rendered = output.getvalue()
+
+        self.assertEqual(exit_code, 0)
+        self.assertIn("src/app.py: DIVERGENT", rendered)
+        self.assertIn("copilot-cli ONLY (1)", rendered)
+        self.assertIn("CLAUDE.md", rendered)
+
+        empty_root = self.root / "empty"
+        empty_root.mkdir()
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(["compare", "--root", str(empty_root)])
+        self.assertEqual(exit_code, 0)
+        self.assertIn("no applied instruction sources", output.getvalue())
 
 
 if __name__ == "__main__":

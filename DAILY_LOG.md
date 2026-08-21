@@ -648,3 +648,30 @@ repository containment, JSON, gate exits, and invalid roots. Direct tests,
 compileall, human/JSON smoke runs, package metadata parsing, whitespace checks,
 and the preserved ProofRun suite passed. The next run should add a cross-profile
 comparison and divergence gate before widening instruction syntax support.
+
+## 2026-08-20 — AgentScope cross-profile comparison
+
+Continued AgentScope after inspecting the automation memory, clean Git state and
+history, portfolio handoffs, active messages, product documentation, tests, and
+implementation. The existing seven-test baseline passed and no active message
+from Sam required a change in direction.
+
+AgentScope v0.2.0 adds a comparison model separate from presentation. For every
+requested target, it evaluates both supported profiles and preserves their
+ordered applied paths, the paths common to both, and the paths unique to each.
+Only effective applied-path differences count as divergence, so a discovered
+but unmatched Copilot path rule does not create a false policy failure.
+
+The new `agentscope compare TARGET...` surface renders concise human groups or a
+schema-v1 JSON document with aggregate divergence counts and per-profile source
+sets. Informational comparisons still exit 0; `--fail-on-divergence` exits 1
+when any target differs, while invalid repository input retains exit 2. Existing
+inspection syntax and its missing-guidance gate remain unchanged.
+
+Five new tests cover nested `AGENTS.md`, Copilot-only `CLAUDE.md`, matching and
+unmatched path rules, multiple targets, empty guidance, human output, JSON, and
+the gate contract. The full 12-test AgentScope suite, compilation, JSON parsing,
+human dogfooding, package metadata, whitespace checks, and the frozen ProofRun
+baseline passed. The next run should build a source-grounded compatibility
+matrix for scalar `applyTo` globs and align the matcher with documented GitHub
+semantics before adding broader frontmatter or `@` reference support.

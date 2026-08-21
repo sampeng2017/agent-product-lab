@@ -8,7 +8,7 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains the AgentScope v0.1.0 Python package, tests,
+- `products/agentscope/` contains the AgentScope v0.2.0 Python package, tests,
   opportunity evidence, product documentation, and contributor instructions.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
@@ -18,7 +18,8 @@ AgentScope currently models two explicit profiles. `agents-md` applies the
 closest ancestor `AGENTS.md` and explains shadowed files. `copilot-cli` combines
 repository-wide Copilot guidance, ancestor `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`,
 and matching path-specific instruction files. It emits human or versioned JSON
-output and can fail when a target has no applied guidance.
+output and can fail when a target has no applied guidance. Its comparison mode
+shows common and profile-only applied sources and can fail on divergence.
 
 ## Completed today
 
@@ -33,12 +34,16 @@ output and can fail when a target has no applied guidance.
   runnable zero-runtime-dependency v0.1.0 prototype with seven passing tests.
 - Added exact run instructions, known limits, product promise, success signal,
   and a source-linked opportunity record.
+- Implemented the planned cross-profile comparison as a separate immutable data
+  model plus human and schema-v1 JSON output.
+- Added a divergence gate and five tests covering nested/proprietary sources,
+  unmatched rules, multiple targets, empty guidance, and CLI contracts.
 
 ## Changes since the prior run
 
-The required discovery pivot is complete: the portfolio moved from an empty
-next-product slot to a named, runnable AgentScope product. ProofRun was inspected
-and validated but not modified. No Sam request is active.
+AgentScope advanced from a single-profile-at-a-time v0.1.0 prototype to a v0.2.0
+comparison workflow suitable for local inspection and CI policy. ProofRun was
+left frozen. No Sam request is active.
 
 ## Known issues
 
@@ -48,6 +53,8 @@ and validated but not modified. No Sam request is active.
   `excludeAgent`, and `@` references are not modeled.
 - Client behavior can evolve, so profile assumptions need source-linked tests
   and explicit versioning as support expands.
+- The current `applyTo` matcher is deliberately narrow and needs a documented
+  compatibility matrix before broader syntax support.
 - The repository has no root CI workflow; each product is validated from its own
   directory for now.
 
@@ -59,10 +66,11 @@ and validated but not modified. No Sam request is active.
 - Permit nonexistent in-repository targets so users can inspect planned files,
   while rejecting absolute or symlink-resolved repository escapes.
 - Prefer cross-profile divergence visibility before adding more syntax breadth.
+- Treat only differences in applied paths as divergence; ignored discovery
+  results remain useful in inspection mode but do not trip comparison policy.
 
 ## Recommended next step
 
-Implement an explicit cross-profile comparison that shows which instruction
-sources apply only under `agents-md` or only under `copilot-cli`, with stable
-human/JSON output and an optional divergence gate. Then dogfood it on a nested
-fixture that demonstrates a real mismatch.
+Align `applyTo` glob matching with GitHub's documented semantics using a focused
+compatibility matrix, retaining dependency-free operation and both existing
+JSON contracts. Then consider `@` reference resolution with cycle detection.

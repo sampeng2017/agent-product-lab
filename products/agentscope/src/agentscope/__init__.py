@@ -1,6 +1,6 @@
 """AgentScope instruction-scope inspection."""
 
-from .core import inspect_targets
+from .core import compare_targets, inspect_targets
 
-__all__ = ["inspect_targets"]
-__version__ = "0.1.0"
+__all__ = ["compare_targets", "inspect_targets"]
+__version__ = "0.2.0"
