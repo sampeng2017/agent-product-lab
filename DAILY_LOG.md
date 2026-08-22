@@ -675,3 +675,31 @@ human dogfooding, package metadata, whitespace checks, and the frozen ProofRun
 baseline passed. The next run should build a source-grounded compatibility
 matrix for scalar `applyTo` globs and align the matcher with documented GitHub
 semantics before adding broader frontmatter or `@` reference support.
+
+## 2026-08-21 — AgentScope dot-path glob compatibility
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, portfolio handoffs, active `To-Sam/` messages, product
+documentation, tests, and implementation. No Sam request was active, and the
+12-test AgentScope baseline passed before changes.
+
+GitHub's current Copilot CLI documentation now provides a concrete glob example
+set for root-only wildcards, recursive wildcards, anchored directories, nested
+segments, and comma-separated patterns. Those examples are captured in a new
+source-linked compatibility matrix and an executable table, along with explicit
+AgentScope boundaries for `?`, dot paths, `./`, and undocumented leading `/`.
+
+The matrix exposed a real normalization defect: `lstrip("./")` removed every
+leading dot or slash character rather than one optional `./` prefix. As a
+result, `.github/**/*.yml` could not match `.github/workflows/test.yml`, `.*`
+incorrectly matched ordinary root files, and `/src/*.py` silently behaved like
+`src/*.py`. Normalization now removes exactly one explicit `./`, preserving all
+other leading path characters.
+
+Added 26 table rows and an end-to-end comma-separated OR regression, taking the
+suite from 12 to 14 tests and AgentScope to v0.2.1. Both schema-v1 JSON surfaces,
+both policy gates, compilation, package metadata, and representative existing
+and planned targets passed. Frozen ProofRun also passed all 53 tests with one
+expected optional pytest-runtime skip; its 49-receipt chain remains audit-valid.
+The next run should explain supported Copilot CLI `@` references with cycle,
+depth, missing-file, and repository-escape diagnostics.

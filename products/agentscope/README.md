@@ -25,7 +25,7 @@ is informational by default; `--fail-on-divergence` exits 1 when any target has
 a source applied by only one profile. This makes the command suitable for a CI
 policy without treating shared guidance or unmatched path rules as divergence.
 
-## Profiles in v0.2.0
+## Profiles in v0.2.1
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -34,12 +34,15 @@ policy without treating shared guidance or unmatched path rules as divergence.
   `.github/instructions/**/*.instructions.md` and reports whether their
   `applyTo` value matches the target.
 
-The path-specific parser intentionally supports a conservative v0.1 subset:
+The path-specific parser intentionally supports a conservative subset:
 frontmatter must contain a one-line scalar `applyTo`, with multiple glob
 patterns separated by commas. Globs support `*`, `**`, and `?`, with `*`
-restricted to one path segment. It does not yet model user-level instruction
-directories, `@` includes, `excludeAgent`, YAML lists, or every client surface.
-These limits are reported here rather than hidden behind a universal claim.
+restricted to one path segment. Leading dots in repository-relative paths are
+preserved, so patterns such as `.github/**/*.yml` and `.*` behave as written.
+The source-linked [compatibility matrix](docs/GLOB_COMPATIBILITY.md) records the
+exact supported contract and its boundary. AgentScope does not yet model
+user-level instruction directories, `@` includes, `excludeAgent`, YAML lists,
+or every client surface.
 
 ## Example output
 
@@ -70,8 +73,9 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m compileall -q src tests
 ```
 
-See [`docs/OPPORTUNITIES.md`](docs/OPPORTUNITIES.md) for the current opportunity
-comparison and selection evidence.
+See [`docs/OPPORTUNITIES.md`](docs/OPPORTUNITIES.md) for the opportunity
+selection evidence and [`docs/GLOB_COMPATIBILITY.md`](docs/GLOB_COMPATIBILITY.md)
+for the executable `applyTo` contract.
 
 ## Product promise and success signal
 
@@ -84,6 +88,5 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, make path-specific glob matching conform to GitHub's documented semantics
-with a focused compatibility matrix. Then add `@` reference resolution with
-cycle and repository-escape detection.
+Next, add `@` reference resolution for the file types where Copilot CLI supports
+it, with cycle, depth, and repository-escape detection.

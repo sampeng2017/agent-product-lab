@@ -276,7 +276,9 @@ def _read_apply_to_patterns(path: Path) -> tuple[str, ...]:
 
 
 def _matches(target: str, pattern: str) -> bool:
-    normalized = pattern.replace("\\", "/").lstrip("./")
+    normalized = pattern.replace("\\", "/")
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
     expression = ""
     index = 0
     while index < len(normalized):

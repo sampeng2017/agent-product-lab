@@ -1,4 +1,4 @@
-# Next run: harden path-specific glob compatibility
+# Next run: explain supported instruction references
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun.
@@ -11,16 +11,18 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Make the `copilot-cli` profile's scalar `applyTo` matcher conform to GitHub's
-documented path semantics within the syntax subset AgentScope claims.
+Model Copilot CLI's documented `@` references in the instruction files where
+they are supported, while keeping scope inspection read-only and explainable.
 
-1. Capture a source-linked compatibility matrix for anchored paths, nested
-   segments, `*`, `**`, `?`, and comma-separated patterns.
-2. Add table-driven tests before changing matching behavior.
-3. Fix mismatches without adding a runtime dependency or broadening YAML parsing.
-4. Confirm inspection and comparison JSON schemas and both policy gates remain
-   stable.
-5. Dogfood matching and comparison on representative planned and existing paths.
+1. Capture the current source rules for relative imports, nested imports,
+   supported file types, and containment.
+2. Define how referenced files appear in human and JSON inspection results
+   before implementation; version schemas only if their shape changes.
+3. Resolve references recursively with cycle, depth, missing-file, and
+   repository-escape diagnostics.
+4. Do not expand references from `GEMINI.md` or `*.instructions.md`, matching the
+   documented Copilot CLI boundary.
+5. Preserve glob matching, comparison semantics, and both policy gates.
 6. Update docs/status/log, validate both products, and leave a clean descriptive
    commit.
 
@@ -28,6 +30,5 @@ documented path semantics within the syntax subset AgentScope claims.
 
 - Preserve the read-only, zero-runtime-dependency first experience.
 - Keep every modeled client behavior explicit and source-grounded.
-- Do not broaden frontmatter parsing to YAML lists or add `@` references in the
-  same change; keep the matcher change independently reviewable.
+- Keep scalar frontmatter and the v0.2.1 glob compatibility matrix unchanged.
 - Keep ProofRun frozen unless its preserved MVP fails validation.

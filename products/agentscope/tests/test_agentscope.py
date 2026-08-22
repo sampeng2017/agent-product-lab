@@ -8,7 +8,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from agentscope.cli import main
-from agentscope.core import compare_targets, inspect_targets
+from agentscope.core import _matches, compare_targets, inspect_targets
 
 
 class AgentScopeTests(unittest.TestCase):
@@ -104,6 +104,61 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(
             nested_by_name[".github/instructions/python.instructions.md"].state,
             "ignored",
+        )
+
+    def test_apply_to_glob_compatibility_matrix(self) -> None:
+        cases = (
+            # GitHub's documented Copilot CLI examples.
+            ("*", "root.py", True),
+            ("*", "src/root.py", False),
+            ("**", "root.py", True),
+            ("**", "src/root.py", True),
+            ("**/*", "root.py", True),
+            ("**/*", "src/root.py", True),
+            ("*.py", "root.py", True),
+            ("*.py", "src/root.py", False),
+            ("**/*.py", "root.py", True),
+            ("**/*.py", "src/root.py", True),
+            ("src/*.py", "src/root.py", True),
+            ("src/*.py", "src/nested/root.py", False),
+            ("src/**/*.py", "src/root.py", True),
+            ("src/**/*.py", "src/nested/root.py", True),
+            ("**/subdir/**/*.py", "subdir/root.py", True),
+            ("**/subdir/**/*.py", "parent/subdir/nested/root.py", True),
+            ("**/subdir/**/*.py", "root.py", False),
+            # Repository-relative anchoring and the claimed '?' subset.
+            ("src/*.py", "other/src/root.py", False),
+            ("**/src/*.py", "other/src/root.py", True),
+            ("src/file?.py", "src/file1.py", True),
+            ("src/file?.py", "src/file10.py", False),
+            # A leading dot is a path character, not a normalization marker.
+            (".github/**/*.yml", ".github/workflows/test.yml", True),
+            (".*", ".env", True),
+            (".*", "README.md", False),
+            # An explicit relative marker is harmless; a slash is not documented.
+            ("./src/*.py", "src/root.py", True),
+            ("/src/*.py", "src/root.py", False),
+        )
+
+        for pattern, target, expected in cases:
+            with self.subTest(pattern=pattern, target=target):
+                self.assertEqual(_matches(target, pattern), expected)
+
+    def test_apply_to_comma_separated_patterns_use_or_semantics(self) -> None:
+        self.write(
+            ".github/instructions/web.instructions.md",
+            '---\napplyTo: "src/**/*.ts, src/**/*.tsx"\n---\nUse TypeScript.\n',
+        )
+
+        inspections = inspect_targets(
+            self.root,
+            ["src/app.ts", "src/components/app.tsx", "src/app.js"],
+            profile="copilot-cli",
+        )
+
+        self.assertEqual(
+            [inspection.sources[0].state for inspection in inspections],
+            ["applied", "applied", "ignored"],
         )
 
     def test_target_cannot_escape_root(self) -> None:
