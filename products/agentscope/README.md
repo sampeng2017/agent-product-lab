@@ -25,24 +25,29 @@ is informational by default; `--fail-on-divergence` exits 1 when any target has
 a source applied by only one profile. This makes the command suitable for a CI
 policy without treating shared guidance or unmatched path rules as divergence.
 
-## Profiles in v0.2.1
+## Profiles in v0.3.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
 - `copilot-cli` combines repository-wide Copilot instructions plus ancestor
   `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files. It also discovers
   `.github/instructions/**/*.instructions.md` and reports whether their
-  `applyTo` value matches the target.
+  `applyTo` value matches the target. Supported `@` references are resolved
+  recursively and shown as applied sources or explicit diagnostics.
 
 The path-specific parser intentionally supports a conservative subset:
 frontmatter must contain a one-line scalar `applyTo`, with multiple glob
 patterns separated by commas. Globs support `*`, `**`, and `?`, with `*`
 restricted to one path segment. Leading dots in repository-relative paths are
 preserved, so patterns such as `.github/**/*.yml` and `.*` behave as written.
-The source-linked [compatibility matrix](docs/GLOB_COMPATIBILITY.md) records the
-exact supported contract and its boundary. AgentScope does not yet model
-user-level instruction directories, `@` includes, `excludeAgent`, YAML lists,
-or every client surface.
+The source-linked [glob compatibility matrix](docs/GLOB_COMPATIBILITY.md)
+records that contract. The separate [reference compatibility
+contract](docs/REFERENCE_COMPATIBILITY.md) defines relative recursive imports,
+the supported source files, a 10-edge safety limit, and diagnostics for cycles,
+missing files, absolute/home paths, and repository escapes. The human and
+schema-v1 JSON source lists use `copilot-reference` for imports and `invalid`
+for rejected edges. AgentScope does not yet model user-level instruction
+directories, `excludeAgent`, YAML lists, or every client surface.
 
 ## Example output
 
@@ -74,8 +79,10 @@ PYTHONPATH=src python3 -m compileall -q src tests
 ```
 
 See [`docs/OPPORTUNITIES.md`](docs/OPPORTUNITIES.md) for the opportunity
-selection evidence and [`docs/GLOB_COMPATIBILITY.md`](docs/GLOB_COMPATIBILITY.md)
-for the executable `applyTo` contract.
+selection evidence, [`docs/GLOB_COMPATIBILITY.md`](docs/GLOB_COMPATIBILITY.md)
+for the executable `applyTo` contract, and
+[`docs/REFERENCE_COMPATIBILITY.md`](docs/REFERENCE_COMPATIBILITY.md) for the
+source-grounded import boundary.
 
 ## Product promise and success signal
 
@@ -88,5 +95,5 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, add `@` reference resolution for the file types where Copilot CLI supports
-it, with cycle, depth, and repository-escape detection.
+Next, add an optional invalid-reference gate and aggregate diagnostic counts for
+CI consumers without changing the informational default.

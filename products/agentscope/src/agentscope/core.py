@@ -7,6 +7,7 @@ from typing import Iterable, Sequence
 
 
 PROFILES = ("agents-md", "copilot-cli")
+REFERENCE_DEPTH_LIMIT = 10
 
 
 @dataclass(frozen=True)
@@ -201,15 +202,20 @@ def _copilot_cli_sources(
     root: Path, ancestors: Sequence[Path], target: str
 ) -> list[InstructionSource]:
     sources: list[InstructionSource] = []
+    referenced: set[Path] = set()
     repository_instructions = root / ".github" / "copilot-instructions.md"
     if repository_instructions.is_file():
-        sources.append(
+        _append_copilot_source(
+            root,
+            repository_instructions,
             InstructionSource(
                 _relative(root, repository_instructions),
                 "copilot-repository",
                 "applied",
                 "repository-wide Copilot instructions",
-            )
+            ),
+            sources,
+            referenced,
         )
 
     for directory in ancestors:
@@ -220,14 +226,18 @@ def _copilot_cli_sources(
         ):
             path = directory / filename
             if path.is_file():
-                sources.append(
-                    InstructionSource(
-                        _relative(root, path),
-                        kind,
-                        "applied",
-                        "combined by Copilot CLI",
-                    )
+                source = InstructionSource(
+                    _relative(root, path),
+                    kind,
+                    "applied",
+                    "combined by Copilot CLI",
                 )
+                if filename == "GEMINI.md":
+                    sources.append(source)
+                else:
+                    _append_copilot_source(
+                        root, path, source, sources, referenced
+                    )
 
     modular_root = root / ".github" / "instructions"
     if modular_root.is_dir():
@@ -252,6 +262,125 @@ def _copilot_cli_sources(
                 )
             )
     return sources
+
+
+def _append_copilot_source(
+    root: Path,
+    path: Path,
+    source: InstructionSource,
+    sources: list[InstructionSource],
+    referenced: set[Path],
+) -> None:
+    resolved = path.resolve()
+    if resolved in referenced:
+        return
+    referenced.add(resolved)
+    sources.append(source)
+    _append_references(
+        root,
+        path,
+        sources,
+        referenced,
+        active=(resolved,),
+        depth=0,
+    )
+
+
+def _append_references(
+    root: Path,
+    source_path: Path,
+    sources: list[InstructionSource],
+    referenced: set[Path],
+    *,
+    active: tuple[Path, ...],
+    depth: int,
+) -> None:
+    try:
+        lines = source_path.read_text(encoding="utf-8").splitlines()
+    except (OSError, UnicodeError):
+        return
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped.startswith("@") or len(stripped) == 1:
+            continue
+        reference = stripped[1:].strip()
+        if not reference:
+            continue
+        parent = _relative(root, source_path)
+        diagnostic = _resolve_reference(root, source_path, reference)
+        if isinstance(diagnostic, str):
+            sources.append(
+                InstructionSource(
+                    reference,
+                    "copilot-reference",
+                    "invalid",
+                    f"{diagnostic} (referenced by {parent})",
+                )
+            )
+            continue
+
+        resolved = diagnostic
+        relative = _relative(root, resolved)
+        if resolved in active:
+            chain = " -> ".join(_relative(root, item) for item in (*active, resolved))
+            sources.append(
+                InstructionSource(
+                    relative,
+                    "copilot-reference",
+                    "invalid",
+                    f"reference cycle: {chain}",
+                )
+            )
+            continue
+        if depth >= REFERENCE_DEPTH_LIMIT:
+            sources.append(
+                InstructionSource(
+                    relative,
+                    "copilot-reference",
+                    "invalid",
+                    "reference depth exceeds AgentScope limit of "
+                    f"{REFERENCE_DEPTH_LIMIT} (referenced by {parent})",
+                )
+            )
+            continue
+        if resolved in referenced:
+            continue
+
+        referenced.add(resolved)
+        sources.append(
+            InstructionSource(
+                relative,
+                "copilot-reference",
+                "applied",
+                f"referenced by {parent}",
+            )
+        )
+        _append_references(
+            root,
+            resolved,
+            sources,
+            referenced,
+            active=(*active, resolved),
+            depth=depth + 1,
+        )
+
+
+def _resolve_reference(root: Path, source_path: Path, reference: str) -> Path | str:
+    requested = Path(reference)
+    if requested.is_absolute():
+        return "absolute reference is not loaded"
+    if reference == "~" or reference.startswith("~/"):
+        return "home-relative reference is not loaded"
+
+    resolved = (source_path.parent / requested).resolve(strict=False)
+    try:
+        resolved.relative_to(root)
+    except ValueError:
+        return "reference escapes repository root"
+    if not resolved.is_file():
+        return "referenced file is missing or not a regular file"
+    return resolved
 
 
 def _read_apply_to_patterns(path: Path) -> tuple[str, ...]:

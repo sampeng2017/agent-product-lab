@@ -8,7 +8,12 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 from agentscope.cli import main
-from agentscope.core import _matches, compare_targets, inspect_targets
+from agentscope.core import (
+    REFERENCE_DEPTH_LIMIT,
+    _matches,
+    compare_targets,
+    inspect_targets,
+)
 
 
 class AgentScopeTests(unittest.TestCase):
@@ -66,6 +71,126 @@ class AgentScopeTests(unittest.TestCase):
             ["copilot-repository", "agents-md", "claude-md", "gemini-md"],
         )
         self.assertTrue(all(source.state == "applied" for source in result.sources))
+
+    def test_copilot_references_expand_recursively_and_relative_to_each_file(self) -> None:
+        self.write("AGENTS.md", "@docs/root.md\n")
+        self.write("docs/root.md", "@nested/detail.md\n")
+        self.write("docs/nested/detail.md", "Detailed guidance.\n")
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+
+        self.assertEqual(
+            [(source.path, source.state) for source in result.sources],
+            [
+                ("AGENTS.md", "applied"),
+                ("docs/root.md", "applied"),
+                ("docs/nested/detail.md", "applied"),
+            ],
+        )
+        self.assertEqual(result.sources[1].kind, "copilot-reference")
+        self.assertEqual(result.sources[1].reason, "referenced by AGENTS.md")
+        self.assertEqual(result.applied_count, 3)
+
+        comparison = compare_targets(self.root, ["src/app.py"])[0]
+        copilot = comparison.profiles[1]
+        self.assertEqual(
+            copilot.unique_sources,
+            ("docs/root.md", "docs/nested/detail.md"),
+        )
+
+    def test_copilot_references_report_cycle_missing_and_escape_diagnostics(self) -> None:
+        self.write(
+            "CLAUDE.md",
+            "@docs/a.md\n@missing.md\n@../outside.md\n@/absolute.md\n@~/home.md\n",
+        )
+        self.write("docs/a.md", "@../CLAUDE.md\n")
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+        invalid = [source for source in result.sources if source.state == "invalid"]
+
+        self.assertEqual(len(invalid), 5)
+        self.assertIn("reference cycle", invalid[0].reason)
+        self.assertIn("missing", invalid[1].reason)
+        self.assertIn("escapes repository root", invalid[2].reason)
+        self.assertIn("absolute reference", invalid[3].reason)
+        self.assertIn("home-relative reference", invalid[4].reason)
+        self.assertEqual(result.applied_count, 2)
+
+    def test_reference_sources_keep_human_and_json_contracts(self) -> None:
+        self.write("AGENTS.md", "@guide.md\n@missing.md\n")
+        self.write("guide.md")
+
+        human = io.StringIO()
+        with redirect_stdout(human):
+            human_exit = main(
+                ["--profile", "copilot-cli", "--root", str(self.root), "src/app.py"]
+            )
+        self.assertEqual(human_exit, 0)
+        self.assertIn("APPLIED  guide.md [copilot-reference]", human.getvalue())
+        self.assertIn("INVALID  missing.md [copilot-reference]", human.getvalue())
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            json_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "src/app.py",
+                ]
+            )
+        payload = json.loads(output.getvalue())
+        self.assertEqual(json_exit, 0)
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["targets"][0]["applied_count"], 2)
+        self.assertEqual(payload["targets"][0]["sources"][-1]["state"], "invalid")
+
+    def test_copilot_references_stop_at_documented_source_boundaries(self) -> None:
+        self.write("GEMINI.md", "@hidden-gemini.md\n")
+        self.write("hidden-gemini.md")
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\n@hidden-path.md\n',
+        )
+        self.write("hidden-path.md")
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+
+        self.assertEqual(
+            [source.path for source in result.sources],
+            ["GEMINI.md", ".github/instructions/python.instructions.md"],
+        )
+
+    def test_copilot_reference_cannot_escape_through_symlink(self) -> None:
+        self.write("AGENTS.md", "@outside-link.md\n")
+        with tempfile.TemporaryDirectory() as outside:
+            outside_file = Path(outside) / "outside.md"
+            outside_file.write_text("not repository guidance\n", encoding="utf-8")
+            (self.root / "outside-link.md").symlink_to(outside_file)
+
+            result = inspect_targets(
+                self.root, ["src/app.py"], profile="copilot-cli"
+            )[0]
+
+        self.assertEqual(result.sources[-1].state, "invalid")
+        self.assertIn("escapes repository root", result.sources[-1].reason)
+
+    def test_copilot_reference_depth_has_explicit_diagnostic(self) -> None:
+        self.write("AGENTS.md", "@refs/0.md\n")
+        for index in range(REFERENCE_DEPTH_LIMIT + 1):
+            self.write(f"refs/{index}.md", f"@{index + 1}.md\n")
+        self.write(f"refs/{REFERENCE_DEPTH_LIMIT + 1}.md")
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+
+        self.assertEqual(result.sources[-1].state, "invalid")
+        self.assertIn("reference depth exceeds", result.sources[-1].reason)
+        self.assertNotIn(
+            f"refs/{REFERENCE_DEPTH_LIMIT}.md",
+            [source.path for source in result.sources if source.state == "applied"],
+        )
 
     def test_copilot_path_instructions_report_matches_and_misses(self) -> None:
         self.write(

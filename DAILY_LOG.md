@@ -703,3 +703,41 @@ and planned targets passed. Frozen ProofRun also passed all 53 tests with one
 expected optional pytest-runtime skip; its 49-receipt chain remains audit-valid.
 The next run should explain supported Copilot CLI `@` references with cycle,
 depth, missing-file, and repository-escape diagnostics.
+
+## 2026-08-22 — AgentScope recursive instruction references
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, portfolio and product handoffs, active `To-Sam/` messages,
+documentation, implementation, and tests. No Sam request was active, and the
+14-test v0.2.1 baseline passed before changes.
+
+GitHub's current Copilot CLI documentation confirms that repository Copilot
+instructions, `AGENTS.md`, and `CLAUDE.md` can import relative `@path` files
+recursively. Referenced files must remain in the repository; absolute and
+home-relative paths are not loaded; and imports are not expanded from
+`GEMINI.md` or modular `*.instructions.md`. GitHub documents cycle, size, and
+depth guards without publishing their numeric limits.
+
+AgentScope v0.3.0 now resolves supported imports immediately and depth-first,
+relative to each containing file. Valid files appear as applied
+`copilot-reference` sources, are deduplicated after their first appearance, and
+participate in cross-profile divergence. Missing or non-file targets, cycles,
+absolute and `~/` paths, repository and symlink escapes, and excess depth appear
+as ordered `invalid` diagnostics and do not increase applied counts. AgentScope
+uses an explicit 10-edge safety limit, documented as its own conservative
+boundary rather than Copilot CLI's unpublished value. `GEMINI.md` and path-
+specific sources preserve their existing no-expansion behavior.
+
+The existing source object accommodates the new kind and state, so both human
+output and inspection schema v1 remain structurally stable. Added a source-
+linked reference contract and six end-to-end tests for recursive relative
+imports, comparison, cycles, missing and disallowed paths, source boundaries,
+depth, symlink escapes, and human/JSON rendering. The AgentScope suite grew from
+14 to 20 tests;
+tests, compilation, version/TOML checks, JSON parsing, human comparison, and
+diff checks passed. Frozen ProofRun passed all 53 tests with one expected
+optional pytest skip, and its receipt chain is audit-valid.
+
+The next run should add an opt-in invalid-reference policy gate and aggregate
+diagnostic counts for human and JSON consumers while keeping ordinary
+inspection informational.

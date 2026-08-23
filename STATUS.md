@@ -8,7 +8,7 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains the AgentScope v0.2.1 Python package, tests,
+- `products/agentscope/` contains the AgentScope v0.3.0 Python package, tests,
   opportunity evidence, product documentation, and contributor instructions.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
@@ -18,34 +18,44 @@ AgentScope currently models two explicit profiles. `agents-md` applies the
 closest ancestor `AGENTS.md` and explains shadowed files. `copilot-cli` combines
 repository-wide Copilot guidance, ancestor `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`,
 and matching path-specific instruction files. It emits human or versioned JSON
-output and can fail when a target has no applied guidance. Its comparison mode
-shows common and profile-only applied sources and can fail on divergence.
+output and can fail when a target has no applied guidance. Supported Copilot
+`@` imports are resolved recursively, while invalid edges are explained without
+being counted as applied. Comparison shows common and profile-only applied
+sources and can fail on divergence.
 
-## Completed today (2026-08-21)
+## Completed today (2026-08-22)
 
-- Captured GitHub's current Copilot CLI glob examples in a source-linked,
-  executable compatibility matrix covering root anchoring, nested paths, `*`,
-  `**`, `?`, dot paths, explicit relative prefixes, and comma-separated rules.
-- Fixed leading-dot corruption in matcher normalization: `.github/**` and `.*`
-  now preserve their dots, while undocumented leading `/` patterns are no
-  longer silently changed into repository-relative matches.
-- Added table-driven matcher coverage plus an end-to-end scalar frontmatter OR
-  test, expanding AgentScope from 12 to 14 tests without a runtime dependency.
-- Preserved both schema-v1 JSON surfaces and policy-gate behavior.
+- Added depth-first `@path` resolution for repository Copilot instructions,
+  `AGENTS.md`, `CLAUDE.md`, and recursively referenced files.
+- Added explicit diagnostics for cycles, missing/non-file targets, absolute and
+  home-relative paths, repository and symlink escapes, and a documented 10-edge
+  AgentScope safety limit.
+- Preserved GitHub's boundary: imports are not expanded from `GEMINI.md` or
+  `*.instructions.md`; repeated referenced files are reported once.
+- Kept schema-v1 JSON structurally stable by using the existing source object
+  with the new `copilot-reference` kind and `invalid` state. Applied imports
+  participate in profile comparison; invalid edges do not.
+- Added a source-linked reference contract and six end-to-end tests, expanding
+  AgentScope from 14 to 20 tests with no runtime dependency.
 - Revalidated frozen ProofRun: 53 tests passed with one expected optional
-  pytest-runtime skip, and all 49 receipts remain audit-valid.
+  pytest-runtime skip, and its receipt chain remains audit-valid.
 
 ## Changes since the prior run
 
-AgentScope advanced from v0.2.0 to v0.2.1 with a documented matching contract
-and correct dot-path behavior. ProofRun remains frozen. No Sam request is active.
+AgentScope advanced from v0.2.1 to v0.3.0 with explainable recursive Copilot
+instruction imports. ProofRun remains frozen. No Sam request is active.
 
 ## Known issues
 
 - AgentScope's Copilot model currently covers repository inputs, not user-level
   instruction directories.
 - Path-specific frontmatter accepts a scalar `applyTo` only; YAML lists,
-  `excludeAgent`, and `@` references are not modeled.
+  `excludeAgent`, and syntax errors are not modeled.
+- Reference diagnostics are informational; there is no dedicated nonzero gate
+  or aggregate diagnostic count yet.
+- Copilot documents depth and size guards without publishing numeric limits.
+  AgentScope's 10-edge cap is explicitly its own conservative contract, and it
+  does not model the client's unpublished size guard.
 - Client behavior can evolve, so profile assumptions need source-linked tests
   and explicit versioning as support expands.
 - `?` retains conventional one-character behavior, but GitHub's Copilot CLI
@@ -64,8 +74,11 @@ and correct dot-path behavior. ProofRun remains frozen. No Sam request is active
   change and avoid silently normalizing undocumented absolute-style patterns.
 - Treat only differences in applied paths as divergence; ignored discovery
   results remain useful in inspection mode but do not trip comparison policy.
+- Resolve imports relative to their containing file, keep them repository-bound,
+  expand only from documented file types, and represent invalid edges without
+  changing the schema-v1 source-object shape.
 
 ## Recommended next step
 
-Add `@` reference resolution for supported Copilot CLI instruction files, with
-cycle, depth, and repository-escape detection plus explicit diagnostic output.
+Add `--fail-on-invalid-references` plus aggregate invalid-reference counts in
+human and JSON inspection output, retaining informational behavior by default.

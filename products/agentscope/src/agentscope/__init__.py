@@ -3,4 +3,4 @@
 from .core import compare_targets, inspect_targets
 
 __all__ = ["compare_targets", "inspect_targets"]
-__version__ = "0.2.1"
+__version__ = "0.3.0"
