@@ -16,8 +16,17 @@ PYTHONPATH=src python3 -m agentscope compare --root ../.. products/agentscope/sr
 ```
 
 Use `--require-instructions` to turn missing applicable guidance into exit 1;
-invalid input exits 2. Without the gate, inspection is informational and exits
-0. Multiple target paths can be inspected in one invocation.
+use `--fail-on-invalid-references` to reject cycles, missing imports, and other
+invalid Copilot reference edges. Either gate exits 1 when its condition occurs
+for any target, and they compose with OR semantics. Invalid repository input
+exits 2. Without either gate, inspection is informational and exits 0. Multiple
+target paths can be inspected in one invocation.
+
+Inspection JSON uses schema v2. It adds `invalid_reference_count` at the document
+level and on every target; the aggregate is the sum of per-target diagnostic
+occurrences. Consumers migrating from schema v1 can keep reading the unchanged
+`sources` objects while accepting the two additive counts. Comparison output
+remains schema v1.
 
 Use `compare` to evaluate every target under both profiles. It reports common
 and profile-only applied source paths in human or schema-v1 JSON form. Comparison
@@ -25,7 +34,7 @@ is informational by default; `--fail-on-divergence` exits 1 when any target has
 a source applied by only one profile. This makes the command suitable for a CI
 policy without treating shared guidance or unmatched path rules as divergence.
 
-## Profiles in v0.3.0
+## Profiles in v0.4.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -44,17 +53,19 @@ The source-linked [glob compatibility matrix](docs/GLOB_COMPATIBILITY.md)
 records that contract. The separate [reference compatibility
 contract](docs/REFERENCE_COMPATIBILITY.md) defines relative recursive imports,
 the supported source files, a 10-edge safety limit, and diagnostics for cycles,
-missing files, absolute/home paths, and repository escapes. The human and
-schema-v1 JSON source lists use `copilot-reference` for imports and `invalid`
-for rejected edges. AgentScope does not yet model user-level instruction
+missing files, absolute/home paths, and repository escapes. The human and JSON
+source lists use `copilot-reference` for imports and `invalid` for rejected
+edges. Aggregate counts make those diagnostics visible to CI without hiding
+their ordered reasons. AgentScope does not yet model user-level instruction
 directories, `excludeAgent`, YAML lists, or every client surface.
 
 ## Example output
 
 ```text
 AgentScope: agents-md profile in /repo
+Targets: 1; applied sources: 1; invalid references: 0
 
-packages/api/src/app.py: 1 applied
+packages/api/src/app.py: 1 applied, 0 invalid references
   SHADOWED AGENTS.md [agents-md] — shadowed by packages/api/AGENTS.md
   APPLIED  packages/api/AGENTS.md [agents-md] — nearest AGENTS.md for target
 ```
@@ -95,5 +106,5 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, add an optional invalid-reference gate and aggregate diagnostic counts for
-CI consumers without changing the informational default.
+Next, classify malformed path-instruction frontmatter as explicit diagnostics
+instead of folding every unsupported form into an ignored source.

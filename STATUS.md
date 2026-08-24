@@ -8,51 +8,46 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains the AgentScope v0.3.0 Python package, tests,
+- `products/agentscope/` contains the AgentScope v0.4.0 Python package, tests,
   opportunity evidence, product documentation, and contributor instructions.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
 - Root documentation coordinates portfolio decisions and run handoffs.
 
-AgentScope currently models two explicit profiles. `agents-md` applies the
-closest ancestor `AGENTS.md` and explains shadowed files. `copilot-cli` combines
+AgentScope models two explicit profiles. `agents-md` applies the closest
+ancestor `AGENTS.md` and explains shadowed files. `copilot-cli` combines
 repository-wide Copilot guidance, ancestor `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`,
-and matching path-specific instruction files. It emits human or versioned JSON
-output and can fail when a target has no applied guidance. Supported Copilot
-`@` imports are resolved recursively, while invalid edges are explained without
-being counted as applied. Comparison shows common and profile-only applied
-sources and can fail on divergence.
+matching path-specific files, and supported recursive `@` imports. Inspection
+emits human or schema-v2 JSON with aggregate and per-target invalid-reference
+counts. Missing guidance and invalid imports can be gated independently or
+together. Comparison remains schema v1 and can gate applied-source divergence.
 
-## Completed today (2026-08-22)
+## Completed today (2026-08-23)
 
-- Added depth-first `@path` resolution for repository Copilot instructions,
-  `AGENTS.md`, `CLAUDE.md`, and recursively referenced files.
-- Added explicit diagnostics for cycles, missing/non-file targets, absolute and
-  home-relative paths, repository and symlink escapes, and a documented 10-edge
-  AgentScope safety limit.
-- Preserved GitHub's boundary: imports are not expanded from `GEMINI.md` or
-  `*.instructions.md`; repeated referenced files are reported once.
-- Kept schema-v1 JSON structurally stable by using the existing source object
-  with the new `copilot-reference` kind and `invalid` state. Applied imports
-  participate in profile comparison; invalid edges do not.
-- Added a source-linked reference contract and six end-to-end tests, expanding
-  AgentScope from 14 to 20 tests with no runtime dependency.
-- Revalidated frozen ProofRun: 53 tests passed with one expected optional
-  pytest-runtime skip, and its receipt chain remains audit-valid.
+- Added the opt-in `--fail-on-invalid-references` inspection policy while
+  retaining an informational exit 0 default and exit 2 for invalid input.
+- Defined OR composition with `--require-instructions` across multiple targets;
+  the complete human or JSON report is emitted before a policy exit 1.
+- Added aggregate and per-target invalid-reference counts to human output and
+  inspection JSON while preserving every ordered source-level reason.
+- Versioned inspection JSON to schema v2 and documented its additive migration;
+  the unchanged comparison JSON contract remains schema v1.
+- Bumped AgentScope to 0.4.0 and expanded its suite from 20 to 21 tests.
+- Revalidated frozen ProofRun without changing its product scope.
 
 ## Changes since the prior run
 
-AgentScope advanced from v0.2.1 to v0.3.0 with explainable recursive Copilot
-instruction imports. ProofRun remains frozen. No Sam request is active.
+AgentScope advanced from v0.3.0's informational reference diagnostics to a
+CI-enforceable v0.4.0 policy and countable output contract. ProofRun remains
+frozen. No Sam request is active.
 
 ## Known issues
 
 - AgentScope's Copilot model currently covers repository inputs, not user-level
   instruction directories.
-- Path-specific frontmatter accepts a scalar `applyTo` only; YAML lists,
-  `excludeAgent`, and syntax errors are not modeled.
-- Reference diagnostics are informational; there is no dedicated nonzero gate
-  or aggregate diagnostic count yet.
+- Path-specific frontmatter accepts a scalar `applyTo` only; malformed or
+  unsupported forms are reported as ignored rather than as precise diagnostics.
+- `excludeAgent`, YAML lists, and syntax errors are not modeled.
 - Copilot documents depth and size guards without publishing numeric limits.
   AgentScope's 10-edge cap is explicitly its own conservative contract, and it
   does not model the client's unpublished size guard.
@@ -72,13 +67,17 @@ instruction imports. ProofRun remains frozen. No Sam request is active.
   while rejecting absolute or symlink-resolved repository escapes.
 - Keep the executable compatibility matrix synchronized with every matcher
   change and avoid silently normalizing undocumented absolute-style patterns.
-- Treat only differences in applied paths as divergence; ignored discovery
-  results remain useful in inspection mode but do not trip comparison policy.
+- Treat only differences in applied paths as divergence; ignored and invalid
+  discovery results remain useful but do not trip comparison policy.
 - Resolve imports relative to their containing file, keep them repository-bound,
-  expand only from documented file types, and represent invalid edges without
-  changing the schema-v1 source-object shape.
+  expand only from documented file types, and retain ordered invalid reasons.
+- Count invalid references per target, compose inspection gates with OR
+  semantics, and reserve exit 2 for invalid repository arguments.
+- Version inspection JSON to v2 for additive diagnostic counts while keeping
+  the structurally unchanged comparison schema at v1.
 
 ## Recommended next step
 
-Add `--fail-on-invalid-references` plus aggregate invalid-reference counts in
-human and JSON inspection output, retaining informational behavior by default.
+Turn malformed path-instruction frontmatter into explicit diagnostics, cover
+unsupported YAML lists and delimiters, and evaluate a broader invalid-source
+gate without weakening the existing reference-specific contract.

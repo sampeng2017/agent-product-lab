@@ -126,6 +126,8 @@ class AgentScopeTests(unittest.TestCase):
                 ["--profile", "copilot-cli", "--root", str(self.root), "src/app.py"]
             )
         self.assertEqual(human_exit, 0)
+        self.assertIn("invalid references: 1", human.getvalue())
+        self.assertIn("src/app.py: 2 applied, 1 invalid reference", human.getvalue())
         self.assertIn("APPLIED  guide.md [copilot-reference]", human.getvalue())
         self.assertIn("INVALID  missing.md [copilot-reference]", human.getvalue())
 
@@ -143,9 +145,72 @@ class AgentScopeTests(unittest.TestCase):
             )
         payload = json.loads(output.getvalue())
         self.assertEqual(json_exit, 0)
-        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["invalid_reference_count"], 1)
         self.assertEqual(payload["targets"][0]["applied_count"], 2)
+        self.assertEqual(payload["targets"][0]["invalid_reference_count"], 1)
         self.assertEqual(payload["targets"][0]["sources"][-1]["state"], "invalid")
+
+    def test_invalid_reference_gate_composes_with_missing_guidance(self) -> None:
+        self.write("services/AGENTS.md", "@missing.md\n")
+        targets = ["services/app.py", "services/worker.py", "docs/readme.md"]
+
+        with redirect_stdout(io.StringIO()):
+            informational_exit = main(
+                ["--profile", "copilot-cli", "--root", str(self.root), *targets]
+            )
+            invalid_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-references",
+                    *targets,
+                ]
+            )
+            missing_exit = main(
+                ["--root", str(self.root), "--require-instructions", *targets]
+            )
+            agents_md_invalid_exit = main(
+                [
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-references",
+                    "services/app.py",
+                ]
+            )
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            combined_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--require-instructions",
+                    "--fail-on-invalid-references",
+                    *targets,
+                ]
+            )
+
+        payload = json.loads(output.getvalue())
+        self.assertEqual(informational_exit, 0)
+        self.assertEqual(invalid_exit, 1)
+        self.assertEqual(missing_exit, 1)
+        self.assertEqual(agents_md_invalid_exit, 0)
+        self.assertEqual(combined_exit, 1)
+        self.assertEqual(payload["invalid_reference_count"], 2)
+        self.assertEqual(
+            [target["invalid_reference_count"] for target in payload["targets"]],
+            [1, 1, 0],
+        )
+        self.assertEqual(
+            [target["applied_count"] for target in payload["targets"]],
+            [1, 1, 0],
+        )
 
     def test_copilot_references_stop_at_documented_source_boundaries(self) -> None:
         self.write("GEMINI.md", "@hidden-gemini.md\n")
@@ -305,14 +370,21 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["invalid_reference_count"], 0)
         self.assertEqual(payload["profile"], "agents-md")
         self.assertEqual(payload["targets"][0]["applied_count"], 0)
 
     def test_cli_reports_invalid_root_as_usage_failure(self) -> None:
         errors = io.StringIO()
         with redirect_stderr(errors):
-            exit_code = main(["--root", str(self.root / "missing")])
+            exit_code = main(
+                [
+                    "--root",
+                    str(self.root / "missing"),
+                    "--fail-on-invalid-references",
+                ]
+            )
 
         self.assertEqual(exit_code, 2)
         self.assertIn("repository root is not a directory", errors.getvalue())

@@ -741,3 +741,39 @@ optional pytest skip, and its receipt chain is audit-valid.
 The next run should add an opt-in invalid-reference policy gate and aggregate
 diagnostic counts for human and JSON consumers while keeping ordinary
 inspection informational.
+
+## 2026-08-23 — AgentScope enforceable reference diagnostics
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, portfolio handoffs, active `To-Sam/` messages, all active
+product documentation, implementation, and tests. No Sam request was active,
+and the 20-test v0.3.0 baseline passed before changes.
+
+AgentScope v0.4.0 adds `--fail-on-invalid-references` as an opt-in inspection
+policy. Ordinary inspection remains informational and exits 0; the gate exits 1
+after rendering the full report when any selected target has a rejected
+Copilot reference. Invalid repository input retains exit 2. The new policy and
+`--require-instructions` compose with OR semantics across multiple targets, so
+either missing guidance or an invalid reference is enforceable without losing
+the other targets' diagnostics. The reference gate is inert for profiles that
+do not model reference diagnostics.
+
+Human inspection now summarizes applied-source and invalid-reference totals and
+adds the diagnostic count to every target heading while retaining the ordered
+source-level reasons. Inspection JSON moved from schema v1 to v2 with additive
+`invalid_reference_count` fields at the document and target levels. Aggregate
+counts sum per-target occurrences, which preserves the impact of a shared bad
+source across several requested targets. The existing source objects are
+unchanged, and comparison JSON remains schema v1 because its shape did not
+change.
+
+The AgentScope suite grew from 20 to 21 tests with coverage for the default,
+both gates independently and together, multi-target aggregation, profile
+boundaries, human/JSON output, and invalid-input precedence. Tests, compilation,
+CLI help/version, package metadata, schema parsing, dogfooding, and whitespace
+checks passed. Frozen ProofRun passed all 53 tests with one expected optional
+pytest-runtime skip; its 52-receipt chain remains audit-valid.
+
+The next run should distinguish malformed or unsupported path-instruction
+frontmatter from a valid nonmatching rule, then evaluate a broader invalid-source
+policy without silently widening the reference-specific gate.

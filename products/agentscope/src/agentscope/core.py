@@ -33,10 +33,19 @@ class TargetInspection:
     def applied_count(self) -> int:
         return sum(source.state == "applied" for source in self.sources)
 
+    @property
+    def invalid_reference_count(self) -> int:
+        return sum(
+            1
+            for source in self.sources
+            if source.kind == "copilot-reference" and source.state == "invalid"
+        )
+
     def to_dict(self) -> dict[str, object]:
         return {
             "target": self.target,
             "applied_count": self.applied_count,
+            "invalid_reference_count": self.invalid_reference_count,
             "sources": [source.to_dict() for source in self.sources],
         }
 

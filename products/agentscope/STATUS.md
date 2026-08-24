@@ -2,37 +2,35 @@
 
 ## Product shape
 
-AgentScope v0.3.0 is a zero-runtime-dependency Python CLI for explaining the
+AgentScope v0.4.0 is a zero-runtime-dependency Python CLI for explaining the
 instruction files that apply to a repository target. Its `agents-md` profile
 models nearest-file precedence; its `copilot-cli` profile combines supported
 ancestor formats, evaluates one-line `applyTo` globs, and recursively resolves
 supported `@` imports. Human and versioned JSON output are available, with
-optional missing-instructions and profile-divergence exit gates.
+optional missing-instructions, invalid-reference, and profile-divergence gates.
 
-## Completed on 2026-08-22
+## Completed on 2026-08-23
 
-- Expanded references immediately and recursively from `.github/copilot-
-  instructions.md`, `AGENTS.md`, `CLAUDE.md`, and referenced files, resolving
-  each relative path from its containing file.
-- Reported valid imports as applied `copilot-reference` sources and cycles,
-  missing/non-file targets, absolute/home paths, repository escapes, and excess
-  depth as ordered `invalid` diagnostics.
-- Preserved the documented no-expansion boundary for `GEMINI.md` and modular
-  `*.instructions.md` sources, plus existing glob and policy behavior.
-- Documented the stable human/schema-v1 representation and AgentScope's
-  conservative 10-edge cap separately from Copilot's unpublished numeric guard.
-- Expanded the suite from 14 to 20 tests while retaining zero dependencies;
-  compilation, human/JSON smoke checks, comparison, metadata, and diff checks
-  pass.
+- Added `--fail-on-invalid-references` to inspection. It exits 1 after rendering
+  the full report when any target has a rejected Copilot reference edge, while
+  informational inspection still exits 0 and invalid repository input exits 2.
+- Defined gate composition explicitly: invalid-reference and
+  `--require-instructions` policies use OR semantics across every target.
+- Added aggregate and per-target invalid-reference counts to human output and
+  inspection JSON without hiding the ordered source-level diagnostic reasons.
+- Versioned inspection JSON from schema v1 to v2 for the two additive
+  `invalid_reference_count` fields. Comparison JSON remains schema v1.
+- Expanded the suite from 20 to 21 tests with default, independent, combined,
+  multi-target, JSON, human, and invalid-input exit-contract coverage.
 
 ## Known issues
 
 - The Copilot profile models repository inputs only, not user-level instruction
   directories or configuration.
-- Path-specific frontmatter supports only a scalar, comma-separated `applyTo`.
+- Path-specific frontmatter supports only a scalar, comma-separated `applyTo`;
+  unsupported or malformed forms are currently collapsed into an ignored
+  source instead of receiving a precise diagnostic.
 - `excludeAgent`, YAML lists, and syntax errors are not analyzed.
-- Invalid reference edges do not yet have a dedicated CI gate or aggregate
-  diagnostic count.
 - AgentScope does not reproduce Copilot CLI's unpublished import size guard;
   the local 10-edge depth limit is intentionally product-defined.
 - GitHub's Copilot CLI documentation does not explicitly demonstrate `?`;
@@ -45,16 +43,21 @@ optional missing-instructions and profile-divergence exit gates.
 - Use named client profiles rather than a misleading universal scope model.
 - Allow nonexistent targets so maintainers can inspect guidance before creating
   a planned file; resolved paths still cannot escape the selected repository.
-- Define divergence strictly from applied source paths: ignored sources do not
-  differ in effective guidance and therefore do not fail the gate.
+- Define divergence strictly from applied source paths: ignored and invalid
+  sources do not differ in effective guidance and do not fail comparison.
 - Treat a leading dot as a real path character; remove only one exact `./`
   relative marker and do not reinterpret a leading `/`.
-- Preserve JSON schema v1 for references by using the existing source shape;
-  compare applied imports as effective guidance and ignore invalid edges.
 - Resolve symlinks before enforcing repository containment, and do not expand
   imports from source formats GitHub excludes.
+- Count invalid-reference diagnostic occurrences per target, because one shared
+  source can affect several requested targets and each assessment is actionable.
+- Keep policy opt-in and orthogonal: either requested inspection gate can fail
+  the command, while usage failures keep their distinct exit 2 contract.
+- Version only inspection JSON for the additive diagnostic counts; keep the
+  unchanged comparison document on schema v1.
 
 ## Recommended next step
 
-Add an optional invalid-reference exit gate and aggregate diagnostic counts for
-human and JSON inspection, leaving informational inspection as the default.
+Classify malformed path-instruction frontmatter as explicit diagnostics,
+including unsupported list values and malformed delimiters, then decide whether
+to generalize the invalid-reference policy into a broader invalid-source gate.

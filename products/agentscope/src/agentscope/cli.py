@@ -41,6 +41,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit 1 when any target has no applied instructions",
     )
+    parser.add_argument(
+        "--fail-on-invalid-references",
+        action="store_true",
+        help="exit 1 when any target has an invalid reference in its profile",
+    )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
@@ -83,7 +88,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         _print_human(args.root, args.profile, inspected)
 
-    if args.require_instructions and any(item.applied_count == 0 for item in inspected):
+    missing_required = args.require_instructions and any(
+        item.applied_count == 0 for item in inspected
+    )
+    invalid_references = args.fail_on_invalid_references and any(
+        item.invalid_reference_count > 0 for item in inspected
+    )
+    if missing_required or invalid_references:
         return 1
     return 0
 
@@ -110,12 +121,14 @@ def _json_result(
     root: Path, profile: str, inspected: Sequence[TargetInspection]
 ) -> dict[str, object]:
     applied = sum(item.applied_count for item in inspected)
+    invalid_references = sum(item.invalid_reference_count for item in inspected)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "profile": profile,
         "root": str(root.resolve()),
         "target_count": len(inspected),
         "applied_source_count": applied,
+        "invalid_reference_count": invalid_references,
         "targets": [item.to_dict() for item in inspected],
     }
 
@@ -123,9 +136,23 @@ def _json_result(
 def _print_human(
     root: Path, profile: str, inspected: Sequence[TargetInspection]
 ) -> None:
+    applied = sum(item.applied_count for item in inspected)
+    invalid_references = sum(item.invalid_reference_count for item in inspected)
     print(f"AgentScope: {profile} profile in {root.resolve()}")
+    print(
+        f"Targets: {len(inspected)}; applied sources: {applied}; "
+        f"invalid references: {invalid_references}"
+    )
     for item in inspected:
-        print(f"\n{item.target}: {item.applied_count} applied")
+        reference_label = (
+            "invalid reference"
+            if item.invalid_reference_count == 1
+            else "invalid references"
+        )
+        print(
+            f"\n{item.target}: {item.applied_count} applied, "
+            f"{item.invalid_reference_count} {reference_label}"
+        )
         if not item.sources:
             print("  no instruction files discovered")
             continue

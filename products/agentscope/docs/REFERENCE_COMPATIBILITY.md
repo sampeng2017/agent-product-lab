@@ -1,7 +1,7 @@
 # `@` reference compatibility
 
 This document records the `@path` import contract modeled by AgentScope's
-`copilot-cli` profile as of 2026-08-22.
+`copilot-cli` profile as of 2026-08-23.
 
 The primary source is GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions).
@@ -36,15 +36,24 @@ limits.
   use an in-repository symlink to load a file outside the selected root.
 
 Human output renders referenced files and diagnostics in the same ordered
-source list as directly discovered instructions. Schema-v1 JSON retains its
-existing shape: consumers see the new `copilot-reference` kind and `invalid`
-state through the existing `sources` objects. Profile comparison continues to
+source list as directly discovered instructions, with aggregate and per-target
+invalid-reference counts. Inspection schema-v2 JSON exposes the same counts as
+`invalid_reference_count`; the document-level value sums the diagnostic
+occurrences reported for each target. The existing `sources` object shape is
+unchanged from schema v1. Profile comparison remains schema v1 and continues to
 compare only applied paths, so valid imported content participates in
 divergence while invalid edges do not.
+
+Inspection is still informational by default. With
+`--fail-on-invalid-references`, any target containing at least one invalid
+reference makes the command exit 1. This gate and `--require-instructions` use
+OR semantics across all targets: either policy failure returns 1 after the full
+report is emitted. Invalid repository arguments retain exit 2.
 
 ## Deliberate boundary
 
 AgentScope does not read or inline file contents into its output, enforce
 GitHub's unpublished size guard, expand user-level instructions, or accept
-absolute imports. Reference diagnostics are informational in v0.3.0; the
-existing missing-guidance and divergence gates keep their prior contracts.
+absolute imports. The invalid-reference gate applies only to inspection;
+comparison keeps its existing informational diagnostic treatment and separate
+divergence policy.
