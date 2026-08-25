@@ -40,8 +40,9 @@ character other than `/`. Treat that row as a documented AgentScope contract,
 not a claim that GitHub guarantees it across every Copilot surface.
 
 AgentScope intentionally does not model character classes, brace expansion,
-negation, YAML lists, or `excludeAgent`. Scalar frontmatter may contain multiple
-comma-separated patterns. A leading `./` is accepted as a harmless explicit
-relative marker, while a leading `/` is left literal rather than silently
-rewritten into a repository-relative match.
-
+negation, YAML list matching, or `excludeAgent`. Scalar frontmatter may contain
+multiple comma-separated patterns. Unsupported frontmatter forms are explicit
+diagnostics defined in the separate [frontmatter compatibility
+contract](FRONTMATTER_COMPATIBILITY.md). A leading `./` is accepted as a
+harmless explicit relative marker, while a leading `/` is left literal rather
+than silently rewritten into a repository-relative match.

@@ -777,3 +777,44 @@ pytest-runtime skip; its 52-receipt chain remains audit-valid.
 The next run should distinguish malformed or unsupported path-instruction
 frontmatter from a valid nonmatching rule, then evaluate a broader invalid-source
 policy without silently widening the reference-specific gate.
+
+## 2026-08-24 — AgentScope path-instruction diagnostics
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, portfolio handoffs, active `To-Sam/` messages, every active
+product document, implementation, and test. No Sam request was active, and the
+21-test v0.4.0 baseline passed before changes. Frozen ProofRun remained outside
+the active implementation scope.
+
+GitHub's current Copilot CLI documentation requires a frontmatter block at the
+start of each `*.instructions.md` file, demonstrates `applyTo` as a one-line glob
+scalar, and separates multiple patterns with commas. It documents
+`excludeAgent` as an optional sibling key but does not publish list, mapping, or
+multiline `applyTo` forms. AgentScope now implements that narrow contract
+directly without adding a YAML runtime dependency.
+
+AgentScope v0.5.0 distinguishes invalid configuration from a valid scope miss.
+Missing opening or closing delimiters, missing or duplicate keys, empty values,
+block and inline lists, mappings, multiline values, missing colons, unmatched
+quotes, and empty comma items produce precise ordered `invalid` path sources.
+Valid scalar globs retain all v0.2.1 matching behavior; a valid nonmatch remains
+`ignored`. The source object shape and recursive-reference behavior are
+unchanged.
+
+Inspection JSON moved from schema v2 to v3 with additive aggregate and
+per-target `invalid_source_count` values. The existing
+`invalid_reference_count` remains its narrower subset. A new opt-in
+`--fail-on-invalid-sources` gate enforces the superset while the existing
+reference gate keeps its exact behavior; all inspection gates compose with OR
+semantics, render before failing, remain informational by default, and preserve
+exit 2 for invalid repository input. Comparison remains schema v1 and compares
+applied paths only.
+
+Added a source-linked frontmatter compatibility contract and two test methods,
+bringing the suite from 21 to 23 tests. Validation covered Python 3.14 and
+warning-strict Python 3.11 suites, compilation, human and both JSON surfaces,
+policy exits, a Python 3.11 wheel build/install smoke, package metadata,
+whitespace checks, and the frozen ProofRun test and evidence baseline. The next
+run should align remaining repository-local Copilot discovery with current
+documentation, beginning with `.claude/CLAUDE.md`, before considering user-level
+instruction inputs.

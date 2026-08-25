@@ -25,6 +25,12 @@ class InstructionSource:
 
 
 @dataclass(frozen=True)
+class _ApplyToFrontmatter:
+    patterns: tuple[str, ...] = ()
+    error: str | None = None
+
+
+@dataclass(frozen=True)
 class TargetInspection:
     target: str
     sources: tuple[InstructionSource, ...]
@@ -41,11 +47,16 @@ class TargetInspection:
             if source.kind == "copilot-reference" and source.state == "invalid"
         )
 
+    @property
+    def invalid_source_count(self) -> int:
+        return sum(source.state == "invalid" for source in self.sources)
+
     def to_dict(self) -> dict[str, object]:
         return {
             "target": self.target,
             "applied_count": self.applied_count,
             "invalid_reference_count": self.invalid_reference_count,
+            "invalid_source_count": self.invalid_source_count,
             "sources": [source.to_dict() for source in self.sources],
         }
 
@@ -251,10 +262,11 @@ def _copilot_cli_sources(
     modular_root = root / ".github" / "instructions"
     if modular_root.is_dir():
         for path in sorted(modular_root.rglob("*.instructions.md")):
-            patterns = _read_apply_to_patterns(path)
-            if not patterns:
-                state = "ignored"
-                reason = "missing supported applyTo frontmatter"
+            frontmatter = _read_apply_to_frontmatter(path)
+            patterns = frontmatter.patterns
+            if frontmatter.error:
+                state = "invalid"
+                reason = frontmatter.error
             elif any(_matches(target, pattern) for pattern in patterns):
                 state = "applied"
                 reason = f"applyTo matches {target}"
@@ -392,25 +404,78 @@ def _resolve_reference(root: Path, source_path: Path, reference: str) -> Path | 
     return resolved
 
 
-def _read_apply_to_patterns(path: Path) -> tuple[str, ...]:
+def _read_apply_to_frontmatter(path: Path) -> _ApplyToFrontmatter:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except (OSError, UnicodeError):
-        return ()
+        return _ApplyToFrontmatter(error="instruction file is not readable UTF-8")
     if not lines or lines[0].strip() != "---":
-        return ()
+        return _ApplyToFrontmatter(error="frontmatter must start with ---")
 
-    for line in lines[1:]:
+    closing_index = next(
+        (
+            index
+            for index, line in enumerate(lines[1:], start=1)
+            if line.strip() == "---"
+        ),
+        None,
+    )
+    if closing_index is None:
+        return _ApplyToFrontmatter(error="frontmatter closing delimiter is missing")
+
+    frontmatter = lines[1:closing_index]
+    declarations: list[tuple[int, str]] = []
+    malformed_declaration = False
+    for index, line in enumerate(frontmatter):
         stripped = line.strip()
-        if stripped == "---":
-            break
-        if not stripped.startswith("applyTo:"):
-            continue
-        value = stripped.partition(":")[2].strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
-            value = value[1:-1]
-        return tuple(part.strip() for part in value.split(",") if part.strip())
-    return ()
+        match = re.fullmatch(r"applyTo\s*:(.*)", stripped)
+        if match:
+            declarations.append((index, match.group(1).strip()))
+        elif re.match(r"applyTo(?:\s|$)", stripped):
+            malformed_declaration = True
+
+    if malformed_declaration:
+        return _ApplyToFrontmatter(error="applyTo declaration is missing a colon")
+    if not declarations:
+        return _ApplyToFrontmatter(error="frontmatter is missing applyTo")
+    if len(declarations) > 1:
+        return _ApplyToFrontmatter(error="frontmatter contains duplicate applyTo keys")
+
+    declaration_index, value = declarations[0]
+    if not value:
+        following = next(
+            (
+                line.strip()
+                for line in frontmatter[declaration_index + 1 :]
+                if line.strip()
+            ),
+            "",
+        )
+        if following.startswith("-"):
+            return _ApplyToFrontmatter(error="applyTo list values are not supported")
+        return _ApplyToFrontmatter(error="applyTo scalar is empty")
+    if value.startswith("[") or value.startswith("-"):
+        return _ApplyToFrontmatter(error="applyTo list values are not supported")
+    if value.startswith("{"):
+        return _ApplyToFrontmatter(error="applyTo mapping values are not supported")
+    if value in ("|", ">"):
+        return _ApplyToFrontmatter(error="multiline applyTo values are not supported")
+
+    if value[0] in "\"'":
+        if len(value) < 2 or value[-1] != value[0]:
+            return _ApplyToFrontmatter(
+                error="applyTo has an unterminated quoted scalar"
+            )
+        value = value[1:-1]
+    elif value[-1] in "\"'":
+        return _ApplyToFrontmatter(error="applyTo has an unmatched closing quote")
+
+    if not value:
+        return _ApplyToFrontmatter(error="applyTo scalar is empty")
+    parts = tuple(part.strip() for part in value.split(","))
+    if any(not part for part in parts):
+        return _ApplyToFrontmatter(error="applyTo contains an empty glob pattern")
+    return _ApplyToFrontmatter(patterns=parts)
 
 
 def _matches(target: str, pattern: str) -> bool:

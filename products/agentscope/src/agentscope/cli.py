@@ -46,6 +46,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit 1 when any target has an invalid reference in its profile",
     )
+    parser.add_argument(
+        "--fail-on-invalid-sources",
+        action="store_true",
+        help="exit 1 when any target has an invalid instruction source",
+    )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
@@ -94,7 +99,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     invalid_references = args.fail_on_invalid_references and any(
         item.invalid_reference_count > 0 for item in inspected
     )
-    if missing_required or invalid_references:
+    invalid_sources = args.fail_on_invalid_sources and any(
+        item.invalid_source_count > 0 for item in inspected
+    )
+    if missing_required or invalid_references or invalid_sources:
         return 1
     return 0
 
@@ -122,13 +130,15 @@ def _json_result(
 ) -> dict[str, object]:
     applied = sum(item.applied_count for item in inspected)
     invalid_references = sum(item.invalid_reference_count for item in inspected)
+    invalid_sources = sum(item.invalid_source_count for item in inspected)
     return {
-        "schema_version": 2,
+        "schema_version": 3,
         "profile": profile,
         "root": str(root.resolve()),
         "target_count": len(inspected),
         "applied_source_count": applied,
         "invalid_reference_count": invalid_references,
+        "invalid_source_count": invalid_sources,
         "targets": [item.to_dict() for item in inspected],
     }
 
@@ -138,10 +148,11 @@ def _print_human(
 ) -> None:
     applied = sum(item.applied_count for item in inspected)
     invalid_references = sum(item.invalid_reference_count for item in inspected)
+    invalid_sources = sum(item.invalid_source_count for item in inspected)
     print(f"AgentScope: {profile} profile in {root.resolve()}")
     print(
         f"Targets: {len(inspected)}; applied sources: {applied}; "
-        f"invalid references: {invalid_references}"
+        f"invalid sources: {invalid_sources}; invalid references: {invalid_references}"
     )
     for item in inspected:
         reference_label = (
@@ -151,6 +162,7 @@ def _print_human(
         )
         print(
             f"\n{item.target}: {item.applied_count} applied, "
+            f"{item.invalid_source_count} invalid, "
             f"{item.invalid_reference_count} {reference_label}"
         )
         if not item.sources:

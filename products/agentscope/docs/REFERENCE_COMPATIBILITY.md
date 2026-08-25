@@ -37,18 +37,20 @@ limits.
 
 Human output renders referenced files and diagnostics in the same ordered
 source list as directly discovered instructions, with aggregate and per-target
-invalid-reference counts. Inspection schema-v2 JSON exposes the same counts as
-`invalid_reference_count`; the document-level value sums the diagnostic
-occurrences reported for each target. The existing `sources` object shape is
-unchanged from schema v1. Profile comparison remains schema v1 and continues to
-compare only applied paths, so valid imported content participates in
-divergence while invalid edges do not.
+invalid-reference counts. Inspection schema-v3 JSON exposes the same counts as
+`invalid_reference_count`, alongside the broader `invalid_source_count`; the
+document-level values sum diagnostic occurrences reported for each target. The
+existing `sources` object shape is unchanged from schema v1. Profile comparison
+remains schema v1 and continues to compare only applied paths, so valid imported
+content participates in divergence while invalid edges do not.
 
 Inspection is still informational by default. With
 `--fail-on-invalid-references`, any target containing at least one invalid
 reference makes the command exit 1. This gate and `--require-instructions` use
 OR semantics across all targets: either policy failure returns 1 after the full
-report is emitted. Invalid repository arguments retain exit 2.
+report is emitted. The newer `--fail-on-invalid-sources` is broader and also
+rejects malformed path instructions, but does not change the reference gate's
+contract. Invalid repository arguments retain exit 2.
 
 ## Deliberate boundary
 

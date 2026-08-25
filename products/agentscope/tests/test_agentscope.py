@@ -126,8 +126,12 @@ class AgentScopeTests(unittest.TestCase):
                 ["--profile", "copilot-cli", "--root", str(self.root), "src/app.py"]
             )
         self.assertEqual(human_exit, 0)
+        self.assertIn("invalid sources: 1", human.getvalue())
         self.assertIn("invalid references: 1", human.getvalue())
-        self.assertIn("src/app.py: 2 applied, 1 invalid reference", human.getvalue())
+        self.assertIn(
+            "src/app.py: 2 applied, 1 invalid, 1 invalid reference",
+            human.getvalue(),
+        )
         self.assertIn("APPLIED  guide.md [copilot-reference]", human.getvalue())
         self.assertIn("INVALID  missing.md [copilot-reference]", human.getvalue())
 
@@ -145,10 +149,12 @@ class AgentScopeTests(unittest.TestCase):
             )
         payload = json.loads(output.getvalue())
         self.assertEqual(json_exit, 0)
-        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["schema_version"], 3)
         self.assertEqual(payload["invalid_reference_count"], 1)
+        self.assertEqual(payload["invalid_source_count"], 1)
         self.assertEqual(payload["targets"][0]["applied_count"], 2)
         self.assertEqual(payload["targets"][0]["invalid_reference_count"], 1)
+        self.assertEqual(payload["targets"][0]["invalid_source_count"], 1)
         self.assertEqual(payload["targets"][0]["sources"][-1]["state"], "invalid")
 
     def test_invalid_reference_gate_composes_with_missing_guidance(self) -> None:
@@ -180,6 +186,16 @@ class AgentScopeTests(unittest.TestCase):
                     "services/app.py",
                 ]
             )
+            broader_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
 
         output = io.StringIO()
         with redirect_stdout(output):
@@ -201,8 +217,10 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(invalid_exit, 1)
         self.assertEqual(missing_exit, 1)
         self.assertEqual(agents_md_invalid_exit, 0)
+        self.assertEqual(broader_exit, 1)
         self.assertEqual(combined_exit, 1)
         self.assertEqual(payload["invalid_reference_count"], 2)
+        self.assertEqual(payload["invalid_source_count"], 2)
         self.assertEqual(
             [target["invalid_reference_count"] for target in payload["targets"]],
             [1, 1, 0],
@@ -282,8 +300,12 @@ class AgentScopeTests(unittest.TestCase):
             by_name[".github/instructions/docs.instructions.md"].state,
             "ignored",
         )
+        self.assertEqual(
+            by_name[".github/instructions/broken.instructions.md"].state,
+            "invalid",
+        )
         self.assertIn(
-            "missing supported applyTo",
+            "frontmatter must start",
             by_name[".github/instructions/broken.instructions.md"].reason,
         )
 
@@ -351,6 +373,91 @@ class AgentScopeTests(unittest.TestCase):
             ["applied", "applied", "ignored"],
         )
 
+    def test_path_frontmatter_diagnostics_are_precise_and_ordered(self) -> None:
+        cases = {
+            "block-list": '---\napplyTo:\n  - "**/*.py"\n---\n',
+            "duplicate": '---\napplyTo: "**/*.py"\napplyTo: "src/**"\n---\n',
+            "empty": '---\napplyTo: ""\n---\n',
+            "empty-pattern": '---\napplyTo: "**/*.py, "\n---\n',
+            "inline-list": '---\napplyTo: ["**/*.py"]\n---\n',
+            "malformed-key": '---\napplyTo "**/*.py"\n---\n',
+            "mapping": '---\napplyTo: {glob: "**/*.py"}\n---\n',
+            "missing-close": '---\napplyTo: "**/*.py"\n',
+            "missing-key": '---\ndescription: Python files\n---\n',
+            "missing-open": 'applyTo: "**/*.py"\n---\n',
+            "multiline": '---\napplyTo: |\n  **/*.py\n---\n',
+            "unmatched-close": '---\napplyTo: **/*.py"\n---\n',
+            "unclosed-quote": '---\napplyTo: "**/*.py\n---\n',
+        }
+        for name, content in cases.items():
+            self.write(f".github/instructions/{name}.instructions.md", content)
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+
+        self.assertEqual(result.applied_count, 0)
+        self.assertEqual(result.invalid_reference_count, 0)
+        self.assertEqual(result.invalid_source_count, len(cases))
+        self.assertEqual(
+            [source.path for source in result.sources],
+            sorted(source.path for source in result.sources),
+        )
+        reasons = {
+            Path(source.path).stem.split(".")[0]: source.reason
+            for source in result.sources
+        }
+        self.assertIn("list values", reasons["block-list"])
+        self.assertIn("duplicate", reasons["duplicate"])
+        self.assertIn("scalar is empty", reasons["empty"])
+        self.assertIn("empty glob", reasons["empty-pattern"])
+        self.assertIn("list values", reasons["inline-list"])
+        self.assertIn("missing a colon", reasons["malformed-key"])
+        self.assertIn("mapping values", reasons["mapping"])
+        self.assertIn("closing delimiter", reasons["missing-close"])
+        self.assertIn("missing applyTo", reasons["missing-key"])
+        self.assertIn("must start", reasons["missing-open"])
+        self.assertIn("multiline", reasons["multiline"])
+        self.assertIn("unmatched closing", reasons["unmatched-close"])
+        self.assertIn("unterminated", reasons["unclosed-quote"])
+
+    def test_invalid_source_gate_is_broader_than_reference_gate(self) -> None:
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**/*.py"]\n---\n',
+        )
+
+        with redirect_stdout(io.StringIO()):
+            reference_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-references",
+                    "src/app.py",
+                ]
+            )
+        output = io.StringIO()
+        with redirect_stdout(output):
+            source_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-invalid-sources",
+                    "src/app.py",
+                ]
+            )
+
+        payload = json.loads(output.getvalue())
+        self.assertEqual(reference_exit, 0)
+        self.assertEqual(source_exit, 1)
+        self.assertEqual(payload["schema_version"], 3)
+        self.assertEqual(payload["invalid_source_count"], 1)
+        self.assertEqual(payload["invalid_reference_count"], 0)
+        self.assertEqual(payload["targets"][0]["sources"][0]["state"], "invalid")
+
     def test_target_cannot_escape_root(self) -> None:
         with self.assertRaisesRegex(ValueError, "escapes repository root"):
             inspect_targets(self.root, ["../outside.py"])
@@ -370,8 +477,9 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["schema_version"], 3)
         self.assertEqual(payload["invalid_reference_count"], 0)
+        self.assertEqual(payload["invalid_source_count"], 0)
         self.assertEqual(payload["profile"], "agents-md")
         self.assertEqual(payload["targets"][0]["applied_count"], 0)
 
