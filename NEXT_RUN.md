@@ -1,4 +1,4 @@
-# Next run: complete Copilot repository discovery
+# Next run: model the Copilot session directory
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun.
@@ -11,20 +11,23 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Close the highest-value repository-scoped discovery gaps against GitHub's
-current Copilot CLI documentation.
+Close the remaining ambiguity between AgentScope's target-based discovery and
+GitHub's documented live-session discovery.
 
-1. Recheck the cited official discovery rules and define the exact standard
-   locations and traversal order AgentScope will model.
-2. Add `.claude/CLAUDE.md` and any other clearly documented repository-local
-   locations missing from the current profile.
-3. Specify ordering and deduplication when equivalent files are reachable by
-   more than one discovery route.
-4. Preserve recursive-reference boundaries, path-frontmatter diagnostics, and
-   all existing policy exits.
-5. Keep user-level locations out of scope unless a repository-independent input
-   can be modeled safely and explicitly in the same timebox.
-6. Update docs/status/log, validate both products, and leave a clean descriptive
+1. Recheck the cited official standard-location and modular-location rules.
+2. Add an explicit repository-contained session-directory input (for example,
+   `--cwd`) without changing the process working directory or reading external
+   state implicitly.
+3. Model repository root, session directory, intermediate directories, and
+   target-nested directories separately; exclude modular instruction trees from
+   intermediate-only locations as GitHub documents.
+4. Preserve v0.6.0 root-to-target behavior when the session directory is the
+   repository root, including first-resolved-source deduplication.
+5. Cover divergent session/target branches, planned targets, containment,
+   ordering, JSON stability, and comparison behavior.
+6. Keep user-level and environment-configured directories out of scope unless
+   they can be modeled explicitly and safely in the remaining timebox.
+7. Update docs/status/log, validate both products, and leave a clean descriptive
    commit.
 
 ## Guardrails

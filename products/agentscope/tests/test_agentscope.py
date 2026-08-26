@@ -72,6 +72,87 @@ class AgentScopeTests(unittest.TestCase):
         )
         self.assertTrue(all(source.state == "applied" for source in result.sources))
 
+    def test_copilot_cli_discovers_target_ancestor_standard_locations(self) -> None:
+        self.write(".github/copilot-instructions.md")
+        self.write(".claude/CLAUDE.md")
+        self.write("packages/.github/copilot-instructions.md")
+        self.write("packages/AGENTS.md")
+        self.write("packages/api/.claude/CLAUDE.md")
+        self.write(
+            ".github/instructions/root.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\n',
+        )
+        self.write(
+            "packages/.github/instructions/package.instructions.md",
+            '---\napplyTo: "packages/**/*.py"\n---\n',
+        )
+        self.write(
+            "packages/api/.github/instructions/api.instructions.md",
+            '---\napplyTo: "packages/api/**/*.py"\n---\n',
+        )
+        self.write("packages/api/app.py", "")
+
+        result = inspect_targets(
+            self.root, ["packages/api/app.py"], profile="copilot-cli"
+        )[0]
+
+        self.assertEqual(
+            [source.path for source in result.sources],
+            [
+                ".github/copilot-instructions.md",
+                ".claude/CLAUDE.md",
+                "packages/.github/copilot-instructions.md",
+                "packages/AGENTS.md",
+                "packages/api/.claude/CLAUDE.md",
+                ".github/instructions/root.instructions.md",
+                "packages/.github/instructions/package.instructions.md",
+                "packages/api/.github/instructions/api.instructions.md",
+            ],
+        )
+        self.assertTrue(all(source.state == "applied" for source in result.sources))
+        self.assertTrue(
+            all(
+                "standard location" in source.reason
+                for source in result.sources[:5]
+            )
+        )
+
+    def test_copilot_cli_deduplicates_first_resolved_source_discovery(self) -> None:
+        self.write(
+            ".github/copilot-instructions.md",
+            "@../CLAUDE.md\n@../GEMINI.md\n@instructions/python.instructions.md\n",
+        )
+        self.write("CLAUDE.md")
+        self.write("GEMINI.md")
+        (self.root / ".claude").mkdir()
+        (self.root / ".claude" / "CLAUDE.md").symlink_to("../CLAUDE.md")
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\n',
+        )
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+
+        self.assertEqual(
+            [source.path for source in result.sources],
+            [
+                ".github/copilot-instructions.md",
+                "CLAUDE.md",
+                "GEMINI.md",
+                ".github/instructions/python.instructions.md",
+            ],
+        )
+        self.assertEqual(
+            [source.kind for source in result.sources],
+            [
+                "copilot-repository",
+                "copilot-reference",
+                "copilot-reference",
+                "copilot-reference",
+            ],
+        )
+        self.assertEqual(result.applied_count, 4)
+
     def test_copilot_references_expand_recursively_and_relative_to_each_file(self) -> None:
         self.write("AGENTS.md", "@docs/root.md\n")
         self.write("docs/root.md", "@nested/detail.md\n")

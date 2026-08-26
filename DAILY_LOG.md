@@ -818,3 +818,41 @@ whitespace checks, and the frozen ProofRun test and evidence baseline. The next
 run should align remaining repository-local Copilot discovery with current
 documentation, beginning with `.claude/CLAUDE.md`, before considering user-level
 instruction inputs.
+
+## 2026-08-25 — AgentScope nested repository discovery
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, portfolio handoffs, active `To-Sam/` messages, every active
+product document, implementation, and test. No Sam request was active, and the
+23-test v0.5.0 baseline passed before changes. Frozen ProofRun remained outside
+the active implementation scope.
+
+GitHub's current Copilot CLI documentation defines repository and agent
+instruction discovery across standard locations, explicitly includes
+`.claude/CLAUDE.md`, says applicable sources are combined without a general
+precedence order, and removes duplicate copies. AgentScope now models the
+selected repository root and each target ancestor as its explicit
+standard-location chain. It discovers nested `.github/copilot-instructions.md`,
+`AGENTS.md`, `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, and ancestor
+`.github/instructions/**/*.instructions.md` trees.
+
+AgentScope v0.6.0 presents standard files root-to-target in a documented
+per-directory order, expands supported imports immediately in depth-first
+order, and then presents modular sources root-to-target with stable path
+sorting. This is an AgentScope reporting contract rather than a precedence
+claim. Direct and referenced routes now share a resolved-path discovery set, so
+the first route wins and later standard, modular, or equivalent symlink routes
+do not duplicate a source.
+
+Added a source-linked discovery compatibility contract and two end-to-end test
+methods for nested locations, ordering, matching, and cross-route
+deduplication. The suite grew from 23 to 25 tests while inspection schema v3,
+comparison schema v1, source objects, reference/frontmatter diagnostics, and
+policy exits remained unchanged. Python 3.14 and warning-strict Python 3.11
+tests, compilation, human/JSON dogfooding, metadata parsing, and diff checks
+passed, as did an isolated Python 3.11 wheel build/install and console smoke.
+Frozen ProofRun passed all 53 tests with one expected optional pytest skip, and
+its 54-receipt chain remained audit-valid. The next run should add an explicit
+repository-contained Copilot session-directory input and distinguish
+intermediate-only directories from target-nested locations for modular
+discovery.

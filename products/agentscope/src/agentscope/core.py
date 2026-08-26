@@ -222,46 +222,45 @@ def _copilot_cli_sources(
     root: Path, ancestors: Sequence[Path], target: str
 ) -> list[InstructionSource]:
     sources: list[InstructionSource] = []
-    referenced: set[Path] = set()
-    repository_instructions = root / ".github" / "copilot-instructions.md"
-    if repository_instructions.is_file():
-        _append_copilot_source(
-            root,
-            repository_instructions,
-            InstructionSource(
-                _relative(root, repository_instructions),
-                "copilot-repository",
-                "applied",
-                "repository-wide Copilot instructions",
-            ),
-            sources,
-            referenced,
-        )
-
+    discovered: set[Path] = set()
     for directory in ancestors:
-        for filename, kind in (
-            ("AGENTS.md", "agents-md"),
-            ("CLAUDE.md", "claude-md"),
-            ("GEMINI.md", "gemini-md"),
-        ):
-            path = directory / filename
-            if path.is_file():
-                source = InstructionSource(
+        standard_sources = (
+            (
+                directory / ".github" / "copilot-instructions.md",
+                "copilot-repository",
+                True,
+            ),
+            (directory / "AGENTS.md", "agents-md", True),
+            (directory / "CLAUDE.md", "claude-md", True),
+            (directory / ".claude" / "CLAUDE.md", "claude-md", True),
+            (directory / "GEMINI.md", "gemini-md", False),
+        )
+        for path, kind, expands_references in standard_sources:
+            if not path.is_file():
+                continue
+            _append_copilot_source(
+                root,
+                path,
+                InstructionSource(
                     _relative(root, path),
                     kind,
                     "applied",
-                    "combined by Copilot CLI",
-                )
-                if filename == "GEMINI.md":
-                    sources.append(source)
-                else:
-                    _append_copilot_source(
-                        root, path, source, sources, referenced
-                    )
+                    "combined from a Copilot CLI standard location",
+                ),
+                sources,
+                discovered,
+                expand_references=expands_references,
+            )
 
-    modular_root = root / ".github" / "instructions"
-    if modular_root.is_dir():
+    for directory in ancestors:
+        modular_root = directory / ".github" / "instructions"
+        if not modular_root.is_dir():
+            continue
         for path in sorted(modular_root.rglob("*.instructions.md")):
+            resolved = path.resolve()
+            if resolved in discovered:
+                continue
+            discovered.add(resolved)
             frontmatter = _read_apply_to_frontmatter(path)
             patterns = frontmatter.patterns
             if frontmatter.error:
@@ -290,18 +289,22 @@ def _append_copilot_source(
     path: Path,
     source: InstructionSource,
     sources: list[InstructionSource],
-    referenced: set[Path],
+    discovered: set[Path],
+    *,
+    expand_references: bool = True,
 ) -> None:
     resolved = path.resolve()
-    if resolved in referenced:
+    if resolved in discovered:
         return
-    referenced.add(resolved)
+    discovered.add(resolved)
     sources.append(source)
+    if not expand_references:
+        return
     _append_references(
         root,
         path,
         sources,
-        referenced,
+        discovered,
         active=(resolved,),
         depth=0,
     )
@@ -311,7 +314,7 @@ def _append_references(
     root: Path,
     source_path: Path,
     sources: list[InstructionSource],
-    referenced: set[Path],
+    discovered: set[Path],
     *,
     active: tuple[Path, ...],
     depth: int,
@@ -365,10 +368,10 @@ def _append_references(
                 )
             )
             continue
-        if resolved in referenced:
+        if resolved in discovered:
             continue
 
-        referenced.add(resolved)
+        discovered.add(resolved)
         sources.append(
             InstructionSource(
                 relative,
@@ -381,7 +384,7 @@ def _append_references(
             root,
             resolved,
             sources,
-            referenced,
+            discovered,
             active=(*active, resolved),
             depth=depth + 1,
         )

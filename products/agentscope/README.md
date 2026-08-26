@@ -35,15 +35,17 @@ is informational by default; `--fail-on-divergence` exits 1 when any target has
 a source applied by only one profile. This makes the command suitable for a CI
 policy without treating shared guidance or unmatched path rules as divergence.
 
-## Profiles in v0.5.0
+## Profiles in v0.6.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
-- `copilot-cli` combines repository-wide Copilot instructions plus ancestor
-  `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md` files. It also discovers
-  `.github/instructions/**/*.instructions.md` and reports whether their
+- `copilot-cli` walks target-ancestor standard locations root-to-target,
+  combining `.github/copilot-instructions.md`, `AGENTS.md`, `CLAUDE.md`,
+  `.claude/CLAUDE.md`, and `GEMINI.md`. It also discovers each ancestor's
+  `.github/instructions/**/*.instructions.md` files and reports whether their
   `applyTo` value matches the target. Supported `@` references are resolved
-  recursively and shown as applied sources or explicit diagnostics.
+  recursively; every resolved source is reported once by its first discovery
+  route.
 
 The path-specific parser intentionally supports a conservative subset:
 frontmatter must contain a one-line scalar `applyTo`, with multiple glob
@@ -63,6 +65,12 @@ escapes. The human and JSON source lists use `copilot-reference` for imports and
 to CI without hiding their ordered reasons. AgentScope does not yet model
 user-level instruction directories, `excludeAgent`, YAML list matching, or
 every client surface.
+
+The [repository discovery
+contract](docs/DISCOVERY_COMPATIBILITY.md) defines target-ancestor locations,
+deterministic reporting order, and resolved-file deduplication. That order is
+not a precedence claim: GitHub documents combination without a general
+precedence rule.
 
 ## Example output
 
@@ -100,7 +108,9 @@ for the executable `applyTo` glob contract,
 [`docs/FRONTMATTER_COMPATIBILITY.md`](docs/FRONTMATTER_COMPATIBILITY.md) for
 frontmatter diagnostics, and
 [`docs/REFERENCE_COMPATIBILITY.md`](docs/REFERENCE_COMPATIBILITY.md) for the
-source-grounded import boundary.
+source-grounded import boundary, and
+[`docs/DISCOVERY_COMPATIBILITY.md`](docs/DISCOVERY_COMPATIBILITY.md) for
+repository standard locations and deduplication.
 
 ## Product promise and success signal
 
@@ -113,6 +123,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, align Copilot repository discovery with the currently documented nested
-locations, especially `.claude/CLAUDE.md`, before expanding beyond repository
-inputs.
+Next, model a separate Copilot session working directory so AgentScope can
+distinguish intermediate directories from target-nested locations, especially
+for modular instruction discovery, before expanding beyond repository inputs.
