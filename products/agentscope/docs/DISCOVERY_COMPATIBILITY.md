@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-25.
+AgentScope's `copilot-cli` profile as of 2026-08-26.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -16,13 +16,19 @@ no general precedence order is defined.
 
 ## AgentScope behavior
 
-AgentScope evaluates named targets rather than a live Copilot session, so the
-repository root and every directory from it through the target's parent are its
-standard-location chain. A planned target that does not exist uses its planned
-parent directory.
+AgentScope evaluates named targets rather than a live Copilot session. The
+optional `--cwd` argument supplies the session working directory explicitly,
+relative to `--root`; it defaults to `.`. AgentScope does not read the process
+working directory as hidden profile state and does not change it. The session
+directory must already exist, resolve inside the repository, and remain inside
+it through symlinks. A planned target may be absent and uses its planned parent
+directory.
 
-For deterministic presentation, AgentScope visits that chain root-to-target.
-Within each directory it checks these locations in order:
+For deterministic presentation, AgentScope visits standard locations in role
+order: repository root, directories between the root and session, the session
+directory, then target-path directories not already visited. A divergent
+session and target branch therefore reports the session branch before the
+target branch. Within each directory it checks these locations in order:
 
 1. `.github/copilot-instructions.md`
 2. `AGENTS.md`
@@ -30,10 +36,14 @@ Within each directory it checks these locations in order:
 4. `.claude/CLAUDE.md`
 5. `GEMINI.md`
 
-After standard files, it visits each ancestor's
-`.github/instructions/**/*.instructions.md` files root-to-target and sorts each
-tree by repository-relative path. This order is an AgentScope reporting
-contract, not a claim of Copilot precedence.
+After standard files, it visits modular
+`.github/instructions/**/*.instructions.md` trees at the repository root, the
+session directory, and target-nested directories. It deliberately skips
+session-intermediate-only directories, matching GitHub's documented exception.
+When the session is the repository root, this is the v0.6.0 root-to-target
+behavior. For divergent branches, target-only locations follow the session
+location. Each tree is sorted by repository-relative path. This order is an
+AgentScope reporting contract, not a claim of Copilot precedence.
 
 Supported `@` references still appear immediately after their parent in
 depth-first order. Every directly discovered or referenced file is keyed by its
@@ -41,15 +51,16 @@ resolved path and reported once; the first discovery route wins. This prevents
 a file imported by an earlier source from appearing again when a later standard
 or modular route reaches it, including equivalent symlink routes.
 
-## Deliberate boundary
+## Output and deliberate boundary
 
-AgentScope does not yet accept a separate Copilot session working directory.
-Consequently, it cannot distinguish directories between that session directory
-and the repository root from directories nested toward the target; it models
-the target-ancestor chain consistently instead. User-level locations,
-`COPILOT_HOME`, `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`, disabled files from the
-interactive `/instructions` command, and content-based duplicate detection are
-also outside v0.6.0.
+Standard-source reasons name whether a file came from the repository root,
+session intermediate, session directory, or target-nested location. Human
+output also names the session directory. Inspection schema v4 and comparison
+schema v2 add the repository-relative `session_directory`; their existing
+target and source objects and policy exits are unchanged.
 
-The existing source object shapes and policy exits are unchanged. Inspection
-remains schema v3 and comparison remains schema v1.
+User-level locations, `COPILOT_HOME`, `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`, files
+disabled with interactive `/instructions`, and identical-content duplicate
+detection remain outside v0.7.0. Resolved-file identity deduplication still
+prevents the same file from appearing twice through direct, referenced, or
+symlink-equivalent routes.

@@ -11,9 +11,15 @@ AgentScope requires Python 3.10 or newer and has no runtime dependencies.
 ```bash
 cd products/agentscope
 PYTHONPATH=src python3 -m agentscope --root ../.. products/agentscope/src/agentscope/core.py
-PYTHONPATH=src python3 -m agentscope --profile copilot-cli --root ../.. --json products/agentscope
-PYTHONPATH=src python3 -m agentscope compare --root ../.. products/agentscope/src/agentscope/core.py
+PYTHONPATH=src python3 -m agentscope --profile copilot-cli --root ../.. --cwd products/agentscope --json products/agentscope/src/agentscope/core.py
+PYTHONPATH=src python3 -m agentscope compare --root ../.. --cwd products/agentscope products/agentscope/src/agentscope/core.py
 ```
+
+`--cwd` is an explicit Copilot session directory; relative values are anchored
+at `--root`, and absolute values are accepted only when contained by it. The
+directory must exist, AgentScope never changes its process directory, and the
+option defaults to the repository root so existing invocations retain v0.6.0
+discovery behavior.
 
 Use `--require-instructions` to turn missing applicable guidance into exit 1;
 use `--fail-on-invalid-references` to reject cycles, missing imports, and other
@@ -23,29 +29,28 @@ when its condition occurs for any target, and they compose with OR semantics.
 Invalid repository input exits 2. Without a gate, inspection is informational
 and exits 0. Multiple target paths can be inspected in one invocation.
 
-Inspection JSON uses schema v3. It adds `invalid_source_count` at the document
-level and on every target; `invalid_reference_count` remains its narrower
-subset. Both aggregates sum per-target diagnostic occurrences. Consumers
-migrating from schema v2 can keep reading the unchanged `sources` objects while
-accepting the additive broader counts. Comparison output remains schema v1.
+Inspection JSON uses schema v4 and comparison JSON uses schema v2. Both add the
+repository-relative `session_directory`; their target and source objects are
+unchanged from inspection v3 and comparison v1. Invalid-source and
+invalid-reference aggregates still sum per-target diagnostic occurrences.
 
 Use `compare` to evaluate every target under both profiles. It reports common
-and profile-only applied source paths in human or schema-v1 JSON form. Comparison
+and profile-only applied source paths in human or schema-v2 JSON form. Comparison
 is informational by default; `--fail-on-divergence` exits 1 when any target has
 a source applied by only one profile. This makes the command suitable for a CI
 policy without treating shared guidance or unmatched path rules as divergence.
 
-## Profiles in v0.6.0
+## Profiles in v0.7.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
-- `copilot-cli` walks target-ancestor standard locations root-to-target,
-  combining `.github/copilot-instructions.md`, `AGENTS.md`, `CLAUDE.md`,
-  `.claude/CLAUDE.md`, and `GEMINI.md`. It also discovers each ancestor's
-  `.github/instructions/**/*.instructions.md` files and reports whether their
-  `applyTo` value matches the target. Supported `@` references are resolved
-  recursively; every resolved source is reported once by its first discovery
-  route.
+- `copilot-cli` combines standard files from the repository root, explicit
+  session directory, session-intermediate directories, and target-nested
+  directories. Modular `.github/instructions/**/*.instructions.md` trees are
+  discovered at the root, session directory, and target-nested locations but
+  not session-intermediate-only locations. Supported `@` references are
+  resolved recursively; every resolved source is reported once by its first
+  discovery route.
 
 The path-specific parser intentionally supports a conservative subset:
 frontmatter must contain a one-line scalar `applyTo`, with multiple glob
@@ -67,10 +72,10 @@ user-level instruction directories, `excludeAgent`, YAML list matching, or
 every client surface.
 
 The [repository discovery
-contract](docs/DISCOVERY_COMPATIBILITY.md) defines target-ancestor locations,
-deterministic reporting order, and resolved-file deduplication. That order is
-not a precedence claim: GitHub documents combination without a general
-precedence rule.
+contract](docs/DISCOVERY_COMPATIBILITY.md) defines session-aware location
+roles, modular exclusions, deterministic reporting order, and resolved-file
+deduplication. That order is not a precedence claim: GitHub documents
+combination without a general precedence rule.
 
 ## Example output
 
@@ -123,6 +128,5 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, model a separate Copilot session working directory so AgentScope can
-distinguish intermediate directories from target-nested locations, especially
-for modular instruction discovery, before expanding beyond repository inputs.
+Next, explain identical-content deduplication for the eligible Copilot standard
+files before expanding beyond repository inputs.

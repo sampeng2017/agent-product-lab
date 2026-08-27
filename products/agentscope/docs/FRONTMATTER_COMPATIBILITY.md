@@ -1,7 +1,7 @@
 # Path-instruction frontmatter compatibility
 
 This document records the deliberately small frontmatter contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-24.
+AgentScope's `copilot-cli` profile as of 2026-08-26.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -44,12 +44,11 @@ including a malformed path instruction or an invalid `@` reference. The older
 can be combined with `--require-instructions` using OR semantics; invalid
 repository arguments still exit 2.
 
-Inspection JSON schema v3 adds `invalid_source_count` at the document and target
-levels. The existing `invalid_reference_count` remains and is always a subset
-of that broader total. Consumers migrating from schema v2 can continue reading
-unchanged source objects and accept the two additive fields plus the version
-increment. Comparison JSON remains schema v1 because it still compares applied
-paths only.
+Inspection JSON schema v4 retains `invalid_source_count` at the document and
+target levels. The existing `invalid_reference_count` remains and is always a
+subset of that broader total. Source objects are unchanged; v4 adds only the
+session context documented by the discovery contract. Comparison JSON schema
+v2 still compares applied paths only and likewise adds the session directory.
 
 ## Deliberate boundary
 

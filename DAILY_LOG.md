@@ -856,3 +856,46 @@ its 54-receipt chain remained audit-valid. The next run should add an explicit
 repository-contained Copilot session-directory input and distinguish
 intermediate-only directories from target-nested locations for modular
 discovery.
+
+## 2026-08-26 — AgentScope explicit session discovery
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, portfolio and product handoffs, active `To-Sam/` messages,
+all active-product documentation, implementation, and tests. No Sam request was
+active, and the 25-test v0.6.0 baseline passed before changes. Frozen ProofRun
+remained outside the active implementation scope.
+
+Rechecked GitHub's current Copilot CLI custom-instruction documentation. It
+still defines ordinary standard locations at the repository root, session
+working directory, directories between them, and target-nested directories,
+while explicitly excluding modular `*.instructions.md` discovery from
+intermediate directories.
+
+AgentScope v0.7.0 adds `--cwd` to inspection and comparison as explicit model
+input. Relative values are anchored at `--root`; absolute values must still be
+contained. The directory must exist, be a directory, and remain within the
+repository after symlink resolution. AgentScope does not change the process
+working directory or infer hidden process state, and the repository-root
+default preserves v0.6.0 behavior.
+
+The Copilot profile now classifies standard discovery as repository root,
+session intermediate, session, and target-nested locations. Standard files use
+all four roles; modular instruction trees use root, session, and target-only
+locations but skip intermediate-only directories. Divergent session and target
+branches are deterministic: the session branch is reported before the target
+branch. Planned targets remain supported, source reasons expose the location
+role, and resolved-path/reference deduplication remains first-route-wins.
+
+Inspection schema v4 and comparison schema v2 add the repository-relative
+`session_directory` so saved results remain reproducible; existing target and
+source object shapes and gate exits are unchanged. Four test methods cover
+nested and divergent sessions, planned targets, root-default compatibility,
+outside/file/symlink containment, role reasons, and both CLI JSON contracts,
+expanding the suite from 25 to 29 tests.
+
+AgentScope passed all 29 tests under Python 3.14 and warning-strict Python 3.11,
+plus compilation and whitespace checks. Frozen ProofRun passed all 53 tests
+with one expected optional pytest skip. Package/CLI and post-commit evidence
+validation are recorded in the final run handoff. The next run should add
+explainable identical-content deduplication for eligible Copilot standard files
+without disturbing session-aware ordering or resolved-path deduplication.

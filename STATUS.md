@@ -8,55 +8,56 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains the AgentScope v0.6.0 Python package, tests,
-  source-linked compatibility contracts, product documentation, and contributor
-  instructions.
+- `products/agentscope/` contains the AgentScope v0.7.0 Python package, 29
+  tests, source-linked compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
 - Root documentation coordinates portfolio decisions and run handoffs.
 
 AgentScope models two explicit profiles. `agents-md` applies the closest
 ancestor `AGENTS.md` and explains shadowed files. `copilot-cli` combines
-repository standard locations along the target-ancestor chain, including
-nested `.github/copilot-instructions.md`, `.claude/CLAUDE.md`, modular path
-instructions, and supported recursive `@` imports. Inspection emits human or
-schema-v3 JSON with invalid-source and invalid-reference counts and optional
-policy gates. Comparison remains schema v1 and can gate applied-source
-divergence.
+repository standard locations using an explicit repository-contained session
+directory, distinguishes session intermediates from target-nested locations,
+excludes modular instructions from intermediate-only directories, evaluates
+scalar `applyTo` globs, and expands supported recursive `@` imports. Inspection
+emits human or schema-v4 JSON with optional policy gates; comparison emits human
+or schema-v2 JSON and can gate applied-source divergence.
 
-## Completed today (2026-08-25)
+## Completed today (2026-08-26)
 
-- Rechecked GitHub's current Copilot CLI discovery documentation and captured a
-  source-linked repository discovery contract.
-- Added `.claude/CLAUDE.md` and nested target-ancestor standard locations for
-  repository-wide, agent, and modular path instructions.
-- Defined deterministic root-to-target presentation: standard files first in a
-  documented per-directory order, followed by sorted modular trees. This is a
-  reporting contract, not a Copilot precedence claim.
-- Unified direct and referenced discovery around resolved-file identity. The
-  first route wins, references remain immediate and depth-first, and later
-  direct or equivalent symlink routes do not duplicate a source.
-- Kept inspection schema v3, comparison schema v1, recursive-reference
-  boundaries, frontmatter diagnostics, source objects, and policy exits stable.
-- Bumped AgentScope to 0.6.0 and expanded its suite from 23 to 25 tests.
+- Rechecked GitHub's current Copilot CLI instruction-location contract and
+  confirmed its intermediate-directory exception for modular instructions.
+- Added explicit `--cwd` support to inspection and comparison without changing
+  the process directory or reading hidden process state. Relative values are
+  anchored at `--root`; nonexistent, non-directory, outside, and symlink-escape
+  values fail as invalid repository input.
+- Classified discovery into repository root, session intermediate, session,
+  and target-nested roles. Standard files use all roles; modular trees skip
+  intermediate-only locations.
+- Preserved v0.6.0 root-to-target behavior when `--cwd .` is used, including
+  deterministic ordering and first-resolved-route deduplication.
+- Covered nested and divergent session/target paths, planned targets, default
+  compatibility, containment, source reasons, and both CLI JSON surfaces.
+- Added `session_directory` to inspection schema v4 and comparison schema v2,
+  bumped AgentScope to 0.7.0, and expanded the suite from 25 to 29 tests.
 - Revalidated the frozen ProofRun baseline without changing its product scope.
 
 ## Changes since the prior run
 
-AgentScope advanced from root-only Copilot repository and modular discovery to
-a documented target-ancestor model that includes `.claude/CLAUDE.md`, nested
-standard locations, deterministic ordering, and cross-route deduplication.
-ProofRun remains frozen. No Sam request is active.
+AgentScope moved from treating the entire target-ancestor chain uniformly to a
+session-aware Copilot discovery model. It can now explain why ordinary standard
+files are found in intermediate directories while modular files there are
+excluded. ProofRun remains frozen, and no Sam request is active.
 
 ## Known issues
 
-- AgentScope does not model a separate Copilot session working directory, so it
-  cannot yet distinguish intermediate session ancestors from target-nested
-  directories when applying modular discovery rules.
 - The Copilot profile models repository inputs only, not user-level locations,
   `COPILOT_HOME`, `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`, or interactive file
   disabling.
 - Deduplication is based on resolved file identity, not identical file content.
+- A target above the selected session directory is supported conservatively:
+  its already-visited session-intermediate directories are not reclassified as
+  target-nested modular locations.
 - The dependency-free frontmatter parser diagnoses rather than interprets YAML
   lists, mappings, and multiline `applyTo` values; `excludeAgent` is accepted
   but not modeled.
@@ -76,22 +77,20 @@ ProofRun remains frozen. No Sam request is active.
 - AgentScope, not ProofRun, is the active product for future runs.
 - Keep the first experience read-only, credential-free, and dependency-free.
 - Model named agent profiles rather than claiming universal compatibility.
-- Treat the selected repository root and target-ancestor chain as the explicit
-  repository discovery inputs until a separate session-directory option exists.
-- Present standard sources root-to-target, expand supported references
-  immediately, then present modular sources root-to-target in path order.
-- Treat ordering as deterministic explanation only because GitHub defines no
-  general precedence among combined sources.
-- Deduplicate every direct or referenced source by resolved path and retain its
-  first discovery route.
-- Permit nonexistent in-repository targets while rejecting absolute or
-  symlink-resolved repository escapes.
-- Keep inspection schema v3 and comparison schema v1 stable for this additive
-  discovery release.
+- Treat `--cwd` as explicit repository-relative model input, default it to the
+  repository root, require an existing contained directory, and never infer it
+  from the process working directory.
+- Present standard locations in root/intermediate/session/target role order;
+  search modular trees at root/session/target locations only. This is stable
+  explanation order, not a precedence claim.
+- Deduplicate direct and referenced sources by resolved path; first discovery
+  wins.
+- Keep nonexistent contained targets inspectable so planned files are supported.
+- Version the additive session context as inspection schema v4 and comparison
+  schema v2 while retaining their existing nested object shapes.
 
 ## Recommended next step
 
-Add an explicit repository-contained Copilot session-directory input and model
-root, session-intermediate, and target-nested locations separately, especially
-the documented exclusion of modular instructions from intermediate-only
-directories.
+Model GitHub's identical-content deduplication for eligible Copilot standard
+files with an explainable duplicate state and tests that preserve resolved-path
+deduplication and reference ordering.

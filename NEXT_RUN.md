@@ -1,4 +1,4 @@
-# Next run: model the Copilot session directory
+# Next run: explain identical Copilot instruction copies
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun.
@@ -11,20 +11,19 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Close the remaining ambiguity between AgentScope's target-based discovery and
-GitHub's documented live-session discovery.
+Close the remaining gap between resolved-file deduplication and GitHub's
+documented removal of identical instruction copies.
 
-1. Recheck the cited official standard-location and modular-location rules.
-2. Add an explicit repository-contained session-directory input (for example,
-   `--cwd`) without changing the process working directory or reading external
-   state implicitly.
-3. Model repository root, session directory, intermediate directories, and
-   target-nested directories separately; exclude modular instruction trees from
-   intermediate-only locations as GitHub documents.
-4. Preserve v0.6.0 root-to-target behavior when the session directory is the
-   repository root, including first-resolved-source deduplication.
-5. Cover divergent session/target branches, planned targets, containment,
-   ordering, JSON stability, and comparison behavior.
+1. Recheck the cited official duplicate-copy rule and define exactly which
+   standard source kinds participate.
+2. Detect byte-identical or normalized-content copies without hiding distinct
+   paths that happen to share only partial content.
+3. Explain the first retained source and later duplicate sources in human and
+   JSON output; do not silently erase useful provenance.
+4. Preserve current resolved-path and symlink deduplication, immediate reference
+   expansion, session-aware ordering, and modular-path diagnostics.
+5. Cover copies across repository root, intermediate, session, target-nested,
+   and divergent branches, plus interaction with references.
 6. Keep user-level and environment-configured directories out of scope unless
    they can be modeled explicitly and safely in the remaining timebox.
 7. Update docs/status/log, validate both products, and leave a clean descriptive
@@ -34,8 +33,7 @@ GitHub's documented live-session discovery.
 
 - Preserve the read-only, zero-runtime-dependency first experience.
 - Keep every modeled client behavior explicit and source-grounded.
-- Keep inspection schema v3 and comparison schema v1 stable unless a documented
-  additive field is necessary.
+- Version JSON only when its serialized shape actually changes.
 - Keep inspection informational by default and retain exit 2 for invalid
   repository arguments.
 - Keep ProofRun frozen unless its preserved MVP fails validation.

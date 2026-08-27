@@ -35,6 +35,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="agents-md",
         help="instruction discovery behavior to model (default: agents-md)",
     )
+    parser.add_argument(
+        "--cwd",
+        type=Path,
+        default=Path("."),
+        help="Copilot session directory; relative paths use root (default: root)",
+    )
     parser.add_argument("--json", action="store_true", help="emit versioned JSON")
     parser.add_argument(
         "--require-instructions",
@@ -67,6 +73,12 @@ def build_compare_parser() -> argparse.ArgumentParser:
         default=Path.cwd(),
         help="repository root (default: current directory)",
     )
+    parser.add_argument(
+        "--cwd",
+        type=Path,
+        default=Path("."),
+        help="Copilot session directory; relative paths use root (default: root)",
+    )
     parser.add_argument("--json", action="store_true", help="emit versioned JSON")
     parser.add_argument(
         "--fail-on-divergence",
@@ -83,15 +95,21 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     args = build_parser().parse_args(arguments)
     try:
-        inspected = inspect_targets(args.root, args.targets, profile=args.profile)
+        inspected = inspect_targets(
+            args.root, args.targets, profile=args.profile, cwd=args.cwd
+        )
     except (OSError, ValueError) as exc:
         print(f"agentscope: {exc}", file=sys.stderr)
         return 2
 
     if args.json:
-        print(json.dumps(_json_result(args.root, args.profile, inspected), indent=2))
+        print(
+            json.dumps(
+                _json_result(args.root, args.cwd, args.profile, inspected), indent=2
+            )
+        )
     else:
-        _print_human(args.root, args.profile, inspected)
+        _print_human(args.root, args.cwd, args.profile, inspected)
 
     missing_required = args.require_instructions and any(
         item.applied_count == 0 for item in inspected
@@ -110,15 +128,19 @@ def main(argv: Sequence[str] | None = None) -> int:
 def _compare_main(argv: Sequence[str]) -> int:
     args = build_compare_parser().parse_args(argv)
     try:
-        compared = compare_targets(args.root, args.targets)
+        compared = compare_targets(args.root, args.targets, cwd=args.cwd)
     except (OSError, ValueError) as exc:
         print(f"agentscope: {exc}", file=sys.stderr)
         return 2
 
     if args.json:
-        print(json.dumps(_comparison_json_result(args.root, compared), indent=2))
+        print(
+            json.dumps(
+                _comparison_json_result(args.root, args.cwd, compared), indent=2
+            )
+        )
     else:
-        _print_comparison(args.root, compared)
+        _print_comparison(args.root, args.cwd, compared)
 
     if args.fail_on_divergence and any(item.divergent for item in compared):
         return 1
@@ -126,15 +148,19 @@ def _compare_main(argv: Sequence[str]) -> int:
 
 
 def _json_result(
-    root: Path, profile: str, inspected: Sequence[TargetInspection]
+    root: Path,
+    cwd: Path,
+    profile: str,
+    inspected: Sequence[TargetInspection],
 ) -> dict[str, object]:
     applied = sum(item.applied_count for item in inspected)
     invalid_references = sum(item.invalid_reference_count for item in inspected)
     invalid_sources = sum(item.invalid_source_count for item in inspected)
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "profile": profile,
         "root": str(root.resolve()),
+        "session_directory": _session_label(root, cwd),
         "target_count": len(inspected),
         "applied_source_count": applied,
         "invalid_reference_count": invalid_references,
@@ -144,12 +170,16 @@ def _json_result(
 
 
 def _print_human(
-    root: Path, profile: str, inspected: Sequence[TargetInspection]
+    root: Path,
+    cwd: Path,
+    profile: str,
+    inspected: Sequence[TargetInspection],
 ) -> None:
     applied = sum(item.applied_count for item in inspected)
     invalid_references = sum(item.invalid_reference_count for item in inspected)
     invalid_sources = sum(item.invalid_source_count for item in inspected)
     print(f"AgentScope: {profile} profile in {root.resolve()}")
+    print(f"Session directory: {_session_label(root, cwd)}")
     print(
         f"Targets: {len(inspected)}; applied sources: {applied}; "
         f"invalid sources: {invalid_sources}; invalid references: {invalid_references}"
@@ -176,11 +206,12 @@ def _print_human(
 
 
 def _comparison_json_result(
-    root: Path, compared: Sequence[TargetComparison]
+    root: Path, cwd: Path, compared: Sequence[TargetComparison]
 ) -> dict[str, object]:
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "root": str(root.resolve()),
+        "session_directory": _session_label(root, cwd),
         "profiles": list(PROFILES),
         "target_count": len(compared),
         "divergent_target_count": sum(item.divergent for item in compared),
@@ -188,8 +219,11 @@ def _comparison_json_result(
     }
 
 
-def _print_comparison(root: Path, compared: Sequence[TargetComparison]) -> None:
+def _print_comparison(
+    root: Path, cwd: Path, compared: Sequence[TargetComparison]
+) -> None:
     print(f"AgentScope comparison in {root.resolve()}")
+    print(f"Session directory: {_session_label(root, cwd)}")
     for item in compared:
         state = "DIVERGENT" if item.divergent else "CONSISTENT"
         print(f"\n{item.target}: {state}")
@@ -210,3 +244,9 @@ def _print_source_group(label: str, sources: Sequence[str]) -> None:
     print(f"  {label} ({len(sources)})")
     for source in sources:
         print(f"    {source}")
+
+
+def _session_label(root: Path, cwd: Path) -> str:
+    candidate = cwd if cwd.is_absolute() else root.resolve() / cwd
+    relative = candidate.resolve().relative_to(root.resolve())
+    return "." if relative == Path(".") else relative.as_posix()

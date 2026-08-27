@@ -117,6 +117,112 @@ class AgentScopeTests(unittest.TestCase):
             )
         )
 
+    def test_copilot_session_directory_excludes_intermediate_modular_sources(
+        self,
+    ) -> None:
+        locations = (
+            ("", "root"),
+            ("workspace", "intermediate"),
+            ("workspace/session", "session"),
+            ("workspace/session/src", "target"),
+        )
+        for directory, name in locations:
+            prefix = f"{directory}/" if directory else ""
+            self.write(f"{prefix}AGENTS.md", f"{name} standard\n")
+            self.write(
+                f"{prefix}.github/instructions/{name}.instructions.md",
+                '---\napplyTo: "**/*.py"\n---\n',
+            )
+
+        result = inspect_targets(
+            self.root,
+            ["workspace/session/src/planned.py"],
+            profile="copilot-cli",
+            cwd="workspace/session",
+        )[0]
+
+        self.assertEqual(
+            [source.path for source in result.sources],
+            [
+                "AGENTS.md",
+                "workspace/AGENTS.md",
+                "workspace/session/AGENTS.md",
+                "workspace/session/src/AGENTS.md",
+                ".github/instructions/root.instructions.md",
+                "workspace/session/.github/instructions/session.instructions.md",
+                "workspace/session/src/.github/instructions/target.instructions.md",
+            ],
+        )
+        self.assertNotIn(
+            "workspace/.github/instructions/intermediate.instructions.md",
+            [source.path for source in result.sources],
+        )
+        self.assertIn("session intermediate", result.sources[1].reason)
+        self.assertIn("session directory", result.sources[2].reason)
+        self.assertIn("target-nested", result.sources[3].reason)
+
+    def test_copilot_session_directory_handles_divergent_planned_target(self) -> None:
+        locations = (
+            ("session-parent", "intermediate"),
+            ("session-parent/work", "session"),
+            ("packages", "package"),
+            ("packages/api", "target"),
+        )
+        for directory, name in locations:
+            self.write(f"{directory}/CLAUDE.md", f"{name} standard\n")
+            self.write(
+                f"{directory}/.github/instructions/{name}.instructions.md",
+                '---\napplyTo: "packages/**/*.py"\n---\n',
+            )
+
+        result = inspect_targets(
+            self.root,
+            ["packages/api/new.py"],
+            profile="copilot-cli",
+            cwd="session-parent/work",
+        )[0]
+
+        self.assertEqual(
+            [source.path for source in result.sources],
+            [
+                "session-parent/CLAUDE.md",
+                "session-parent/work/CLAUDE.md",
+                "packages/CLAUDE.md",
+                "packages/api/CLAUDE.md",
+                "session-parent/work/.github/instructions/session.instructions.md",
+                "packages/.github/instructions/package.instructions.md",
+                "packages/api/.github/instructions/target.instructions.md",
+            ],
+        )
+        self.assertNotIn(
+            "session-parent/.github/instructions/intermediate.instructions.md",
+            [source.path for source in result.sources],
+        )
+
+    def test_session_directory_defaults_to_root_and_must_be_contained_directory(
+        self,
+    ) -> None:
+        self.write("AGENTS.md")
+        self.write("src/AGENTS.md")
+
+        default = inspect_targets(
+            self.root, ["src/app.py"], profile="copilot-cli"
+        )
+        explicit = inspect_targets(
+            self.root, ["src/app.py"], profile="copilot-cli", cwd="."
+        )
+        self.assertEqual(default, explicit)
+
+        with self.assertRaisesRegex(ValueError, "session directory escapes"):
+            inspect_targets(self.root, ["src/app.py"], cwd="../outside")
+        self.write("not-a-directory", "file\n")
+        with self.assertRaisesRegex(ValueError, "session directory is not"):
+            inspect_targets(self.root, ["src/app.py"], cwd="not-a-directory")
+        with tempfile.TemporaryDirectory() as outside:
+            (self.root / "outside-link").symlink_to(outside)
+            with self.assertRaisesRegex(ValueError, "session directory escapes"):
+                inspect_targets(self.root, ["src/app.py"], cwd="outside-link")
+
     def test_copilot_cli_deduplicates_first_resolved_source_discovery(self) -> None:
         self.write(
             ".github/copilot-instructions.md",
@@ -230,7 +336,7 @@ class AgentScopeTests(unittest.TestCase):
             )
         payload = json.loads(output.getvalue())
         self.assertEqual(json_exit, 0)
-        self.assertEqual(payload["schema_version"], 3)
+        self.assertEqual(payload["schema_version"], 4)
         self.assertEqual(payload["invalid_reference_count"], 1)
         self.assertEqual(payload["invalid_source_count"], 1)
         self.assertEqual(payload["targets"][0]["applied_count"], 2)
@@ -534,7 +640,7 @@ class AgentScopeTests(unittest.TestCase):
         payload = json.loads(output.getvalue())
         self.assertEqual(reference_exit, 0)
         self.assertEqual(source_exit, 1)
-        self.assertEqual(payload["schema_version"], 3)
+        self.assertEqual(payload["schema_version"], 4)
         self.assertEqual(payload["invalid_source_count"], 1)
         self.assertEqual(payload["invalid_reference_count"], 0)
         self.assertEqual(payload["targets"][0]["sources"][0]["state"], "invalid")
@@ -558,7 +664,7 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 3)
+        self.assertEqual(payload["schema_version"], 4)
         self.assertEqual(payload["invalid_reference_count"], 0)
         self.assertEqual(payload["invalid_source_count"], 0)
         self.assertEqual(payload["profile"], "agents-md")
@@ -577,6 +683,49 @@ class AgentScopeTests(unittest.TestCase):
 
         self.assertEqual(exit_code, 2)
         self.assertIn("repository root is not a directory", errors.getvalue())
+
+    def test_cli_session_directory_is_reported_in_inspection_and_comparison(
+        self,
+    ) -> None:
+        self.write("tools/session/CLAUDE.md")
+
+        inspection_output = io.StringIO()
+        with redirect_stdout(inspection_output):
+            inspection_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--cwd",
+                    "tools/session",
+                    "--json",
+                    "src/planned.py",
+                ]
+            )
+        inspection = json.loads(inspection_output.getvalue())
+
+        comparison_output = io.StringIO()
+        with redirect_stdout(comparison_output):
+            comparison_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--cwd",
+                    "tools/session",
+                    "--json",
+                    "src/planned.py",
+                ]
+            )
+        comparison = json.loads(comparison_output.getvalue())
+
+        self.assertEqual(inspection_exit, 0)
+        self.assertEqual(inspection["schema_version"], 4)
+        self.assertEqual(inspection["session_directory"], "tools/session")
+        self.assertEqual(comparison_exit, 0)
+        self.assertEqual(comparison["schema_version"], 2)
+        self.assertEqual(comparison["session_directory"], "tools/session")
 
     def test_compare_finds_common_and_profile_specific_nested_sources(self) -> None:
         self.write("AGENTS.md")
@@ -642,7 +791,7 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["schema_version"], 2)
         self.assertEqual(payload["profiles"], ["agents-md", "copilot-cli"])
         self.assertEqual(payload["divergent_target_count"], 1)
         target = payload["targets"][0]

@@ -1,7 +1,7 @@
 # `@` reference compatibility
 
 This document records the `@path` import contract modeled by AgentScope's
-`copilot-cli` profile as of 2026-08-23.
+`copilot-cli` profile as of 2026-08-26.
 
 The primary source is GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions).
@@ -37,12 +37,12 @@ limits.
 
 Human output renders referenced files and diagnostics in the same ordered
 source list as directly discovered instructions, with aggregate and per-target
-invalid-reference counts. Inspection schema-v3 JSON exposes the same counts as
+invalid-reference counts. Inspection schema-v4 JSON exposes the same counts as
 `invalid_reference_count`, alongside the broader `invalid_source_count`; the
 document-level values sum diagnostic occurrences reported for each target. The
 existing `sources` object shape is unchanged from schema v1. Profile comparison
-remains schema v1 and continues to compare only applied paths, so valid imported
-content participates in divergence while invalid edges do not.
+schema v2 continues to compare only applied paths, so valid imported content
+participates in divergence while invalid edges do not.
 
 Inspection is still informational by default. With
 `--fail-on-invalid-references`, any target containing at least one invalid

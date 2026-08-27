@@ -101,6 +101,7 @@ def inspect_targets(
     targets: Sequence[str | Path],
     *,
     profile: str = "agents-md",
+    cwd: str | Path = ".",
 ) -> list[TargetInspection]:
     """Return the instruction sources that a profile applies to each target."""
     if profile not in PROFILES:
@@ -109,20 +110,30 @@ def inspect_targets(
     resolved_root = root.resolve()
     if not resolved_root.is_dir():
         raise ValueError(f"repository root is not a directory: {root}")
+    session_directory = _resolve_session_directory(resolved_root, Path(cwd))
 
     requested = targets or (Path("."),)
     return [
-        _inspect_target(resolved_root, Path(target), profile=profile)
+        _inspect_target(
+            resolved_root,
+            Path(target),
+            profile=profile,
+            session_directory=session_directory,
+        )
         for target in requested
     ]
 
 
 def compare_targets(
-    root: Path, targets: Sequence[str | Path]
+    root: Path,
+    targets: Sequence[str | Path],
+    *,
+    cwd: str | Path = ".",
 ) -> list[TargetComparison]:
     """Compare applied instruction paths across all supported profiles."""
     inspected_by_profile = {
-        profile: inspect_targets(root, targets, profile=profile) for profile in PROFILES
+        profile: inspect_targets(root, targets, profile=profile, cwd=cwd)
+        for profile in PROFILES
     }
     comparisons: list[TargetComparison] = []
 
@@ -164,7 +175,25 @@ def compare_targets(
     return comparisons
 
 
-def _inspect_target(root: Path, target: Path, *, profile: str) -> TargetInspection:
+def _resolve_session_directory(root: Path, cwd: Path) -> Path:
+    candidate = cwd if cwd.is_absolute() else root / cwd
+    resolved = candidate.resolve(strict=False)
+    try:
+        resolved.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"session directory escapes repository root: {cwd}") from exc
+    if not resolved.is_dir():
+        raise ValueError(f"session directory is not a directory: {cwd}")
+    return resolved
+
+
+def _inspect_target(
+    root: Path,
+    target: Path,
+    *,
+    profile: str,
+    session_directory: Path,
+) -> TargetInspection:
     candidate = target if target.is_absolute() else root / target
     resolved = candidate.resolve(strict=False)
     try:
@@ -180,7 +209,15 @@ def _inspect_target(root: Path, target: Path, *, profile: str) -> TargetInspecti
     if profile == "agents-md":
         sources = _agents_md_sources(root, ancestors)
     else:
-        sources = _copilot_cli_sources(root, ancestors, relative.as_posix())
+        standard_locations, modular_locations = _copilot_cli_locations(
+            root, session_directory, target_dir
+        )
+        sources = _copilot_cli_sources(
+            root,
+            standard_locations,
+            modular_locations,
+            relative.as_posix(),
+        )
 
     label = "." if relative == Path(".") else relative.as_posix()
     return TargetInspection(label, tuple(sources))
@@ -218,12 +255,48 @@ def _agents_md_sources(
     return sources
 
 
+def _copilot_cli_locations(
+    root: Path, session_directory: Path, target_directory: Path
+) -> tuple[list[tuple[Path, str]], list[Path]]:
+    session_chain = list(_ancestor_directories(root, session_directory))
+    target_chain = list(_ancestor_directories(root, target_directory))
+
+    standard: list[tuple[Path, str]] = []
+    for directory in session_chain:
+        if directory == root:
+            role = "repository root"
+        elif directory == session_directory:
+            role = "session directory"
+        else:
+            role = "session intermediate directory"
+        standard.append((directory, role))
+
+    standard_paths = set(session_chain)
+    target_nested = [
+        directory for directory in target_chain if directory not in standard_paths
+    ]
+    standard.extend((directory, "target-nested directory") for directory in target_nested)
+
+    modular = [root]
+    if session_directory != root:
+        modular.append(session_directory)
+    modular.extend(
+        directory
+        for directory in target_nested
+        if directory not in (root, session_directory)
+    )
+    return standard, modular
+
+
 def _copilot_cli_sources(
-    root: Path, ancestors: Sequence[Path], target: str
+    root: Path,
+    standard_locations: Sequence[tuple[Path, str]],
+    modular_locations: Sequence[Path],
+    target: str,
 ) -> list[InstructionSource]:
     sources: list[InstructionSource] = []
     discovered: set[Path] = set()
-    for directory in ancestors:
+    for directory, role in standard_locations:
         standard_sources = (
             (
                 directory / ".github" / "copilot-instructions.md",
@@ -245,14 +318,14 @@ def _copilot_cli_sources(
                     _relative(root, path),
                     kind,
                     "applied",
-                    "combined from a Copilot CLI standard location",
+                    f"combined from a Copilot CLI standard location ({role})",
                 ),
                 sources,
                 discovered,
                 expand_references=expands_references,
             )
 
-    for directory in ancestors:
+    for directory in modular_locations:
         modular_root = directory / ".github" / "instructions"
         if not modular_root.is_dir():
             continue
