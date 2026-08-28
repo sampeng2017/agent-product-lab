@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-26.
+AgentScope's `copilot-cli` profile as of 2026-08-28.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -51,16 +51,36 @@ resolved path and reported once; the first discovery route wins. This prevents
 a file imported by an earlier source from appearing again when a later standard
 or modular route reaches it, including equivalent symlink routes.
 
+Eligible standard files also participate in content-copy detection:
+`.github/copilot-instructions.md`, `AGENTS.md`, both `CLAUDE.md` locations, and
+`GEMINI.md`. AgentScope normalizes each complete UTF-8 file by removing blank
+lines, trimming surrounding whitespace on nonblank lines, and joining those
+lines with single spaces. It does not perform partial-content or semantic
+similarity matching. The first standard source with a normalized value remains
+`applied`; later distinct paths with that value are reported as `duplicate`,
+with a reason naming the first source. This map spans source kinds and all
+repository, intermediate, session, target-nested, and divergent-branch roles.
+
+Modular `*.instructions.md` and imported files neither participate in nor seed
+standard-copy detection. References found in a duplicate standard source are
+still resolved immediately relative to that copy. This conservative choice
+keeps a repeated wrapper from hiding different files reached by the same
+relative import. A reference already reached by resolved identity retains the
+existing first-route-wins behavior.
+
 ## Output and deliberate boundary
 
 Standard-source reasons name whether a file came from the repository root,
-session intermediate, session directory, or target-nested location. Human
-output also names the session directory. Inspection schema v4 and comparison
-schema v2 add the repository-relative `session_directory`; their existing
-target and source objects and policy exits are unchanged.
+session intermediate, session directory, or target-nested location. Duplicate
+reasons instead name the first retained source and state that relative imports
+are still evaluated. Human output renders `DUPLICATE`; inspection schema v4
+uses `state: "duplicate"` in the unchanged source object. Comparison schema v2
+continues to compare applied paths only, so duplicates do not create profile
+divergence. Policy exits are unchanged.
 
-User-level locations, `COPILOT_HOME`, `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`, files
-disabled with interactive `/instructions`, and identical-content duplicate
-detection remain outside v0.7.0. Resolved-file identity deduplication still
+User-level locations, `COPILOT_HOME`, `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`, and
+files disabled with interactive `/instructions` remain outside v0.8.0.
+Unreadable or non-UTF-8 standard files cannot be content-compared and preserve
+the prior applied-source behavior. Resolved-file identity deduplication still
 prevents the same file from appearing twice through direct, referenced, or
 symlink-equivalent routes.

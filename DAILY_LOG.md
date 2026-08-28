@@ -899,3 +899,44 @@ with one expected optional pytest skip. Package/CLI and post-commit evidence
 validation are recorded in the final run handoff. The next run should add
 explainable identical-content deduplication for eligible Copilot standard files
 without disturbing session-aware ordering or resolved-path deduplication.
+
+## 2026-08-28 — AgentScope standard-content deduplication
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, portfolio handoffs, active `To-Sam/` messages, all active
+product documentation, implementation, and tests. No Sam request was active,
+and the 29-test v0.7.0 baseline passed before changes. ProofRun remained frozen.
+
+Rechecked GitHub's current Copilot CLI custom-instruction documentation. It
+still says Copilot combines applicable sources while removing duplicate copies
+of identical user-level, repository-wide, and agent instructions; modular
+path-specific files remain a separate matching category. The same page says
+line placement and blank lines do not affect instruction content.
+
+AgentScope v0.8.0 now compares normalized complete text across the modeled
+standard files: `.github/copilot-instructions.md`, `AGENTS.md`, both `CLAUDE.md`
+locations, and `GEMINI.md`. It removes blank lines, trims surrounding line
+whitespace, and joins nonblank lines with spaces. The first source remains
+`applied`; later distinct paths with the same value appear as `duplicate` and
+name the retained source. Partial-content similarity never deduplicates.
+
+Resolved-path and symlink identity still win before content comparison.
+Modular and imported files neither participate in nor seed the standard-content
+map. Duplicate wrappers still expand supported `@` lines immediately from their
+own locations, so identical wrapper text cannot hide distinct relative imports.
+Comparison continues to use applied paths only. The existing source object
+already carries state and reason, so inspection schema v4 and comparison schema
+v2 remain unchanged.
+
+Two new test methods cover root, intermediate, session, target-nested, and
+divergent discovery; cross-kind and whitespace-normalized copies; distinct
+partial content; modular exclusions; retained-source reasons; human/JSON state;
+and copied wrappers with different relative imports. The suite grew from 29 to
+31 tests and passed under Python 3.14 and warning-strict Python 3.11. Compilation,
+version/TOML checks, inspection and comparison JSON dogfooding, whitespace
+checks, and an isolated Python 3.11 wheel build/install smoke passed. Frozen
+ProofRun passed all 53 tests with one expected optional pytest-runtime skip.
+
+The next run should evaluate a repeatable, repository-contained CLI input for
+additional Copilot instruction directories without implicitly reading
+`COPILOT_CUSTOM_INSTRUCTIONS_DIRS` from the process environment.

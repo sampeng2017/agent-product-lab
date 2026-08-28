@@ -296,6 +296,7 @@ def _copilot_cli_sources(
 ) -> list[InstructionSource]:
     sources: list[InstructionSource] = []
     discovered: set[Path] = set()
+    standard_content_sources: dict[str, str] = {}
     for directory, role in standard_locations:
         standard_sources = (
             (
@@ -323,6 +324,7 @@ def _copilot_cli_sources(
                 sources,
                 discovered,
                 expand_references=expands_references,
+                standard_content_sources=standard_content_sources,
             )
 
     for directory in modular_locations:
@@ -365,11 +367,27 @@ def _append_copilot_source(
     discovered: set[Path],
     *,
     expand_references: bool = True,
+    standard_content_sources: dict[str, str] | None = None,
 ) -> None:
     resolved = path.resolve()
     if resolved in discovered:
         return
     discovered.add(resolved)
+
+    if standard_content_sources is not None:
+        content_key = _standard_instruction_content_key(path)
+        if content_key is not None:
+            first_source = standard_content_sources.get(content_key)
+            if first_source is None:
+                standard_content_sources[content_key] = source.path
+            else:
+                source = InstructionSource(
+                    source.path,
+                    source.kind,
+                    "duplicate",
+                    "duplicate normalized content of first discovered source "
+                    f"{first_source}; relative references are still evaluated",
+                )
     sources.append(source)
     if not expand_references:
         return
@@ -381,6 +399,15 @@ def _append_copilot_source(
         active=(resolved,),
         depth=0,
     )
+
+
+def _standard_instruction_content_key(path: Path) -> str | None:
+    """Return conservatively normalized text for eligible standard instructions."""
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return None
+    return " ".join(line.strip() for line in content.splitlines() if line.strip())
 
 
 def _append_references(

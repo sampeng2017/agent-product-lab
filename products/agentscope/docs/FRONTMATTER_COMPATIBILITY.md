@@ -1,7 +1,7 @@
 # Path-instruction frontmatter compatibility
 
 This document records the deliberately small frontmatter contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-26.
+AgentScope's `copilot-cli` profile as of 2026-08-28.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)

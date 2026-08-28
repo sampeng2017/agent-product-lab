@@ -55,10 +55,10 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(result.applied_count, 1)
 
     def test_copilot_cli_combines_supported_ancestor_formats(self) -> None:
-        self.write(".github/copilot-instructions.md")
-        self.write("AGENTS.md")
-        self.write("packages/CLAUDE.md")
-        self.write("packages/api/GEMINI.md")
+        self.write(".github/copilot-instructions.md", "Repository guidance.\n")
+        self.write("AGENTS.md", "Agent guidance.\n")
+        self.write("packages/CLAUDE.md", "Claude guidance.\n")
+        self.write("packages/api/GEMINI.md", "Gemini guidance.\n")
         self.write("packages/api/app.py", "")
 
         result = inspect_targets(
@@ -73,11 +73,13 @@ class AgentScopeTests(unittest.TestCase):
         self.assertTrue(all(source.state == "applied" for source in result.sources))
 
     def test_copilot_cli_discovers_target_ancestor_standard_locations(self) -> None:
-        self.write(".github/copilot-instructions.md")
-        self.write(".claude/CLAUDE.md")
-        self.write("packages/.github/copilot-instructions.md")
-        self.write("packages/AGENTS.md")
-        self.write("packages/api/.claude/CLAUDE.md")
+        self.write(".github/copilot-instructions.md", "Root repository.\n")
+        self.write(".claude/CLAUDE.md", "Root Claude.\n")
+        self.write(
+            "packages/.github/copilot-instructions.md", "Package repository.\n"
+        )
+        self.write("packages/AGENTS.md", "Package agents.\n")
+        self.write("packages/api/.claude/CLAUDE.md", "API Claude.\n")
         self.write(
             ".github/instructions/root.instructions.md",
             '---\napplyTo: "**/*.py"\n---\n',
@@ -257,6 +259,125 @@ class AgentScopeTests(unittest.TestCase):
                 "copilot-reference",
             ],
         )
+        self.assertEqual(result.applied_count, 4)
+
+    def test_copilot_cli_explains_normalized_standard_content_copies(self) -> None:
+        canonical = "Use Python.\n\nRun tests.\n"
+        self.write("AGENTS.md", canonical)
+        self.write("CLAUDE.md", "Use Python only.\nRun tests.\n")
+        self.write(
+            "workspace/.github/copilot-instructions.md",
+            "  Use Python.\n Run tests.  \n",
+        )
+        self.write("workspace/session/.claude/CLAUDE.md", canonical)
+        self.write("packages/GEMINI.md", canonical)
+        self.write("packages/api/CLAUDE.md", canonical)
+        modular = '---\napplyTo: "**/*.py"\n---\nUse Python.\n'
+        self.write(".github/instructions/root.instructions.md", modular)
+        self.write(
+            "workspace/session/.github/instructions/session.instructions.md",
+            modular,
+        )
+
+        result = inspect_targets(
+            self.root,
+            ["packages/api/new.py"],
+            profile="copilot-cli",
+            cwd="workspace/session",
+        )[0]
+        by_path = {source.path: source for source in result.sources}
+
+        self.assertEqual(by_path["AGENTS.md"].state, "applied")
+        self.assertEqual(by_path["CLAUDE.md"].state, "applied")
+        duplicates = [
+            source for source in result.sources if source.state == "duplicate"
+        ]
+        self.assertEqual(
+            [source.path for source in duplicates],
+            [
+                "workspace/.github/copilot-instructions.md",
+                "workspace/session/.claude/CLAUDE.md",
+                "packages/GEMINI.md",
+                "packages/api/CLAUDE.md",
+            ],
+        )
+        self.assertTrue(
+            all(
+                "first discovered source AGENTS.md" in item.reason
+                for item in duplicates
+            )
+        )
+        self.assertEqual(
+            [
+                source.state
+                for source in result.sources
+                if source.kind == "copilot-path"
+            ],
+            ["applied", "applied"],
+        )
+        self.assertEqual(result.applied_count, 4)
+
+        human = io.StringIO()
+        with redirect_stdout(human):
+            main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--cwd",
+                    "workspace/session",
+                    "packages/api/new.py",
+                ]
+            )
+        self.assertIn(
+            "DUPLICATE workspace/.github/copilot-instructions.md",
+            human.getvalue(),
+        )
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--cwd",
+                    "workspace/session",
+                    "--json",
+                    "packages/api/new.py",
+                ]
+            )
+        payload = json.loads(output.getvalue())
+        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["targets"][0]["sources"][2]["state"], "duplicate")
+
+    def test_standard_copy_deduplication_preserves_relative_references(self) -> None:
+        self.write("AGENTS.md", "@guide.md\nUse Python.\n")
+        self.write("guide.md", "Shared guidance.\n")
+        self.write("GEMINI.md", "Shared guidance.\n")
+        self.write("session/CLAUDE.md", " @guide.md\n\nUse Python. \n")
+        self.write("session/guide.md", "Session-specific guidance.\n")
+
+        result = inspect_targets(
+            self.root,
+            ["src/app.py"],
+            profile="copilot-cli",
+            cwd="session",
+        )[0]
+
+        self.assertEqual(
+            [(source.path, source.state) for source in result.sources],
+            [
+                ("AGENTS.md", "applied"),
+                ("guide.md", "applied"),
+                ("GEMINI.md", "applied"),
+                ("session/CLAUDE.md", "duplicate"),
+                ("session/guide.md", "applied"),
+            ],
+        )
+        self.assertEqual(result.sources[-1].kind, "copilot-reference")
         self.assertEqual(result.applied_count, 4)
 
     def test_copilot_references_expand_recursively_and_relative_to_each_file(self) -> None:
@@ -728,9 +849,9 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(comparison["session_directory"], "tools/session")
 
     def test_compare_finds_common_and_profile_specific_nested_sources(self) -> None:
-        self.write("AGENTS.md")
-        self.write("packages/api/AGENTS.md")
-        self.write("packages/api/CLAUDE.md")
+        self.write("AGENTS.md", "Root agents.\n")
+        self.write("packages/api/AGENTS.md", "API agents.\n")
+        self.write("packages/api/CLAUDE.md", "API Claude.\n")
         self.write("packages/api/app.py", "")
 
         comparison = compare_targets(self.root, ["packages/api/app.py"])[0]
