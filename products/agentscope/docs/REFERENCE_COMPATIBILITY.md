@@ -37,11 +37,11 @@ limits.
 
 Human output renders referenced files and diagnostics in the same ordered
 source list as directly discovered instructions, with aggregate and per-target
-invalid-reference counts. Inspection schema-v4 JSON exposes the same counts as
+invalid-reference counts. Inspection schema-v5 JSON exposes the same counts as
 `invalid_reference_count`, alongside the broader `invalid_source_count`; the
 document-level values sum diagnostic occurrences reported for each target. The
 existing `sources` object shape is unchanged from schema v1. Profile comparison
-schema v2 continues to compare only applied paths, so valid imported content
+schema v3 continues to compare only applied paths, so valid imported content
 participates in divergence while invalid edges do not.
 
 Inspection is still informational by default. With

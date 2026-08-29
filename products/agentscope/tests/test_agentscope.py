@@ -350,7 +350,7 @@ class AgentScopeTests(unittest.TestCase):
                 ]
             )
         payload = json.loads(output.getvalue())
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["targets"][0]["sources"][2]["state"], "duplicate")
 
     def test_standard_copy_deduplication_preserves_relative_references(self) -> None:
@@ -457,7 +457,7 @@ class AgentScopeTests(unittest.TestCase):
             )
         payload = json.loads(output.getvalue())
         self.assertEqual(json_exit, 0)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["invalid_reference_count"], 1)
         self.assertEqual(payload["invalid_source_count"], 1)
         self.assertEqual(payload["targets"][0]["applied_count"], 2)
@@ -761,10 +761,191 @@ class AgentScopeTests(unittest.TestCase):
         payload = json.loads(output.getvalue())
         self.assertEqual(reference_exit, 0)
         self.assertEqual(source_exit, 1)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["invalid_source_count"], 1)
         self.assertEqual(payload["invalid_reference_count"], 0)
         self.assertEqual(payload["targets"][0]["sources"][0]["state"], "invalid")
+
+    def test_additional_instruction_directories_are_ordered_and_composed(
+        self,
+    ) -> None:
+        self.write("shared/AGENTS.md", "Shared guidance.\n@guide.md\n")
+        self.write("shared/guide.md", "Imported guidance.\n")
+        self.write(
+            "shared/nested/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\nPython guidance.\n',
+        )
+        self.write("team/AGENTS.md", "Shared guidance.\n@guide.md\n")
+        self.write("team/guide.md", "Team-specific guidance.\n")
+        self.write(
+            "team/docs.instructions.md",
+            '---\napplyTo: "**/*.md"\n---\nDocs guidance.\n',
+        )
+
+        result = inspect_targets(
+            self.root,
+            ["src/planned.py"],
+            profile="copilot-cli",
+            instruction_dirs=["shared", "team", "shared/.", "."],
+        )[0]
+
+        self.assertEqual(
+            [(source.path, source.state) for source in result.sources],
+            [
+                ("shared/AGENTS.md", "applied"),
+                ("shared/guide.md", "applied"),
+                ("shared/nested/python.instructions.md", "applied"),
+                ("team/AGENTS.md", "duplicate"),
+                ("team/guide.md", "applied"),
+                ("team/docs.instructions.md", "ignored"),
+            ],
+        )
+        self.assertIn("explicit additional", result.sources[0].reason)
+        self.assertIn("explicit additional", result.sources[2].reason)
+        self.assertEqual(result.applied_count, 4)
+
+        portable = inspect_targets(
+            self.root,
+            ["src/planned.py"],
+            profile="agents-md",
+            instruction_dirs=["shared"],
+        )[0]
+        self.assertEqual(portable.sources, ())
+
+    def test_additional_instruction_directories_require_contained_directories(
+        self,
+    ) -> None:
+        self.write("custom/AGENTS.md")
+        self.write("not-a-directory", "file\n")
+
+        with self.assertRaisesRegex(
+            ValueError, "additional instruction directory escapes"
+        ):
+            inspect_targets(
+                self.root,
+                ["src/app.py"],
+                profile="copilot-cli",
+                instruction_dirs=["../outside"],
+            )
+        with self.assertRaisesRegex(
+            ValueError, "additional instruction directory is not"
+        ):
+            inspect_targets(
+                self.root,
+                ["src/app.py"],
+                profile="copilot-cli",
+                instruction_dirs=["not-a-directory"],
+            )
+        with tempfile.TemporaryDirectory() as outside:
+            (self.root / "custom-link").symlink_to(outside)
+            with self.assertRaisesRegex(
+                ValueError, "additional instruction directory escapes"
+            ):
+                inspect_targets(
+                    self.root,
+                    ["src/app.py"],
+                    profile="copilot-cli",
+                    instruction_dirs=["custom-link"],
+                )
+
+            sources = self.root / "sources"
+            sources.mkdir()
+            outside_root = Path(outside)
+            (outside_root / "AGENTS.md").write_text("External.\n", encoding="utf-8")
+            (outside_root / "rule.instructions.md").write_text(
+                '---\napplyTo: "**"\n---\nExternal.\n', encoding="utf-8"
+            )
+            (sources / "AGENTS.md").symlink_to(outside_root / "AGENTS.md")
+            (sources / "rule.instructions.md").symlink_to(
+                outside_root / "rule.instructions.md"
+            )
+
+            result = inspect_targets(
+                self.root,
+                ["src/app.py"],
+                profile="copilot-cli",
+                instruction_dirs=["sources"],
+            )[0]
+            self.assertEqual(
+                [(source.path, source.state) for source in result.sources],
+                [
+                    ("sources/AGENTS.md", "invalid"),
+                    ("sources/rule.instructions.md", "invalid"),
+                ],
+            )
+            self.assertTrue(
+                all(
+                    "escapes repository root" in source.reason
+                    for source in result.sources
+                )
+            )
+
+    def test_cli_reports_effective_additional_directories_and_policy_exit(
+        self,
+    ) -> None:
+        self.write("custom/AGENTS.md", "Custom guidance.\n")
+        self.write(
+            "custom/broken.instructions.md",
+            '---\napplyTo: ["**/*.py"]\n---\n',
+        )
+
+        inspection_output = io.StringIO()
+        with redirect_stdout(inspection_output):
+            inspection_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--instructions-dir",
+                    "custom",
+                    "--instructions-dir",
+                    "custom/.",
+                    "--json",
+                    "--fail-on-invalid-sources",
+                    "src/planned.py",
+                ]
+            )
+        inspection = json.loads(inspection_output.getvalue())
+
+        comparison_output = io.StringIO()
+        with redirect_stdout(comparison_output):
+            comparison_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--instructions-dir",
+                    "custom",
+                    "--json",
+                    "src/planned.py",
+                ]
+            )
+        comparison = json.loads(comparison_output.getvalue())
+
+        self.assertEqual(inspection_exit, 1)
+        self.assertEqual(inspection["schema_version"], 5)
+        self.assertEqual(inspection["additional_instruction_directories"], ["custom"])
+        self.assertEqual(inspection["invalid_source_count"], 1)
+        self.assertEqual(comparison_exit, 0)
+        self.assertEqual(comparison["schema_version"], 3)
+        self.assertEqual(comparison["additional_instruction_directories"], ["custom"])
+        self.assertEqual(comparison["divergent_target_count"], 1)
+
+        human = io.StringIO()
+        with redirect_stdout(human):
+            main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--instructions-dir",
+                    "custom",
+                    "src/planned.py",
+                ]
+            )
+        self.assertIn("Additional instruction directories: custom", human.getvalue())
 
     def test_target_cannot_escape_root(self) -> None:
         with self.assertRaisesRegex(ValueError, "escapes repository root"):
@@ -785,7 +966,7 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["invalid_reference_count"], 0)
         self.assertEqual(payload["invalid_source_count"], 0)
         self.assertEqual(payload["profile"], "agents-md")
@@ -842,10 +1023,10 @@ class AgentScopeTests(unittest.TestCase):
         comparison = json.loads(comparison_output.getvalue())
 
         self.assertEqual(inspection_exit, 0)
-        self.assertEqual(inspection["schema_version"], 4)
+        self.assertEqual(inspection["schema_version"], 5)
         self.assertEqual(inspection["session_directory"], "tools/session")
         self.assertEqual(comparison_exit, 0)
-        self.assertEqual(comparison["schema_version"], 2)
+        self.assertEqual(comparison["schema_version"], 3)
         self.assertEqual(comparison["session_directory"], "tools/session")
 
     def test_compare_finds_common_and_profile_specific_nested_sources(self) -> None:
@@ -912,7 +1093,7 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 2)
+        self.assertEqual(payload["schema_version"], 3)
         self.assertEqual(payload["profiles"], ["agents-md", "copilot-cli"])
         self.assertEqual(payload["divergent_target_count"], 1)
         target = payload["targets"][0]

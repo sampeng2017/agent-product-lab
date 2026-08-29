@@ -1,7 +1,7 @@
-# Next run: model explicit additional instruction directories
+# Next run: add portfolio-level CI
 
 AgentScope is the active product. Continue it rather than restarting discovery
-or resuming ProofRun.
+or resuming ProofRun feature work.
 
 ## Required starting inspection
 
@@ -11,32 +11,26 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Evaluate and, if the contract can stay explicit and safe, add repository-
-contained equivalents of Copilot CLI's configured additional instruction
-directories.
+Add one maintained root GitHub Actions workflow that proves both products remain
+runnable without turning frozen ProofRun into active feature scope.
 
-1. Recheck the current official `COPILOT_CUSTOM_INSTRUCTIONS_DIRS` contract and
-   define the exact `AGENTS.md` and `*.instructions.md` discovery behavior.
-2. Prefer a repeatable CLI option over implicitly reading the process
-   environment; record the effective inputs in human and JSON output.
-3. Require every configured directory to exist, be a directory, and remain
-   contained by the selected repository after symlink resolution.
-4. Define stable ordering relative to repository/session discovery without
-   claiming undocumented precedence.
-5. Integrate resolved-path, normalized-standard-content, and modular-path
-   behavior without hiding provenance.
-6. Cover multiple directories, duplicate routes, invalid input, comparison,
-   planned targets, and policy exits.
-7. Keep user-home `COPILOT_HOME` inputs out of scope unless they can be modeled
-   without weakening the repository containment boundary.
-8. Update docs/status/log, validate both products, and leave a clean descriptive
+1. Inspect each product's supported Python versions and existing validation
+   commands before selecting a matrix.
+2. Run AgentScope and ProofRun unit suites from their own package directories.
+3. Include warning-strict validation on the oldest supported Python version.
+4. Build each wheel and smoke-test its console entry point in an isolated
+   environment without publishing anything.
+5. Keep permissions read-only, pin current official action majors, and avoid
+   repository writes from validation commands where possible.
+6. Add local YAML parsing or another dependency-free structural check.
+7. Document exact local equivalents and failure interpretation.
+8. Update status/log, validate both products, and leave a clean descriptive
    commit.
 
 ## Guardrails
 
-- Preserve the read-only, zero-runtime-dependency first experience.
-- Keep every modeled client behavior explicit and source-grounded.
-- Version JSON when adding the effective directory list.
-- Keep inspection informational by default and retain exit 2 for invalid
-  repository arguments.
+- Preserve AgentScope's read-only, zero-runtime-dependency first experience.
 - Keep ProofRun frozen unless its preserved MVP fails validation.
+- Do not add publishing, release, secrets, or write permissions.
+- Keep platform-specific expectations explicit if the matrix cannot cover every
+  supported OS in the timebox.

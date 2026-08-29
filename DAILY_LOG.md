@@ -940,3 +940,44 @@ ProofRun passed all 53 tests with one expected optional pytest-runtime skip.
 The next run should evaluate a repeatable, repository-contained CLI input for
 additional Copilot instruction directories without implicitly reading
 `COPILOT_CUSTOM_INSTRUCTIONS_DIRS` from the process environment.
+
+## 2026-08-28 — AgentScope explicit additional instruction directories
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, portfolio and product handoffs, active `To-Sam/` messages,
+all active documentation, implementation, and tests. No Sam request was active,
+and the 31-test v0.8.0 baseline passed before changes. ProofRun remained frozen.
+
+Rechecked GitHub's current Copilot CLI documentation. It identifies
+`COPILOT_CUSTOM_INSTRUCTIONS_DIRS` as a comma-separated list of directories
+that add `AGENTS.md` and `*.instructions.md` sources, but it does not define
+their precedence or nested `AGENTS.md` scope. AgentScope v0.9.0 therefore adds a
+repeatable `--instructions-dir` model input to inspection and comparison instead
+of reading environment state. Relative paths use `--root`; every directory must
+exist, resolve inside the repository, and remain contained through symlinks.
+Equivalent inputs collapse to their first position.
+
+Ordinary repository/session sources remain first. Each additional directory is
+then visited in caller order, contributing its direct `AGENTS.md` followed by
+recursively discovered `*.instructions.md` files in path order. This explicit
+direct-file boundary avoids inventing nested-agent scope. Additional sources use
+the existing recursive-reference, repository-relative glob, normalized-content,
+resolved-route, planned-target, comparison, diagnostic, and policy behavior.
+Instruction-file symlinks that escape the root now become invalid diagnostics
+instead of causing external reads across both ordinary and additional routes.
+
+Inspection schema v5 and comparison schema v3 record the effective deduplicated
+`additional_instruction_directories` list while leaving target and source
+objects unchanged. Human output records the same context. Three new test
+methods cover ordered multiple directories, recursive modular files, imports,
+content and route deduplication, planned targets, profile comparison, invalid
+policy exits, duplicate inputs, missing/file/outside/symlink directories, and
+escaping source symlinks. The suite grew from 31 to 34 tests.
+
+AgentScope passed all 34 tests on Python 3.14 and warning-strict Python 3.11,
+plus compilation, metadata, help, human/JSON dogfooding, and diff checks. A
+Python 3.11 no-isolation wheel build and isolated console-script install passed.
+Frozen ProofRun passed all 53 tests with one expected optional pytest-runtime
+skip. Post-commit evidence validation is recorded in the final handoff. The next
+run should add a read-only root CI workflow that validates both products and
+isolated package installs from one maintained entry point.

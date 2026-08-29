@@ -44,11 +44,12 @@ including a malformed path instruction or an invalid `@` reference. The older
 can be combined with `--require-instructions` using OR semantics; invalid
 repository arguments still exit 2.
 
-Inspection JSON schema v4 retains `invalid_source_count` at the document and
+Inspection JSON schema v5 retains `invalid_source_count` at the document and
 target levels. The existing `invalid_reference_count` remains and is always a
-subset of that broader total. Source objects are unchanged; v4 adds only the
-session context documented by the discovery contract. Comparison JSON schema
-v2 still compares applied paths only and likewise adds the session directory.
+subset of that broader total. Source objects are unchanged; v5 adds the
+effective additional-directory input documented by the discovery contract.
+Comparison JSON schema v3 still compares applied paths only and records the
+same effective discovery context.
 
 ## Deliberate boundary
 

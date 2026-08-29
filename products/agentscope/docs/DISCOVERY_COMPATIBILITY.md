@@ -14,6 +14,13 @@ file being worked on. It lists `.github/copilot-instructions.md`, `AGENTS.md`,
 also says applicable sources are combined, duplicate copies are removed, and
 no general precedence order is defined.
 
+The same page documents comma-separated directories in
+`COPILOT_CUSTOM_INSTRUCTIONS_DIRS` as contributing additional `AGENTS.md` and
+`*.instructions.md` files. It does not define precedence for those directories
+or say that other standard names are loaded from them. AgentScope therefore
+models only those two documented source shapes and exposes the list as explicit
+CLI input instead of importing process environment state.
+
 ## AgentScope behavior
 
 AgentScope evaluates named targets rather than a live Copilot session. The
@@ -61,6 +68,31 @@ similarity matching. The first standard source with a normalized value remains
 with a reason naming the first source. This map spans source kinds and all
 repository, intermediate, session, target-nested, and divergent-branch roles.
 
+### Explicit additional directories
+
+`--instructions-dir PATH` may be repeated for inspection and comparison.
+Relative values are anchored at the selected repository root. Every value must
+exist as a directory and remain inside that root after symlink resolution;
+repeated or symlink-equivalent values retain their first position and appear
+once in output. AgentScope never reads `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`
+implicitly.
+
+After ordinary standard and modular discovery, AgentScope visits each explicit
+directory in caller order. It checks the directory's direct `AGENTS.md`, then
+recursively discovers `*.instructions.md` files in repository-relative path
+order. The direct-file boundary avoids claiming undocumented nested
+`AGENTS.md` scoping, while recursive modular discovery follows the documented
+file shape. This is an AgentScope reporting contract, not a precedence claim.
+
+Additional `AGENTS.md` files expand supported relative references and
+participate in normalized standard-content copy detection. Additional modular
+files use the same repository-relative `applyTo` matching and diagnostics as
+ordinary modular sources. Both categories share resolved-file identity with
+all earlier routes, so pointing at an ordinary location does not duplicate it.
+Source symlinks that resolve outside the repository are reported as invalid
+instead of being read. Planned targets use their requested repository-relative
+path exactly as ordinary modular matching does.
+
 Modular `*.instructions.md` and imported files neither participate in nor seed
 standard-copy detection. References found in a duplicate standard source are
 still resolved immediately relative to that copy. This conservative choice
@@ -73,14 +105,16 @@ existing first-route-wins behavior.
 Standard-source reasons name whether a file came from the repository root,
 session intermediate, session directory, or target-nested location. Duplicate
 reasons instead name the first retained source and state that relative imports
-are still evaluated. Human output renders `DUPLICATE`; inspection schema v4
-uses `state: "duplicate"` in the unchanged source object. Comparison schema v2
+are still evaluated. Human output renders `DUPLICATE`; inspection schema v5
+uses `state: "duplicate"` in the unchanged source object. Comparison schema v3
 continues to compare applied paths only, so duplicates do not create profile
-divergence. Policy exits are unchanged.
+divergence. Both document types record the effective, deduplicated additional
+directory list. Existing policy exits apply to additional sources unchanged.
 
-User-level locations, `COPILOT_HOME`, `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`, and
-files disabled with interactive `/instructions` remain outside v0.8.0.
-Unreadable or non-UTF-8 standard files cannot be content-compared and preserve
-the prior applied-source behavior. Resolved-file identity deduplication still
-prevents the same file from appearing twice through direct, referenced, or
+User-home locations, `COPILOT_HOME`, implicit environment loading, nested
+`AGENTS.md` interpretation inside an additional directory, and files disabled
+with interactive `/instructions` remain outside v0.9.0. Unreadable or non-UTF-8
+standard files cannot be content-compared and preserve the prior applied-source
+behavior. Resolved-file identity deduplication still prevents the same file
+from appearing twice through direct, referenced, additional-directory, or
 symlink-equivalent routes.

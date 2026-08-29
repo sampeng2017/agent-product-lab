@@ -102,6 +102,7 @@ def inspect_targets(
     *,
     profile: str = "agents-md",
     cwd: str | Path = ".",
+    instruction_dirs: Sequence[str | Path] = (),
 ) -> list[TargetInspection]:
     """Return the instruction sources that a profile applies to each target."""
     if profile not in PROFILES:
@@ -111,6 +112,9 @@ def inspect_targets(
     if not resolved_root.is_dir():
         raise ValueError(f"repository root is not a directory: {root}")
     session_directory = _resolve_session_directory(resolved_root, Path(cwd))
+    additional_directories = resolve_instruction_directories(
+        resolved_root, instruction_dirs
+    )
 
     requested = targets or (Path("."),)
     return [
@@ -119,6 +123,7 @@ def inspect_targets(
             Path(target),
             profile=profile,
             session_directory=session_directory,
+            instruction_directories=additional_directories,
         )
         for target in requested
     ]
@@ -129,10 +134,17 @@ def compare_targets(
     targets: Sequence[str | Path],
     *,
     cwd: str | Path = ".",
+    instruction_dirs: Sequence[str | Path] = (),
 ) -> list[TargetComparison]:
     """Compare applied instruction paths across all supported profiles."""
     inspected_by_profile = {
-        profile: inspect_targets(root, targets, profile=profile, cwd=cwd)
+        profile: inspect_targets(
+            root,
+            targets,
+            profile=profile,
+            cwd=cwd,
+            instruction_dirs=instruction_dirs,
+        )
         for profile in PROFILES
     }
     comparisons: list[TargetComparison] = []
@@ -187,12 +199,42 @@ def _resolve_session_directory(root: Path, cwd: Path) -> Path:
     return resolved
 
 
+def resolve_instruction_directories(
+    root: Path, directories: Sequence[str | Path]
+) -> tuple[Path, ...]:
+    """Resolve explicit additional instruction directories within a repository."""
+    resolved_root = root.resolve()
+    resolved_directories: list[Path] = []
+    seen: set[Path] = set()
+    for directory in directories:
+        requested = Path(directory)
+        candidate = (
+            requested if requested.is_absolute() else resolved_root / requested
+        )
+        resolved = candidate.resolve(strict=False)
+        try:
+            resolved.relative_to(resolved_root)
+        except ValueError as exc:
+            raise ValueError(
+                f"additional instruction directory escapes repository root: {directory}"
+            ) from exc
+        if not resolved.is_dir():
+            raise ValueError(
+                f"additional instruction directory is not a directory: {directory}"
+            )
+        if resolved not in seen:
+            seen.add(resolved)
+            resolved_directories.append(resolved)
+    return tuple(resolved_directories)
+
+
 def _inspect_target(
     root: Path,
     target: Path,
     *,
     profile: str,
     session_directory: Path,
+    instruction_directories: Sequence[Path],
 ) -> TargetInspection:
     candidate = target if target.is_absolute() else root / target
     resolved = candidate.resolve(strict=False)
@@ -216,6 +258,7 @@ def _inspect_target(
             root,
             standard_locations,
             modular_locations,
+            instruction_directories,
             relative.as_posix(),
         )
 
@@ -292,6 +335,7 @@ def _copilot_cli_sources(
     root: Path,
     standard_locations: Sequence[tuple[Path, str]],
     modular_locations: Sequence[Path],
+    instruction_directories: Sequence[Path],
     target: str,
 ) -> list[InstructionSource]:
     sources: list[InstructionSource] = []
@@ -329,34 +373,87 @@ def _copilot_cli_sources(
 
     for directory in modular_locations:
         modular_root = directory / ".github" / "instructions"
-        if not modular_root.is_dir():
+        if modular_root.is_dir():
+            _append_modular_sources(
+                root,
+                sorted(modular_root.rglob("*.instructions.md")),
+                target,
+                sources,
+                discovered,
+                reason_suffix="",
+            )
+
+    for directory in instruction_directories:
+        agents_file = directory / "AGENTS.md"
+        if agents_file.is_file():
+            _append_copilot_source(
+                root,
+                agents_file,
+                InstructionSource(
+                    _relative(root, agents_file),
+                    "agents-md",
+                    "applied",
+                    "combined from an explicit additional instruction directory",
+                ),
+                sources,
+                discovered,
+                standard_content_sources=standard_content_sources,
+            )
+        _append_modular_sources(
+            root,
+            sorted(directory.rglob("*.instructions.md")),
+            target,
+            sources,
+            discovered,
+            reason_suffix=" from an explicit additional instruction directory",
+        )
+    return sources
+
+
+def _append_modular_sources(
+    root: Path,
+    paths: Iterable[Path],
+    target: str,
+    sources: list[InstructionSource],
+    discovered: set[Path],
+    *,
+    reason_suffix: str,
+) -> None:
+    for path in paths:
+        resolved = path.resolve()
+        if resolved in discovered:
             continue
-        for path in sorted(modular_root.rglob("*.instructions.md")):
-            resolved = path.resolve()
-            if resolved in discovered:
-                continue
-            discovered.add(resolved)
-            frontmatter = _read_apply_to_frontmatter(path)
-            patterns = frontmatter.patterns
-            if frontmatter.error:
-                state = "invalid"
-                reason = frontmatter.error
-            elif any(_matches(target, pattern) for pattern in patterns):
-                state = "applied"
-                reason = f"applyTo matches {target}"
-            else:
-                state = "ignored"
-                reason = f"applyTo does not match {target}"
+        discovered.add(resolved)
+        if not _is_contained(root, resolved):
             sources.append(
                 InstructionSource(
                     _relative(root, path),
                     "copilot-path",
-                    state,
-                    reason,
-                    patterns,
+                    "invalid",
+                    "instruction file escapes repository root through a symlink",
                 )
             )
-    return sources
+            continue
+        frontmatter = _read_apply_to_frontmatter(path)
+        patterns = frontmatter.patterns
+        if frontmatter.error:
+            state = "invalid"
+            reason = frontmatter.error
+        elif any(_matches(target, pattern) for pattern in patterns):
+            state = "applied"
+            reason = f"applyTo matches {target}{reason_suffix}"
+        else:
+            state = "ignored"
+            reason = f"applyTo does not match {target}{reason_suffix}"
+        sources.append(
+            InstructionSource(
+                _relative(root, path),
+                "copilot-path",
+                state,
+                reason,
+                patterns,
+            )
+        )
 
 
 def _append_copilot_source(
@@ -373,6 +470,16 @@ def _append_copilot_source(
     if resolved in discovered:
         return
     discovered.add(resolved)
+    if not _is_contained(root, resolved):
+        sources.append(
+            InstructionSource(
+                source.path,
+                source.kind,
+                "invalid",
+                "instruction file escapes repository root through a symlink",
+            )
+        )
+        return
 
     if standard_content_sources is not None:
         content_key = _standard_instruction_content_key(path)
@@ -609,3 +716,11 @@ def _matches(target: str, pattern: str) -> bool:
 
 def _relative(root: Path, path: Path) -> str:
     return path.relative_to(root).as_posix()
+
+
+def _is_contained(root: Path, path: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
