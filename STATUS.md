@@ -12,7 +12,8 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
   compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
-- Root documentation coordinates portfolio decisions and run handoffs.
+- Root documentation coordinates portfolio decisions and run handoffs. A
+  read-only portfolio CI workflow validates both products on Python 3.10-3.14.
 
 AgentScope models two explicit profiles. `agents-md` applies the closest
 ancestor `AGENTS.md` and explains shadowed files. `copilot-cli` combines
@@ -22,29 +23,31 @@ supported recursive imports, diagnoses invalid sources, and explains duplicate
 instruction content. Inspection emits human or schema-v5 JSON with policy
 gates; comparison emits human or schema-v3 JSON and can gate divergence.
 
-## Completed today (2026-08-28)
+## Completed today (2026-08-29)
 
-- Rechecked GitHub's current configured-instruction-directory contract and
-  limited modeling to the documented `AGENTS.md` and `*.instructions.md` forms.
-- Added repeatable `--instructions-dir` to inspection and comparison without
-  reading `COPILOT_CUSTOM_INSTRUCTIONS_DIRS` from the environment.
-- Enforced existing, repository-contained directories, stable caller ordering,
-  and resolved-identity deduplication of equivalent input paths.
-- Added direct additional `AGENTS.md` and recursive modular discovery after
-  ordinary sources, integrated with imports, globs, content-copy handling,
-  planned targets, comparison, and policy exits.
-- Reported escaping source symlinks as invalid rather than reading them.
-- Recorded effective inputs in human output, inspection schema v5, and
-  comparison schema v3; bumped AgentScope to 0.9.0 and grew the suite to 34
-  passing tests.
-- Revalidated frozen ProofRun without changing its product scope.
+- Added one root GitHub Actions workflow for pushes, pull requests, and manual
+  runs with read-only contents permission and no retained checkout credential.
+- Added a Python 3.10-3.14 matrix using the current official checkout and Python
+  setup action majors; the oldest supported runtime treats warnings as errors.
+- Added one reusable local validator that runs both unit suites, compiles both
+  packages, builds wheels without publishing, installs them into isolated
+  environments, and exercises both console commands.
+- Made CI install the shared declared `setuptools>=68` build requirement and
+  added a concise local preflight when the selected interpreter lacks it.
+- Kept all generated artifacts, bytecode, and virtual environments in a
+  temporary directory that is removed at exit, leaving the checkout unchanged.
+- Documented exact local use, build-backend preflight, platform scope, and the
+  distinction between active AgentScope and frozen ProofRun validation.
+- Revalidated 34 AgentScope tests and 53 ProofRun tests (one expected optional
+  pytest-runtime skip) before introducing the workflow.
 
 ## Changes since the prior run
 
-AgentScope can now reproduce configured Copilot directory discovery without
-hidden process state. Reports preserve the exact deduplicated input list and
-additional sources receive the same explanations and gates as ordinary ones.
-ProofRun remains frozen, and no Sam request is active.
+The portfolio now has a single maintained validation entry point locally and in
+GitHub Actions. Every stable supported Python minor is covered, packaging is
+tested from built artifacts rather than editable installs, and warning drift is
+caught at the Python 3.10 compatibility boundary. Product behavior did not
+change; ProofRun remains frozen, and no Sam request is active.
 
 ## Known issues
 
@@ -63,7 +66,8 @@ ProofRun remains frozen, and no Sam request is active.
   import size limit, and interactive source disabling are not modeled.
 - Client behavior can evolve, so profile assumptions require source-linked tests
   and explicit schema/version changes.
-- The repository has no root CI workflow; each product is validated separately.
+- Root CI currently runs on Ubuntu only; Windows/macOS behavior remains covered
+  by portable implementation design and focused platform code, not hosted jobs.
 
 ## Decisions
 
@@ -80,8 +84,11 @@ ProofRun remains frozen, and no Sam request is active.
   standard/additional agent sources; reject symlink escapes as invalid.
 - Preserve planned target support and use inspection schema v5/comparison v3 to
   record the effective additional-directory list.
+- Validate all stable supported Python minors in root CI, keep external
+  permissions read-only, and build/smoke-install packages outside the checkout.
 
 ## Recommended next step
 
-Add a root GitHub Actions workflow that validates AgentScope and frozen ProofRun
-across supported Python versions, including isolated wheel-install smoke tests.
+Make unreadable or non-UTF-8 standard Copilot instruction files explicit invalid
+sources so existing policy gates cannot accept content AgentScope could not
+inspect.

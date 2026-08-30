@@ -981,3 +981,42 @@ Frozen ProofRun passed all 53 tests with one expected optional pytest-runtime
 skip. Post-commit evidence validation is recorded in the final handoff. The next
 run should add a read-only root CI workflow that validates both products and
 isolated package installs from one maintained entry point.
+
+## 2026-08-29 — Portfolio compatibility and package CI
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, portfolio and product handoffs, active `To-Sam/` messages,
+product documentation, implementation, and tests. No Sam request was active.
+The AgentScope baseline passed all 34 tests; frozen ProofRun passed all 53 tests
+with one expected optional pytest-runtime skip.
+
+Added a root GitHub Actions workflow for push, pull request, and manual runs.
+The matrix covers Python 3.10, 3.11, 3.12, 3.13, and 3.14, matching both
+packages' `>=3.10` metadata across current stable minors. Python 3.10 promotes
+warnings to errors. The workflow uses the current official checkout and Python
+setup action majors, grants only read access to repository contents, disables
+persisted checkout credentials, fails matrix jobs independently, and has a
+bounded timeout. Each job explicitly installs the packages' shared declared
+`setuptools>=68` build backend because modern Python installations need not
+bundle it.
+
+Added `scripts/validate-portfolio.sh` as the shared local and hosted validation
+entry point. For each product it runs the unit suite without checkout bytecode,
+compiles sources into a temporary cache, builds a wheel without publishing,
+installs the exact wheel with dependencies disabled into a fresh virtual
+environment, and exercises the installed console command. All generated state
+lives under a temporary directory and is removed on exit. This proves both the
+active AgentScope package and frozen ProofRun distribution while keeping the
+checkout clean and avoiding editable-install blind spots. The validator
+preflights the build backend and emits a concise remediation when a selected
+local interpreter does not provide it.
+
+Updated root and AgentScope documentation, product status, and the next-run
+handoff. Final validation passed through the warning-strict shared script on
+Python 3.11: all 34 AgentScope tests, 52 ProofRun tests with one expected skip,
+both compile passes, both no-isolation wheel builds, both isolated installs, and
+both console smokes. Shell syntax, dependency-free Ruby YAML parsing, Git
+whitespace checks, the missing-backend preflight, and checkout cleanliness also
+passed. The next run should make unreadable or non-UTF-8 Copilot standard files
+explicit invalid diagnostics so `--fail-on-invalid-sources` cannot accept
+instructions AgentScope could not inspect.

@@ -11,33 +11,30 @@ and explain resolved-path and normalized-content deduplication. Human and
 versioned JSON output support missing-instructions, invalid-reference,
 invalid-source, and profile-divergence gates.
 
-## Completed on 2026-08-28
+## Completed on 2026-08-29
 
-- Rechecked GitHub's current `COPILOT_CUSTOM_INSTRUCTIONS_DIRS` documentation:
-  configured directories add `AGENTS.md` and `*.instructions.md` sources, while
-  ordering and nested `AGENTS.md` scope remain unspecified.
-- Added repeatable `--instructions-dir` input to inspection and comparison
-  without implicitly reading the process environment.
-- Required each directory to exist, resolve inside the selected repository, and
-  remain contained through symlinks; equivalent directory inputs collapse to
-  their first occurrence.
-- Added direct `AGENTS.md` and recursively sorted `*.instructions.md` discovery
-  after ordinary repository/session sources, preserving caller directory order.
-- Integrated additional sources with recursive imports, repository-relative
-  glob matching, normalized-content copy detection, resolved-route
-  deduplication, invalid-source policy exits, and planned targets.
-- Rejected source-file symlinks that escape the repository instead of reading
-  them, including ordinary and additional discovery routes.
-- Recorded the effective directory list in human output, inspection schema v5,
-  and comparison schema v3; target and source object shapes remain unchanged.
-- Bumped AgentScope to 0.9.0 and expanded the suite from 31 to 34 tests.
+- Added root portfolio CI across every stable supported Python minor from 3.10
+  through 3.14, with warning-strict tests at the oldest compatibility boundary.
+- Added a reusable local validation entry point that runs AgentScope's 34 tests,
+  compiles its source, builds its wheel, installs that wheel into a fresh
+  environment, and exercises the installed `agentscope --version` command.
+- Applied the same checks to frozen ProofRun without resuming its feature scope.
+- Kept build, bytecode, wheel, and environment output outside the checkout and
+  removed it after validation.
+- Provisioned the shared declared `setuptools>=68` backend explicitly in CI and
+  made local backend absence a concise validator preflight.
+- Used read-only GitHub permissions, disabled retained checkout credentials, and
+  pinned the current official checkout/setup action majors.
+- Documented exact local use, build prerequisites, and the Ubuntu-only hosted
+  matrix boundary.
 
 ## Changes since the prior run
 
-Maintainers can now reproduce configured Copilot instruction discovery without
-hidden environment state. Saved output includes the effective, deduplicated
-directory list, and the same policy gates diagnose malformed or escaping
-additional sources. ProofRun remains frozen.
+AgentScope now has continuous compatibility and distribution-shape validation
+instead of relying only on autonomous local runs. The workflow tests all
+declared stable Python minors and proves the installed console command from a
+built wheel. AgentScope behavior and schemas remain unchanged; ProofRun remains
+frozen.
 
 ## Known issues
 
@@ -60,6 +57,8 @@ additional sources. ProofRun remains frozen.
   the local 10-edge depth limit is intentionally product-defined.
 - GitHub's Copilot CLI documentation does not explicitly demonstrate `?`;
   AgentScope documents conventional single-character behavior as its contract.
+- Root hosted CI runs on Ubuntu only; Windows and macOS are not separate matrix
+  dimensions.
 
 ## Decisions
 
@@ -76,9 +75,11 @@ additional sources. ProofRun remains frozen.
 - Reject any discovered instruction symlink that escapes the selected root.
 - Use inspection schema v5 and comparison schema v3 to record the new effective
   input while preserving target and source objects.
+- Keep portfolio validation in one root script, cover Python 3.10-3.14, promote
+  warnings to errors on 3.10, and install wheels only in temporary environments.
 
 ## Recommended next step
 
-Add a repository-level CI workflow that validates both AgentScope and the
-frozen ProofRun product, including Python 3.10/3.11 compatibility and isolated
-wheel-install smoke tests from one maintained entry point.
+Treat unreadable or non-UTF-8 standard Copilot instructions as explicit invalid
+sources and cover their policy, output, comparison, and reference-expansion
+behavior.

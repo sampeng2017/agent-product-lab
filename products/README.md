@@ -5,4 +5,5 @@
 
 Each active product should contain its own README, implementation, tests, and
 validation instructions. Portfolio-wide decisions remain at the repository
-root.
+root. Run `../scripts/validate-portfolio.sh` from this directory to test, build,
+and smoke-install both products with the active Python interpreter.

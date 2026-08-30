@@ -125,7 +125,14 @@ packages/api/src/app.py: DIVERGENT
 ```bash
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m compileall -q src tests
+../../scripts/validate-portfolio.sh
 ```
+
+The first two commands are the focused AgentScope checks. The root validator
+also runs frozen ProofRun, builds both wheels outside the checkout, installs
+them into isolated environments, and smokes their console commands. Root
+Portfolio CI runs that validator on Python 3.10 through 3.14 and treats warnings
+as errors on 3.10.
 
 See [`docs/OPPORTUNITIES.md`](docs/OPPORTUNITIES.md) for the opportunity
 selection evidence, [`docs/GLOB_COMPATIBILITY.md`](docs/GLOB_COMPATIBILITY.md)
@@ -148,5 +155,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, add a repository-level CI workflow that validates both preserved products
-and package-install smoke tests from one maintained entry point.
+Next, make unreadable or non-UTF-8 standard Copilot instruction files explicit
+invalid diagnostics so policy gates cannot accept sources AgentScope could not
+inspect or content-compare.
