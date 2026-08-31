@@ -30,6 +30,9 @@ and equivalent paths are reported once. Each directory contributes its direct
 repository/session sources are reported first, followed by additional
 directories in caller order and their modular files in path order.
 
+Unreadable or non-UTF-8 Copilot sources are reported as `invalid` with stable
+diagnostics that do not expose platform exception details. AgentScope does not
+content-compare them or expand apparent references from undecodable content.
 Use `--require-instructions` to turn missing applicable guidance into exit 1;
 use `--fail-on-invalid-references` to reject cycles, missing imports, and other
 invalid Copilot reference edges. Use the broader `--fail-on-invalid-sources` to
@@ -49,7 +52,7 @@ is informational by default; `--fail-on-divergence` exits 1 when any target has
 a source applied by only one profile. This makes the command suitable for a CI
 policy without treating shared guidance or unmatched path rules as divergence.
 
-## Profiles in v0.9.0
+## Profiles in v0.10.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -66,6 +69,8 @@ policy without treating shared guidance or unmatched path rules as divergence.
   Explicit additional directories contribute `AGENTS.md` and recursively
   discovered modular instructions after the ordinary locations. Their sources
   share the same resolved-path, content-copy, glob, import, and policy logic.
+  Any source that cannot be read as UTF-8 is invalid rather than applied, and
+  recursive expansion stops safely at that source.
 
 The path-specific parser intentionally supports a conservative subset:
 frontmatter must contain a one-line scalar `applyTo`, with multiple glob
@@ -155,6 +160,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, make unreadable or non-UTF-8 standard Copilot instruction files explicit
-invalid diagnostics so policy gates cannot accept sources AgentScope could not
-inspect or content-compare.
+Next, preserve invalid-source diagnostics in profile comparison output and add
+an explicit comparison policy gate so unreadable or malformed guidance cannot
+be hidden by an otherwise consistent applied-path result.

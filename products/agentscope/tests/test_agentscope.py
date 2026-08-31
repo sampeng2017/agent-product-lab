@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from agentscope.cli import main
 from agentscope.core import (
@@ -380,6 +381,101 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(result.sources[-1].kind, "copilot-reference")
         self.assertEqual(result.applied_count, 4)
 
+    def test_unreadable_standard_sources_are_invalid_without_expanding_references(
+        self,
+    ) -> None:
+        invalid_utf8 = self.root / ".github" / "copilot-instructions.md"
+        invalid_utf8.parent.mkdir(parents=True)
+        invalid_utf8.write_bytes(b"@hidden-from-invalid.md\n\xff")
+        self.write("hidden-from-invalid.md")
+        self.write("AGENTS.md", "@valid.md\n")
+        self.write("valid.md")
+        self.write("CLAUDE.md", "@hidden-from-unreadable.md\n")
+        self.write("hidden-from-unreadable.md")
+
+        original_read_text = Path.read_text
+        unreadable = (self.root / "CLAUDE.md").resolve()
+
+        def read_text_with_failure(path: Path, *args: object, **kwargs: object) -> str:
+            if path.resolve() == unreadable:
+                raise OSError("platform-specific details must not leak")
+            return original_read_text(path, *args, **kwargs)
+
+        with patch.object(Path, "read_text", read_text_with_failure):
+            result = inspect_targets(
+                self.root, ["src/app.py"], profile="copilot-cli"
+            )[0]
+
+        self.assertEqual(
+            [(source.path, source.state) for source in result.sources],
+            [
+                (".github/copilot-instructions.md", "invalid"),
+                ("AGENTS.md", "applied"),
+                ("valid.md", "applied"),
+                ("CLAUDE.md", "invalid"),
+            ],
+        )
+        self.assertEqual(result.applied_count, 2)
+        self.assertEqual(result.invalid_source_count, 2)
+        self.assertEqual(result.invalid_reference_count, 0)
+        self.assertEqual(
+            result.sources[0].reason, "instruction file is not valid UTF-8"
+        )
+        self.assertEqual(
+            result.sources[-1].reason, "instruction file could not be read"
+        )
+        self.assertNotIn(
+            "platform-specific details",
+            " ".join(source.reason for source in result.sources),
+        )
+
+    def test_invalid_standard_source_policy_output_and_comparison(self) -> None:
+        agents = self.root / "AGENTS.md"
+        agents.write_bytes(b"@hidden.md\n\xff")
+        self.write("hidden.md")
+
+        human = io.StringIO()
+        with redirect_stdout(human):
+            informational_exit = main(
+                ["--profile", "copilot-cli", "--root", str(self.root), "src/app.py"]
+            )
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            policy_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-invalid-sources",
+                    "src/app.py",
+                ]
+            )
+
+        payload = json.loads(output.getvalue())
+        comparison = compare_targets(self.root, ["src/app.py"])[0]
+        by_profile = {profile.profile: profile for profile in comparison.profiles}
+
+        self.assertEqual(informational_exit, 0)
+        self.assertEqual(policy_exit, 1)
+        self.assertIn("invalid sources: 1", human.getvalue())
+        self.assertIn("INVALID  AGENTS.md [agents-md]", human.getvalue())
+        self.assertIn("not valid UTF-8", human.getvalue())
+        self.assertEqual(payload["schema_version"], 5)
+        self.assertEqual(payload["applied_source_count"], 0)
+        self.assertEqual(payload["invalid_source_count"], 1)
+        self.assertEqual(payload["invalid_reference_count"], 0)
+        self.assertEqual(payload["targets"][0]["sources"][0]["state"], "invalid")
+        self.assertEqual(
+            [source["path"] for source in payload["targets"][0]["sources"]],
+            ["AGENTS.md"],
+        )
+        self.assertTrue(comparison.divergent)
+        self.assertEqual(by_profile["agents-md"].unique_sources, ("AGENTS.md",))
+        self.assertEqual(by_profile["copilot-cli"].applied_sources, ())
+
     def test_copilot_references_expand_recursively_and_relative_to_each_file(self) -> None:
         self.write("AGENTS.md", "@docs/root.md\n")
         self.write("docs/root.md", "@nested/detail.md\n")
@@ -423,6 +519,39 @@ class AgentScopeTests(unittest.TestCase):
         self.assertIn("absolute reference", invalid[3].reason)
         self.assertIn("home-relative reference", invalid[4].reason)
         self.assertEqual(result.applied_count, 2)
+
+    def test_unreadable_reference_is_invalid_and_stops_recursive_expansion(
+        self,
+    ) -> None:
+        self.write("AGENTS.md", "@guide.md\n")
+        (self.root / "guide.md").write_bytes(b"@hidden.md\n\xff")
+        self.write("hidden.md")
+
+        result = inspect_targets(self.root, ["src/app.py"], profile="copilot-cli")[0]
+        with redirect_stdout(io.StringIO()):
+            gate_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-references",
+                    "src/app.py",
+                ]
+            )
+
+        self.assertEqual(
+            [(source.path, source.state) for source in result.sources],
+            [("AGENTS.md", "applied"), ("guide.md", "invalid")],
+        )
+        self.assertEqual(result.applied_count, 1)
+        self.assertEqual(result.invalid_source_count, 1)
+        self.assertEqual(result.invalid_reference_count, 1)
+        self.assertEqual(
+            result.sources[-1].reason,
+            "instruction file is not valid UTF-8 (referenced by AGENTS.md)",
+        )
+        self.assertEqual(gate_exit, 1)
 
     def test_reference_sources_keep_human_and_json_contracts(self) -> None:
         self.write("AGENTS.md", "@guide.md\n@missing.md\n")

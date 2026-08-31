@@ -481,26 +481,38 @@ def _append_copilot_source(
         )
         return
 
+    content, read_error = _read_instruction_text(path)
+    if read_error:
+        sources.append(
+            InstructionSource(
+                source.path,
+                source.kind,
+                "invalid",
+                read_error,
+            )
+        )
+        return
+
     if standard_content_sources is not None:
-        content_key = _standard_instruction_content_key(path)
-        if content_key is not None:
-            first_source = standard_content_sources.get(content_key)
-            if first_source is None:
-                standard_content_sources[content_key] = source.path
-            else:
-                source = InstructionSource(
-                    source.path,
-                    source.kind,
-                    "duplicate",
-                    "duplicate normalized content of first discovered source "
-                    f"{first_source}; relative references are still evaluated",
-                )
+        content_key = _standard_instruction_content_key(content)
+        first_source = standard_content_sources.get(content_key)
+        if first_source is None:
+            standard_content_sources[content_key] = source.path
+        else:
+            source = InstructionSource(
+                source.path,
+                source.kind,
+                "duplicate",
+                "duplicate normalized content of first discovered source "
+                f"{first_source}; relative references are still evaluated",
+            )
     sources.append(source)
     if not expand_references:
         return
     _append_references(
         root,
         path,
+        content,
         sources,
         discovered,
         active=(resolved,),
@@ -508,30 +520,32 @@ def _append_copilot_source(
     )
 
 
-def _standard_instruction_content_key(path: Path) -> str | None:
-    """Return conservatively normalized text for eligible standard instructions."""
+def _read_instruction_text(path: Path) -> tuple[str, str | None]:
+    """Read an instruction without exposing platform-specific failure details."""
     try:
-        content = path.read_text(encoding="utf-8")
-    except (OSError, UnicodeError):
-        return None
+        return path.read_text(encoding="utf-8"), None
+    except UnicodeError:
+        return "", "instruction file is not valid UTF-8"
+    except OSError:
+        return "", "instruction file could not be read"
+
+
+def _standard_instruction_content_key(content: str) -> str:
+    """Return conservatively normalized text for eligible standard instructions."""
     return " ".join(line.strip() for line in content.splitlines() if line.strip())
 
 
 def _append_references(
     root: Path,
     source_path: Path,
+    content: str,
     sources: list[InstructionSource],
     discovered: set[Path],
     *,
     active: tuple[Path, ...],
     depth: int,
 ) -> None:
-    try:
-        lines = source_path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError):
-        return
-
-    for line in lines:
+    for line in content.splitlines():
         stripped = line.strip()
         if not stripped.startswith("@") or len(stripped) == 1:
             continue
@@ -579,6 +593,17 @@ def _append_references(
             continue
 
         discovered.add(resolved)
+        referenced_content, read_error = _read_instruction_text(resolved)
+        if read_error:
+            sources.append(
+                InstructionSource(
+                    relative,
+                    "copilot-reference",
+                    "invalid",
+                    f"{read_error} (referenced by {parent})",
+                )
+            )
+            continue
         sources.append(
             InstructionSource(
                 relative,
@@ -590,6 +615,7 @@ def _append_references(
         _append_references(
             root,
             resolved,
+            referenced_content,
             sources,
             discovered,
             active=(*active, resolved),
@@ -615,10 +641,10 @@ def _resolve_reference(root: Path, source_path: Path, reference: str) -> Path | 
 
 
 def _read_apply_to_frontmatter(path: Path) -> _ApplyToFrontmatter:
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError):
-        return _ApplyToFrontmatter(error="instruction file is not readable UTF-8")
+    content, read_error = _read_instruction_text(path)
+    if read_error:
+        return _ApplyToFrontmatter(error=read_error)
+    lines = content.splitlines()
     if not lines or lines[0].strip() != "---":
         return _ApplyToFrontmatter(error="frontmatter must start with ---")
 

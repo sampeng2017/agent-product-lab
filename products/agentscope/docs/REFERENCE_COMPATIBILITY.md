@@ -1,7 +1,7 @@
 # `@` reference compatibility
 
 This document records the `@path` import contract modeled by AgentScope's
-`copilot-cli` profile as of 2026-08-28.
+`copilot-cli` profile as of 2026-08-30.
 
 The primary source is GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions).
@@ -26,6 +26,9 @@ limits.
 - Missing files, non-files, cycles, repository escapes, absolute paths, and
   `~/` paths appear as `invalid` sources. Their reason names the failed rule and
   referring file; they do not increase `applied_count`.
+- A referenced file that cannot be read or decoded as UTF-8 is an `invalid`
+  `copilot-reference`, and recursion stops at that edge. The reason uses a
+  stable category plus the referring path without exposing exception details.
 - AgentScope stops before the eleventh import edge. The resulting `invalid`
   source explicitly names AgentScope's 10-edge safety limit. This is a
   conservative product limit, not a claim about Copilot CLI's unpublished
@@ -57,5 +60,5 @@ contract. Invalid repository arguments retain exit 2.
 AgentScope does not read or inline file contents into its output, enforce
 GitHub's unpublished size guard, expand user-level instructions, or accept
 absolute imports. The invalid-reference gate applies only to inspection;
-comparison keeps its existing informational diagnostic treatment and separate
-divergence policy.
+comparison keeps its existing applied-path-only treatment and separate
+divergence policy, so invalid-source details are not yet preserved there.

@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-28.
+AgentScope's `copilot-cli` profile as of 2026-08-30.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -113,8 +113,11 @@ directory list. Existing policy exits apply to additional sources unchanged.
 
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.9.0. Unreadable or non-UTF-8
-standard files cannot be content-compared and preserve the prior applied-source
-behavior. Resolved-file identity deduplication still prevents the same file
-from appearing twice through direct, referenced, additional-directory, or
-symlink-equivalent routes.
+with interactive `/instructions` remain outside v0.10.0. A discovered Copilot
+source must be readable UTF-8 before it can be applied or content-compared.
+Decode failures use `instruction file is not valid UTF-8`; other read failures
+use `instruction file could not be read`. Both are stable `invalid` diagnostics,
+and exception details or file content are never included. Apparent references
+inside unreadable content are not expanded. Resolved-file identity
+deduplication still prevents the same file from appearing twice through direct,
+referenced, additional-directory, or symlink-equivalent routes.

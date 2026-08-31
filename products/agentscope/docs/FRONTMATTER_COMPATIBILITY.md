@@ -1,7 +1,7 @@
 # Path-instruction frontmatter compatibility
 
 This document records the deliberately small frontmatter contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-28.
+AgentScope's `copilot-cli` profile as of 2026-08-30.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -29,6 +29,8 @@ broken source from a valid source whose glob simply does not match the target.
 | block or inline YAML list | `invalid`: lists unsupported |
 | mapping or multiline value | `invalid`: form unsupported |
 | duplicate `applyTo`, missing colon, unmatched quote, or empty comma item | `invalid`: precise syntax diagnostic |
+| file cannot be decoded as UTF-8 | `invalid`: stable encoding diagnostic |
+| other file read failure | `invalid`: stable read diagnostic |
 | readable scalar whose globs do not match | `ignored`, not invalid |
 
 All path-instruction diagnostics use the existing `copilot-path` source kind

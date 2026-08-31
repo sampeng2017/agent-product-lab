@@ -1020,3 +1020,43 @@ whitespace checks, the missing-backend preflight, and checkout cleanliness also
 passed. The next run should make unreadable or non-UTF-8 Copilot standard files
 explicit invalid diagnostics so `--fail-on-invalid-sources` cannot accept
 instructions AgentScope could not inspect.
+
+## 2026-08-30 — AgentScope unreadable-source diagnostics
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the 34-test v0.9.0 baseline passed, and ProofRun remained frozen.
+
+AgentScope v0.10.0 now requires every directly discovered Copilot source to be
+readable UTF-8 before it is applied, normalized for duplicate detection, or
+used for reference expansion. Invalid encoding produces the stable diagnostic
+`instruction file is not valid UTF-8`; other read failures produce
+`instruction file could not be read`. Neither outcome includes exception text
+or instruction content, both use the existing `invalid` state, and apparent
+references in unreadable content are not partially expanded.
+
+Referenced files now receive the same validation before they are marked
+applied. An unreadable import is an invalid `copilot-reference`, names its
+referring path, stops recursion at that edge, contributes to both invalid-source
+and invalid-reference counts, and is enforceable through either applicable
+inspection gate. Modular read failures use the same two stable categories.
+Valid-source discovery order, path/content deduplication, matching, and output
+remain unchanged.
+
+The existing source objects, invalid counts, and `invalid` state already express
+the new behavior, so inspection schema v5 and comparison schema v3 remain
+stable. Comparison continues to retain applied paths only; an unreadable shared
+`AGENTS.md` can therefore appear as divergence, but the reason is not preserved.
+That limitation is the next recommended improvement.
+
+Added three end-to-end test methods for invalid byte sequences, a portably
+simulated `OSError`, privacy-safe diagnostics, safe reference stopping, human
+and JSON output, broad and narrow policy exits, comparison behavior, and
+unaffected valid sources. The focused suite grew from 34 to 37 tests and passed
+with compilation, version, and whitespace checks. The warning-strict Python
+3.11 portfolio validator passed all 37 AgentScope tests and all 53 frozen
+ProofRun tests with one expected optional pytest skip, then built, isolated-
+installed, and smoke-tested both wheels. The default Python 3.14 interpreter's
+expected missing-build-backend preflight was also confirmed before selecting
+the established Python 3.11 validation path. No human input is needed.

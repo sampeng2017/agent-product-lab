@@ -8,7 +8,7 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains AgentScope v0.9.0, 34 tests, source-linked
+- `products/agentscope/` contains AgentScope v0.10.0, 37 tests, source-linked
   compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
@@ -23,31 +23,27 @@ supported recursive imports, diagnoses invalid sources, and explains duplicate
 instruction content. Inspection emits human or schema-v5 JSON with policy
 gates; comparison emits human or schema-v3 JSON and can gate divergence.
 
-## Completed today (2026-08-29)
+## Completed today (2026-08-30)
 
-- Added one root GitHub Actions workflow for pushes, pull requests, and manual
-  runs with read-only contents permission and no retained checkout credential.
-- Added a Python 3.10-3.14 matrix using the current official checkout and Python
-  setup action majors; the oldest supported runtime treats warnings as errors.
-- Added one reusable local validator that runs both unit suites, compiles both
-  packages, builds wheels without publishing, installs them into isolated
-  environments, and exercises both console commands.
-- Made CI install the shared declared `setuptools>=68` build requirement and
-  added a concise local preflight when the selected interpreter lacks it.
-- Kept all generated artifacts, bytecode, and virtual environments in a
-  temporary directory that is removed at exit, leaving the checkout unchanged.
-- Documented exact local use, build-backend preflight, platform scope, and the
-  distinction between active AgentScope and frozen ProofRun validation.
-- Revalidated 34 AgentScope tests and 53 ProofRun tests (one expected optional
-  pytest-runtime skip) before introducing the workflow.
+- Made every directly discovered Copilot standard source readable as UTF-8
+  before it can be applied, content-compared, or used for reference expansion.
+- Added stable, privacy-safe diagnostics that distinguish invalid UTF-8 from
+  other read failures without embedding platform exception text.
+- Marked unreadable referenced files as invalid `copilot-reference` sources and
+  stopped recursion at the failed edge; the narrow reference gate now rejects
+  those failures as well as the broader invalid-source gate.
+- Preserved discovery order, resolved-path deduplication, valid-source behavior,
+  existing source objects, inspection schema v5, and comparison schema v3.
+- Added portable tests for invalid bytes, simulated read errors, human and JSON
+  output, both policy paths, comparison behavior, and safe expansion stopping.
+- Bumped AgentScope to v0.10.0 and expanded its suite from 34 to 37 tests.
 
 ## Changes since the prior run
 
-The portfolio now has a single maintained validation entry point locally and in
-GitHub Actions. Every stable supported Python minor is covered, packaging is
-tested from built artifacts rather than editable installs, and warning drift is
-caught at the Python 3.10 compatibility boundary. Product behavior did not
-change; ProofRun remains frozen, and no Sam request is active.
+AgentScope no longer treats content it could not inspect as applied evidence.
+Read failures now participate in enforceable policy and cannot trigger partial
+reference discovery. The prior portfolio CI remains unchanged, ProofRun stays
+frozen, and no Sam request is active.
 
 ## Known issues
 
@@ -56,8 +52,9 @@ change; ProofRun remains frozen, and no Sam request is active.
   file disabling remain out of scope.
 - GitHub does not document precedence or nested `AGENTS.md` scope for configured
   directories; AgentScope's direct-file and post-repository order is explicit.
-- Unreadable or non-UTF-8 standard files cannot be content-compared and retain
-  applied-source behavior; unreadable modular files are invalid.
+- Profile comparison still retains applied paths only; it can reveal an
+  unreadable shared `AGENTS.md` as divergence, but does not preserve the invalid
+  reason or offer an invalid-source comparison gate.
 - Content normalization ignores line placement, blank lines, and surrounding
   line whitespace but deliberately avoids semantic similarity.
 - The dependency-free frontmatter parser supports only scalar `applyTo` values;
@@ -82,6 +79,8 @@ change; ProofRun remains frozen, and no Sam request is active.
   order without claiming client precedence.
 - Deduplicate resolved identity first, then normalized content among eligible
   standard/additional agent sources; reject symlink escapes as invalid.
+- Require readable UTF-8 before any Copilot source is applied. Use stable read
+  categories without exception text and stop reference recursion on failure.
 - Preserve planned target support and use inspection schema v5/comparison v3 to
   record the effective additional-directory list.
 - Validate all stable supported Python minors in root CI, keep external
@@ -89,6 +88,5 @@ change; ProofRun remains frozen, and no Sam request is active.
 
 ## Recommended next step
 
-Make unreadable or non-UTF-8 standard Copilot instruction files explicit invalid
-sources so existing policy gates cannot accept content AgentScope could not
-inspect.
+Carry per-profile invalid-source diagnostics into comparison output and add an
+opt-in comparison gate without changing applied-path divergence semantics.

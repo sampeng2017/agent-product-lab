@@ -1,4 +1,4 @@
-# Next run: diagnose unreadable standard instructions
+# Next run: retain invalid diagnostics in comparison
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun feature work.
@@ -11,19 +11,19 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Make unreadable or non-UTF-8 Copilot standard files diagnosable and enforceable
-instead of leaving them in the applied state when content normalization fails.
+Make profile comparison retain invalid-source evidence instead of reducing each
+inspection to applied paths only.
 
-1. Define a precise read-error contract for standard files without leaking file
-   content or unstable platform exception text.
-2. Preserve ordered source discovery and recursive-reference behavior where it
-   is safe; do not read or expand references from content that cannot be decoded.
-3. Count affected files in `invalid_source_count` and make the existing
-   `--fail-on-invalid-sources` policy reject them.
-4. Cover invalid UTF-8, read failures that can be simulated portably, human/JSON
-   output, comparison behavior, and unaffected valid sources.
-5. Decide whether the source-state change requires an inspection schema or
-   package-version bump; document the compatibility reasoning explicitly.
+1. Extend comparison results with per-profile invalid counts and ordered source
+   diagnostics while keeping common/profile-only applied paths intact.
+2. Add an opt-in comparison invalid-source gate that composes with
+   `--fail-on-divergence` and renders full human/JSON output before exit 1.
+3. Decide and document the comparison schema bump; keep inspection schema v5
+   stable unless its existing contract actually changes.
+4. Cover consistent-invalid, divergent-invalid, malformed modular, unreadable
+   standard, and invalid-reference cases across human and JSON output.
+5. Preserve direct-library compatibility where practical and avoid conflating
+   source invalidity with applied-path divergence.
 6. Run the root portfolio validator plus focused AgentScope checks, update all
    handoffs, and leave a clean descriptive commit.
 
