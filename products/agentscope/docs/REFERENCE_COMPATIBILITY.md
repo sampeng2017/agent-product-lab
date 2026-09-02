@@ -44,8 +44,10 @@ invalid-reference counts. Inspection schema-v5 JSON exposes the same counts as
 `invalid_reference_count`, alongside the broader `invalid_source_count`; the
 document-level values sum diagnostic occurrences reported for each target. The
 existing `sources` object shape is unchanged from schema v1. Profile comparison
-schema v3 continues to compare only applied paths, so valid imported content
-participates in divergence while invalid edges do not.
+schema v4 continues to calculate divergence only from applied paths, so valid
+imported content participates while invalid edges do not. Invalid edges are
+retained as ordered per-profile diagnostics and contribute to comparison
+invalid-source and invalid-reference counts.
 
 Inspection is still informational by default. With
 `--fail-on-invalid-references`, any target containing at least one invalid
@@ -59,6 +61,6 @@ contract. Invalid repository arguments retain exit 2.
 
 AgentScope does not read or inline file contents into its output, enforce
 GitHub's unpublished size guard, expand user-level instructions, or accept
-absolute imports. The invalid-reference gate applies only to inspection;
-comparison keeps its existing applied-path-only treatment and separate
-divergence policy, so invalid-source details are not yet preserved there.
+absolute imports. Comparison preserves invalid-reference details and its broad
+`--fail-on-invalid-sources` gate rejects them, but it does not yet expose the
+narrow `--fail-on-invalid-references` policy available during inspection.

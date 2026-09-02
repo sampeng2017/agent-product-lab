@@ -8,7 +8,7 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains AgentScope v0.10.0, 37 tests, source-linked
+- `products/agentscope/` contains AgentScope v0.11.0, 39 tests, source-linked
   compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
@@ -21,29 +21,28 @@ repository standard locations using explicit repository-contained session and
 additional-directory inputs, evaluates scalar `applyTo` globs, expands
 supported recursive imports, diagnoses invalid sources, and explains duplicate
 instruction content. Inspection emits human or schema-v5 JSON with policy
-gates; comparison emits human or schema-v3 JSON and can gate divergence.
+gates; comparison emits human or schema-v4 JSON and can independently gate
+applied-path divergence or invalid guidance.
 
-## Completed today (2026-08-30)
+## Completed today (2026-09-01)
 
-- Made every directly discovered Copilot standard source readable as UTF-8
-  before it can be applied, content-compared, or used for reference expansion.
-- Added stable, privacy-safe diagnostics that distinguish invalid UTF-8 from
-  other read failures without embedding platform exception text.
-- Marked unreadable referenced files as invalid `copilot-reference` sources and
-  stopped recursion at the failed edge; the narrow reference gate now rejects
-  those failures as well as the broader invalid-source gate.
-- Preserved discovery order, resolved-path deduplication, valid-source behavior,
-  existing source objects, inspection schema v5, and comparison schema v3.
-- Added portable tests for invalid bytes, simulated read errors, human and JSON
-  output, both policy paths, comparison behavior, and safe expansion stopping.
-- Bumped AgentScope to v0.10.0 and expanded its suite from 34 to 37 tests.
+- Retained each profile's ordered invalid sources in direct-library comparison
+  results instead of reducing inspections to applied paths alone.
+- Added invalid-source and invalid-reference aggregates per profile, target, and
+  comparison document in human output and comparison JSON schema v4.
+- Added `compare --fail-on-invalid-sources`; it composes with
+  `--fail-on-divergence`, renders complete diagnostics, and exits 1 on either
+  policy without changing invalid repository input exit 2.
+- Kept divergence strictly based on profile-specific applied paths, allowing a
+  consistent-but-invalid result to remain accurately labeled.
+- Bumped AgentScope to v0.11.0 and expanded the suite from 37 to 39 tests.
 
 ## Changes since the prior run
 
-AgentScope no longer treats content it could not inspect as applied evidence.
-Read failures now participate in enforceable policy and cannot trigger partial
-reference discovery. The prior portfolio CI remains unchanged, ProofRun stays
-frozen, and no Sam request is active.
+Profile comparison now exposes malformed, unreadable, and invalid-reference
+evidence with its profile attribution and discovery order. CI can reject that
+evidence independently from source-set divergence. Inspection schema v5 and
+existing discovery behavior remain unchanged; ProofRun stays frozen.
 
 ## Known issues
 
@@ -52,9 +51,8 @@ frozen, and no Sam request is active.
   file disabling remain out of scope.
 - GitHub does not document precedence or nested `AGENTS.md` scope for configured
   directories; AgentScope's direct-file and post-repository order is explicit.
-- Profile comparison still retains applied paths only; it can reveal an
-  unreadable shared `AGENTS.md` as divergence, but does not preserve the invalid
-  reason or offer an invalid-source comparison gate.
+- Comparison does not yet expose the narrower invalid-reference-only gate that
+  inspection provides; its new comparison policy rejects all invalid sources.
 - Content normalization ignores line placement, blank lines, and surrounding
   line whitespace but deliberately avoids semantic similarity.
 - The dependency-free frontmatter parser supports only scalar `applyTo` values;
@@ -81,12 +79,12 @@ frozen, and no Sam request is active.
   standard/additional agent sources; reject symlink escapes as invalid.
 - Require readable UTF-8 before any Copilot source is applied. Use stable read
   categories without exception text and stop reference recursion on failure.
-- Preserve planned target support and use inspection schema v5/comparison v3 to
-  record the effective additional-directory list.
+- Preserve planned target support and use inspection schema v5/comparison v4;
+  keep invalid evidence separate from applied-path divergence.
 - Validate all stable supported Python minors in root CI, keep external
   permissions read-only, and build/smoke-install packages outside the checkout.
 
 ## Recommended next step
 
-Carry per-profile invalid-source diagnostics into comparison output and add an
-opt-in comparison gate without changing applied-path divergence semantics.
+Add a narrow `compare --fail-on-invalid-references` gate for callers that want
+to reject broken imports without rejecting other malformed instruction sources.

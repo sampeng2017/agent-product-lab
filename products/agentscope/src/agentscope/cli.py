@@ -100,6 +100,11 @@ def build_compare_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit 1 when any target has profile-specific applied sources",
     )
+    parser.add_argument(
+        "--fail-on-invalid-sources",
+        action="store_true",
+        help="exit 1 when any target has an invalid source in any profile",
+    )
     return parser
 
 
@@ -182,7 +187,11 @@ def _compare_main(argv: Sequence[str]) -> int:
     else:
         _print_comparison(args.root, args.cwd, args.instructions_dir, compared)
 
-    if args.fail_on_divergence and any(item.divergent for item in compared):
+    divergent = args.fail_on_divergence and any(item.divergent for item in compared)
+    invalid_sources = args.fail_on_invalid_sources and any(
+        item.invalid_source_count > 0 for item in compared
+    )
+    if divergent or invalid_sources:
         return 1
     return 0
 
@@ -262,7 +271,7 @@ def _comparison_json_result(
     compared: Sequence[TargetComparison],
 ) -> dict[str, object]:
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "root": str(root.resolve()),
         "session_directory": _session_label(root, cwd),
         "additional_instruction_directories": _instruction_directory_labels(
@@ -271,6 +280,12 @@ def _comparison_json_result(
         "profiles": list(PROFILES),
         "target_count": len(compared),
         "divergent_target_count": sum(item.divergent for item in compared),
+        "invalid_source_count": sum(
+            item.invalid_source_count for item in compared
+        ),
+        "invalid_reference_count": sum(
+            item.invalid_reference_count for item in compared
+        ),
         "targets": [item.to_dict() for item in compared],
     }
 
@@ -288,20 +303,40 @@ def _print_comparison(
         "Additional instruction directories: "
         + (", ".join(labels) if labels else "none")
     )
+    print(
+        f"Targets: {len(compared)}; "
+        f"divergent targets: {sum(item.divergent for item in compared)}; "
+        "invalid sources: "
+        f"{sum(item.invalid_source_count for item in compared)}; "
+        "invalid references: "
+        f"{sum(item.invalid_reference_count for item in compared)}"
+    )
     for item in compared:
         state = "DIVERGENT" if item.divergent else "CONSISTENT"
-        print(f"\n{item.target}: {state}")
+        print(
+            f"\n{item.target}: {state}; "
+            f"{item.invalid_source_count} invalid; "
+            f"{item.invalid_reference_count} invalid references"
+        )
         if not item.common_sources and not any(
             profile.applied_sources for profile in item.profiles
         ):
             print("  no applied instruction sources in either profile")
-            continue
+        else:
+            _print_source_group("COMMON", item.common_sources)
+            for profile in item.profiles:
+                _print_source_group(
+                    f"{profile.profile} ONLY", profile.unique_sources
+                )
 
-        _print_source_group("COMMON", item.common_sources)
         for profile in item.profiles:
-            _print_source_group(
-                f"{profile.profile} ONLY", profile.unique_sources
+            print(
+                f"  {profile.profile} DIAGNOSTICS "
+                f"({profile.invalid_source_count} invalid; "
+                f"{profile.invalid_reference_count} invalid references)"
             )
+            for source in profile.invalid_sources:
+                print(f"    {source.path} [{source.kind}] — {source.reason}")
 
 
 def _print_source_group(label: str, sources: Sequence[str]) -> None:

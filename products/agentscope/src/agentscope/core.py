@@ -66,12 +66,26 @@ class ProfileSourceComparison:
     profile: str
     applied_sources: tuple[str, ...]
     unique_sources: tuple[str, ...]
+    invalid_sources: tuple[InstructionSource, ...] = ()
+
+    @property
+    def invalid_source_count(self) -> int:
+        return len(self.invalid_sources)
+
+    @property
+    def invalid_reference_count(self) -> int:
+        return sum(
+            source.kind == "copilot-reference" for source in self.invalid_sources
+        )
 
     def to_dict(self) -> dict[str, object]:
         return {
             "applied_source_count": len(self.applied_sources),
             "applied_sources": list(self.applied_sources),
             "unique_sources": list(self.unique_sources),
+            "invalid_source_count": self.invalid_source_count,
+            "invalid_reference_count": self.invalid_reference_count,
+            "invalid_sources": [source.to_dict() for source in self.invalid_sources],
         }
 
 
@@ -85,10 +99,20 @@ class TargetComparison:
     def divergent(self) -> bool:
         return any(profile.unique_sources for profile in self.profiles)
 
+    @property
+    def invalid_source_count(self) -> int:
+        return sum(profile.invalid_source_count for profile in self.profiles)
+
+    @property
+    def invalid_reference_count(self) -> int:
+        return sum(profile.invalid_reference_count for profile in self.profiles)
+
     def to_dict(self) -> dict[str, object]:
         return {
             "target": self.target,
             "divergent": self.divergent,
+            "invalid_source_count": self.invalid_source_count,
+            "invalid_reference_count": self.invalid_reference_count,
             "common_sources": list(self.common_sources),
             "profiles": {
                 profile.profile: profile.to_dict() for profile in self.profiles
@@ -136,7 +160,7 @@ def compare_targets(
     cwd: str | Path = ".",
     instruction_dirs: Sequence[str | Path] = (),
 ) -> list[TargetComparison]:
-    """Compare applied instruction paths across all supported profiles."""
+    """Compare applied paths and retain invalid evidence for every profile."""
     inspected_by_profile = {
         profile: inspect_targets(
             root,
@@ -171,6 +195,11 @@ def compare_targets(
                 applied_sources=applied_by_profile[profile],
                 unique_sources=tuple(
                     path for path in applied_by_profile[profile] if path not in common
+                ),
+                invalid_sources=tuple(
+                    source
+                    for source in inspections[profile].sources
+                    if source.state == "invalid"
                 ),
             )
             for profile in PROFILES

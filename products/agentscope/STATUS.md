@@ -2,36 +2,37 @@
 
 ## Product shape
 
-AgentScope v0.10.0 is a zero-runtime-dependency Python CLI for explaining the
+AgentScope v0.11.0 is a zero-runtime-dependency Python CLI for explaining the
 instruction files that apply to a repository target. Its `agents-md` profile
 models nearest-file precedence. Its `copilot-cli` profile uses explicit,
 repository-contained session and additional-directory inputs to discover
 standard and modular instructions, diagnose malformed sources and references,
 and explain resolved-path and normalized-content deduplication. Human and
 versioned JSON output support missing-instructions, invalid-reference,
-invalid-source, and profile-divergence gates.
+invalid-source, and profile-divergence gates. Comparison retains per-profile
+invalid evidence without conflating it with applied-path divergence.
 
-## Completed on 2026-08-30
+## Completed on 2026-09-01
 
-- Required directly discovered Copilot standard sources to be readable UTF-8
-  before applying, content-normalizing, or expanding them.
-- Added deterministic `instruction file is not valid UTF-8` and `instruction
-  file could not be read` diagnostics without leaking exception text.
-- Made unreadable referenced files invalid reference diagnostics and stopped
-  recursive expansion at the failed edge.
-- Integrated both failure categories with invalid counts and existing gates;
-  informational mode still renders the full report and exits zero.
-- Preserved source shapes and inspection/comparison schemas because `invalid`
-  sources and their counts are already published fields.
-- Added three test methods covering invalid bytes, portable simulated read
-  failure, expansion stopping, human/JSON output, policy, and comparison.
+- Extended direct comparison results with each profile's ordered invalid source
+  objects plus invalid-source and invalid-reference counts.
+- Added target and document aggregates to human and JSON comparison output;
+  bumped comparison JSON from schema v3 to v4 while inspection remains v5.
+- Added `compare --fail-on-invalid-sources`, which composes with the divergence
+  gate and emits the complete report before returning exit 1.
+- Kept divergence defined only by profile-specific applied paths, so malformed
+  or unreadable guidance remains diagnosable without becoming false divergence.
+- Preserved the three-argument `ProfileSourceComparison` constructor by giving
+  the new invalid evidence field an empty default.
+- Added two test methods plus expanded unreadable-source assertions, growing the
+  focused suite from 37 to 39 tests.
 
 ## Changes since the prior run
 
-Unreadable Copilot guidance can no longer appear as applied merely because its
-path exists. Valid sources retain their prior order and behavior, while invalid
-direct and referenced sources are explicit and enforceable. Comparison schemas
-remain unchanged and ProofRun remains frozen.
+Comparison no longer discards the reason a profile could not apply a source.
+Consistent-invalid, divergent-invalid, malformed modular, unreadable standard,
+and invalid-reference cases retain ordered evidence and can be enforced in CI.
+Applied-path comparison semantics remain unchanged and ProofRun remains frozen.
 
 ## Known issues
 
@@ -41,8 +42,8 @@ remain unchanged and ProofRun remains frozen.
 - GitHub documents additional directory source shapes but not precedence or
   nested `AGENTS.md` scope; AgentScope's direct-file and post-repository order is
   an explicit deterministic product contract.
-- Comparison output discards per-profile invalid-source diagnostics and has no
-  invalid-source gate; it still compares applied paths only.
+- Comparison has only the broad invalid-source gate; it does not yet offer the
+  narrower invalid-reference-only policy available during inspection.
 - Content normalization deliberately ignores line placement, blank lines, and
   surrounding line whitespace only; it does not attempt Markdown semantics.
 - A target above the session directory does not reclassify session-intermediate
@@ -72,12 +73,14 @@ remain unchanged and ProofRun remains frozen.
 - Reject any discovered instruction symlink that escapes the selected root.
 - Require readable UTF-8 before applying a Copilot source; use stable diagnostic
   categories and never expose file content or platform exception details.
-- Use inspection schema v5 and comparison schema v3 to record the new effective
-  input while preserving target and source objects.
+- Keep comparison divergence based only on applied paths; report invalid
+  evidence separately and enforce it with an independent policy gate.
+- Use inspection schema v5 and comparison schema v4; comparison v4 adds ordered
+  per-profile invalid sources and counts without changing inspection objects.
 - Keep portfolio validation in one root script, cover Python 3.10-3.14, promote
   warnings to errors on 3.10, and install wheels only in temporary environments.
 
 ## Recommended next step
 
-Preserve per-profile invalid-source details in comparison results and add an
-opt-in invalid-source gate while retaining existing divergence semantics.
+Add a narrow `compare --fail-on-invalid-references` gate for policy parity with
+inspection while keeping the broad invalid-source gate unchanged.

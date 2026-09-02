@@ -41,18 +41,21 @@ when its condition occurs for any target, and they compose with OR semantics.
 Invalid repository input exits 2. Without a gate, inspection is informational
 and exits 0. Multiple target paths can be inspected in one invocation.
 
-Inspection JSON uses schema v5 and comparison JSON uses schema v3. Both record
+Inspection JSON uses schema v5 and comparison JSON uses schema v4. Both record
 the effective deduplicated `additional_instruction_directories` list; target
-and source objects are unchanged. Invalid-source and invalid-reference
-aggregates still sum per-target diagnostic occurrences.
+and inspection source objects are unchanged. Comparison v4 adds ordered invalid
+source objects plus invalid-source and invalid-reference counts per profile,
+target, and document. Aggregates sum diagnostic occurrences per target/profile.
 
 Use `compare` to evaluate every target under both profiles. It reports common
-and profile-only applied source paths in human or schema-v3 JSON form. Comparison
-is informational by default; `--fail-on-divergence` exits 1 when any target has
-a source applied by only one profile. This makes the command suitable for a CI
-policy without treating shared guidance or unmatched path rules as divergence.
+and profile-only applied source paths plus each profile's ordered invalid
+diagnostics in human or schema-v4 JSON form. Comparison is informational by
+default; `--fail-on-divergence` exits 1 when any target has a source applied by
+only one profile, while `--fail-on-invalid-sources` exits 1 when either profile
+finds invalid guidance. The gates compose with OR semantics and render the full
+report before failing. Invalidity remains separate from applied-path divergence.
 
-## Profiles in v0.10.0
+## Profiles in v0.11.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -115,14 +118,17 @@ packages/api/src/app.py: 1 applied, 0 invalid, 0 invalid references
 AgentScope comparison in /repo
 Session directory: .
 Additional instruction directories: none
+Targets: 1; divergent targets: 1; invalid sources: 0; invalid references: 0
 
-packages/api/src/app.py: DIVERGENT
+packages/api/src/app.py: DIVERGENT; 0 invalid; 0 invalid references
   COMMON (1)
     packages/api/AGENTS.md
   agents-md ONLY (0)
   copilot-cli ONLY (2)
     AGENTS.md
     packages/api/CLAUDE.md
+  agents-md DIAGNOSTICS (0 invalid; 0 invalid references)
+  copilot-cli DIAGNOSTICS (0 invalid; 0 invalid references)
 ```
 
 ## Validate
@@ -160,6 +166,5 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, preserve invalid-source diagnostics in profile comparison output and add
-an explicit comparison policy gate so unreadable or malformed guidance cannot
-be hidden by an otherwise consistent applied-path result.
+Next, add a narrow comparison invalid-reference gate for parity with inspection
+so CI can reject broken imports without also rejecting malformed modular files.

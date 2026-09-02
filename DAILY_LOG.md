@@ -1060,3 +1060,37 @@ ProofRun tests with one expected optional pytest skip, then built, isolated-
 installed, and smoke-tested both wheels. The default Python 3.14 interpreter's
 expected missing-build-backend preflight was also confirmed before selecting
 the established Python 3.11 validation path. No human input is needed.
+
+## 2026-09-01 — AgentScope comparison invalid-source evidence
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the 37-test v0.10.0 baseline passed, and ProofRun remained frozen.
+
+AgentScope v0.11.0 now preserves each profile's ordered invalid sources in
+comparison results instead of reducing each inspection to applied paths alone.
+Direct-library results expose invalid-source and invalid-reference counts per
+profile and target. Human output adds the counts and ordered diagnostics;
+schema-v4 JSON adds the same aggregates plus complete source objects, including
+path, kind, state, reason, and patterns where applicable. The new field on the
+profile comparison dataclass has an empty default to preserve practical
+three-argument construction compatibility.
+
+Added `agentscope compare --fail-on-invalid-sources`. It renders the full human
+or JSON report before returning exit 1 and composes with
+`--fail-on-divergence` using OR semantics. Divergence remains defined only by
+profile-specific applied paths: malformed, unreadable, or invalid-reference
+sources are reported separately and cannot turn an otherwise consistent source
+set into false divergence.
+
+Expanded the focused suite from 37 to 39 tests. Coverage now includes ordered
+invalid evidence, malformed modular instructions, invalid references,
+unreadable standard files, consistent-invalid and divergent-invalid results,
+human and JSON output, schema-v4 aggregates, and both comparison policies.
+Focused tests, compilation, metadata, JSON dogfooding, and whitespace checks
+passed. The warning-strict Python 3.11 portfolio validator passed all 39
+AgentScope tests and all 53 frozen ProofRun tests with one expected optional
+pytest-runtime skip, then built, isolated-installed, and smoke-tested both
+wheels. No human input is needed. The next run should add the narrower
+`compare --fail-on-invalid-references` policy already available to inspection.

@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-30.
+AgentScope's `copilot-cli` profile as of 2026-09-01.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -106,14 +106,16 @@ Standard-source reasons name whether a file came from the repository root,
 session intermediate, session directory, or target-nested location. Duplicate
 reasons instead name the first retained source and state that relative imports
 are still evaluated. Human output renders `DUPLICATE`; inspection schema v5
-uses `state: "duplicate"` in the unchanged source object. Comparison schema v3
-continues to compare applied paths only, so duplicates do not create profile
-divergence. Both document types record the effective, deduplicated additional
-directory list. Existing policy exits apply to additional sources unchanged.
+uses `state: "duplicate"` in the unchanged source object. Comparison schema v4
+continues to calculate divergence from applied paths only, so duplicates and
+invalid sources do not create profile divergence. It separately retains each
+profile's ordered invalid diagnostics and counts, which the comparison
+`--fail-on-invalid-sources` gate can enforce. Both document types record the
+effective, deduplicated additional-directory list.
 
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.10.0. A discovered Copilot
+with interactive `/instructions` remain outside v0.11.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,
