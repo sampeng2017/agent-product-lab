@@ -51,11 +51,12 @@ Use `compare` to evaluate every target under both profiles. It reports common
 and profile-only applied source paths plus each profile's ordered invalid
 diagnostics in human or schema-v4 JSON form. Comparison is informational by
 default; `--fail-on-divergence` exits 1 when any target has a source applied by
-only one profile, while `--fail-on-invalid-sources` exits 1 when either profile
-finds invalid guidance. The gates compose with OR semantics and render the full
-report before failing. Invalidity remains separate from applied-path divergence.
+only one profile, `--fail-on-invalid-references` narrowly rejects broken import
+edges, and `--fail-on-invalid-sources` also rejects other invalid guidance. The
+gates compose with OR semantics and render the full report before failing.
+Invalidity remains separate from applied-path divergence.
 
-## Profiles in v0.11.0
+## Profiles in v0.12.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -166,5 +167,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, add a narrow comparison invalid-reference gate for parity with inspection
-so CI can reject broken imports without also rejecting malformed modular files.
+Next, define a comparison missing-guidance policy that can distinguish a target
+with no instructions in either profile from intentional profile-specific
+coverage, then add a CLI gate only if the semantics are useful and unambiguous.

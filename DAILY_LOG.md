@@ -1094,3 +1094,32 @@ AgentScope tests and all 53 frozen ProofRun tests with one expected optional
 pytest-runtime skip, then built, isolated-installed, and smoke-tested both
 wheels. No human input is needed. The next run should add the narrower
 `compare --fail-on-invalid-references` policy already available to inspection.
+
+## 2026-09-02 — AgentScope narrow comparison reference policy
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the 39-test v0.11.0 baseline passed, and ProofRun remained frozen.
+
+AgentScope v0.12.0 adds `compare --fail-on-invalid-references`, bringing the
+narrow broken-import policy already available during inspection to profile
+comparison. The gate evaluates the comparison schema-v4 invalid-reference
+counts across every target and profile. It returns exit 1 only after the full
+human or JSON report is rendered and composes with `--fail-on-divergence` and
+`--fail-on-invalid-sources` using OR semantics. Invalid repository input keeps
+exit 2.
+
+The narrow policy deliberately ignores malformed non-reference sources, which
+remain enforceable through the broad invalid-source gate. Discovery, ordered
+diagnostics, applied-path divergence, direct-library result objects, inspection
+schema v5, and comparison schema v4 are unchanged. A focused regression covers
+malformed modular instructions, broken imports, two targets, schema totals, and
+all three comparison gates together. The suite grew from 39 to 40 tests.
+
+Focused tests, comparison help, version inspection, and whitespace checks
+passed. The warning-strict Python 3.11 portfolio validator passed all 40
+AgentScope tests and all 53 frozen ProofRun tests with one expected optional
+pytest-runtime skip, then built, isolated-installed, and smoke-tested both
+wheels. No human input is needed. The next run should define useful
+missing-guidance semantics for comparison before deciding whether to add a gate.

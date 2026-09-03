@@ -1,7 +1,7 @@
 # Path-instruction frontmatter compatibility
 
 This document records the deliberately small frontmatter contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-08-30.
+AgentScope's `copilot-cli` profile as of 2026-09-02.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -53,7 +53,8 @@ effective additional-directory input documented by the discovery contract.
 Comparison JSON schema v4 keeps applied-path divergence separate while adding
 ordered invalid diagnostics and counts for every profile. Its
 `--fail-on-invalid-sources` gate rejects malformed path instructions after
-rendering the full comparison report.
+rendering the full comparison report, while
+`--fail-on-invalid-references` deliberately does not reject them.
 
 ## Deliberate boundary
 

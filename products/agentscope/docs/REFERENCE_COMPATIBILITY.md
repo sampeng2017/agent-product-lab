@@ -1,7 +1,7 @@
 # `@` reference compatibility
 
 This document records the `@path` import contract modeled by AgentScope's
-`copilot-cli` profile as of 2026-08-30.
+`copilot-cli` profile as of 2026-09-02.
 
 The primary source is GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions).
@@ -49,18 +49,19 @@ imported content participates while invalid edges do not. Invalid edges are
 retained as ordered per-profile diagnostics and contribute to comparison
 invalid-source and invalid-reference counts.
 
-Inspection is still informational by default. With
+Inspection and comparison are still informational by default. With
 `--fail-on-invalid-references`, any target containing at least one invalid
-reference makes the command exit 1. This gate and `--require-instructions` use
-OR semantics across all targets: either policy failure returns 1 after the full
-report is emitted. The newer `--fail-on-invalid-sources` is broader and also
-rejects malformed path instructions, but does not change the reference gate's
-contract. Invalid repository arguments retain exit 2.
+reference makes the applicable command exit 1. In inspection, this gate
+composes with `--require-instructions`; in comparison it composes with
+`--fail-on-divergence`. Both commands also provide the broader
+`--fail-on-invalid-sources`. All requested policies use OR semantics across all
+targets and return 1 only after the complete human or JSON report is emitted.
+Invalid repository arguments retain exit 2.
 
 ## Deliberate boundary
 
 AgentScope does not read or inline file contents into its output, enforce
 GitHub's unpublished size guard, expand user-level instructions, or accept
-absolute imports. Comparison preserves invalid-reference details and its broad
-`--fail-on-invalid-sources` gate rejects them, but it does not yet expose the
-narrow `--fail-on-invalid-references` policy available during inspection.
+absolute imports. Its narrow invalid-reference policy uses the existing
+diagnostic counts and does not change discovery, comparison divergence, or JSON
+schema contracts.

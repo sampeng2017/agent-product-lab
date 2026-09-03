@@ -101,6 +101,11 @@ def build_compare_parser() -> argparse.ArgumentParser:
         help="exit 1 when any target has profile-specific applied sources",
     )
     parser.add_argument(
+        "--fail-on-invalid-references",
+        action="store_true",
+        help="exit 1 when any target has an invalid reference in any profile",
+    )
+    parser.add_argument(
         "--fail-on-invalid-sources",
         action="store_true",
         help="exit 1 when any target has an invalid source in any profile",
@@ -188,10 +193,13 @@ def _compare_main(argv: Sequence[str]) -> int:
         _print_comparison(args.root, args.cwd, args.instructions_dir, compared)
 
     divergent = args.fail_on_divergence and any(item.divergent for item in compared)
+    invalid_references = args.fail_on_invalid_references and any(
+        item.invalid_reference_count > 0 for item in compared
+    )
     invalid_sources = args.fail_on_invalid_sources and any(
         item.invalid_source_count > 0 for item in compared
     )
-    if divergent or invalid_sources:
+    if divergent or invalid_references or invalid_sources:
         return 1
     return 0
 

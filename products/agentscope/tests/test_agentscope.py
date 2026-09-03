@@ -1303,6 +1303,82 @@ class AgentScopeTests(unittest.TestCase):
             "invalid",
         )
 
+    def test_compare_invalid_reference_gate_is_narrow_and_composes(self) -> None:
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**/*.py"]\n---\n',
+        )
+        targets = ["src/app.py", "docs/readme.md"]
+
+        with redirect_stdout(io.StringIO()):
+            narrow_malformed_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-references",
+                    *targets,
+                ]
+            )
+            broad_malformed_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
+
+        self.write("AGENTS.md", "@missing.md\n")
+        with redirect_stdout(io.StringIO()):
+            reference_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-references",
+                    *targets,
+                ]
+            )
+
+        self.write("CLAUDE.md", "Copilot-only guidance.\n")
+        output = io.StringIO()
+        with redirect_stdout(output):
+            combined_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-divergence",
+                    "--fail-on-invalid-references",
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
+
+        payload = json.loads(output.getvalue())
+        self.assertEqual(narrow_malformed_exit, 0)
+        self.assertEqual(broad_malformed_exit, 1)
+        self.assertEqual(reference_exit, 1)
+        self.assertEqual(combined_exit, 1)
+        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["target_count"], 2)
+        self.assertEqual(payload["divergent_target_count"], 2)
+        self.assertEqual(payload["invalid_reference_count"], 2)
+        self.assertEqual(
+            [target["invalid_reference_count"] for target in payload["targets"]],
+            [1, 1],
+        )
+        self.assertTrue(
+            all(
+                target["profiles"]["copilot-cli"]["invalid_sources"][0]["kind"]
+                == "copilot-reference"
+                for target in payload["targets"]
+            )
+        )
+
     def test_compare_cli_json_contract_and_divergence_gate(self) -> None:
         self.write("CLAUDE.md")
         output = io.StringIO()
