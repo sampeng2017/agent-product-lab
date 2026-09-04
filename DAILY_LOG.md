@@ -1123,3 +1123,38 @@ AgentScope tests and all 53 frozen ProofRun tests with one expected optional
 pytest-runtime skip, then built, isolated-installed, and smoke-tested both
 wheels. No human input is needed. The next run should define useful
 missing-guidance semantics for comparison before deciding whether to add a gate.
+
+## 2026-09-03 — AgentScope comparison guidance requirement
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the 40-test v0.12.0 baseline passed with warnings treated as errors, and
+ProofRun remained frozen.
+
+Defined missing comparison guidance as a target for which every compared
+profile has zero applied sources. AgentScope v0.13.0 adds
+`compare --require-instructions` using that union-of-profiles rule: a wholly
+uncovered target exits 1, while intentional `agents-md`-only or
+`copilot-cli`-only coverage passes unless the caller separately requests
+`--fail-on-divergence`. The new gate composes with divergence,
+invalid-reference, and invalid-source policies using OR semantics and emits the
+complete human or JSON report before failing. Invalid repository input remains
+exit 2.
+
+Human comparison output now labels wholly uncovered targets `UNGUIDED` rather
+than `CONSISTENT` and includes an aggregate unguided-target count. The public
+`TargetComparison.has_applied_guidance` property centralizes that classification.
+Inspection schema v5 and comparison schema v4 remain unchanged because each
+profile's existing applied-source list already encodes the condition. One new
+regression covers one-profile coverage, mixed covered/uncovered target sets,
+empty repositories, human and JSON rendering, and informational versus gated
+exit behavior; the focused suite grew from 40 to 41 tests.
+
+Warning-strict Python 3.11 portfolio validation passed all 41 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.13.0 and ProofRun
+1.8.1 wheels. Focused version, comparison dogfood, help, and whitespace checks
+also passed. No human input is needed. The next run should retain ignored,
+duplicate, and shadowed source evidence in comparison output so non-applied
+profile behavior remains explainable.

@@ -1,4 +1,4 @@
-# Next run: define missing-guidance comparison semantics
+# Next run: retain non-applied comparison evidence
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun feature work.
@@ -11,18 +11,16 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Evaluate and, if the contract is clear, add a missing-guidance policy for
-profile comparison.
+Preserve useful non-applied evidence when comparing profiles.
 
-1. Decide whether missing means neither profile has applied guidance or whether
-   each profile must have guidance; document the user and CI consequence before
-   implementing it.
-2. Prefer semantics that do not turn intentional profile-specific coverage into
-   a redundant divergence failure.
-3. If added, compose the gate with all existing comparison policies after full
-   human or JSON rendering, with multi-target and empty-repository tests.
-4. Preserve inspection schema v5 and comparison schema v4 unless the published
-   result object genuinely needs new data.
+1. Decide which states belong in comparison: `ignored`, `duplicate`, and
+   `shadowed` are the current candidates; keep invalid evidence separate.
+2. Preserve deterministic per-profile order and explain why each source did not
+   apply without changing applied-path divergence semantics.
+3. Update human and JSON output together; bump comparison schema v4 only if the
+   result object gains fields.
+4. Cover matched and unmatched modular rules, content duplicates, nested
+   `AGENTS.md` shadowing, and multi-target ordering.
 5. Run the root portfolio validator plus focused AgentScope checks, update all
    handoffs, and leave a clean descriptive commit.
 
@@ -31,5 +29,6 @@ profile comparison.
 - Preserve AgentScope's read-only, zero-runtime-dependency first experience.
 - Keep ProofRun frozen unless its preserved MVP fails validation.
 - Do not broaden the frontmatter parser or claim undocumented client behavior.
-- Preserve comparison schema v4 unless its published object contract changes.
+- Keep missing guidance defined as no applied source across any compared
+  profile; do not silently turn it into a profile-parity rule.
 - Preserve the root CI matrix and temporary-output package smoke tests.

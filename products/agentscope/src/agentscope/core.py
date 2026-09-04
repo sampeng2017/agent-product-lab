@@ -96,6 +96,10 @@ class TargetComparison:
     profiles: tuple[ProfileSourceComparison, ...]
 
     @property
+    def has_applied_guidance(self) -> bool:
+        return any(profile.applied_sources for profile in self.profiles)
+
+    @property
     def divergent(self) -> bool:
         return any(profile.unique_sources for profile in self.profiles)
 

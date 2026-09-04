@@ -96,6 +96,11 @@ def build_compare_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--json", action="store_true", help="emit versioned JSON")
     parser.add_argument(
+        "--require-instructions",
+        action="store_true",
+        help="exit 1 when any target is unguided across all profiles",
+    )
+    parser.add_argument(
         "--fail-on-divergence",
         action="store_true",
         help="exit 1 when any target has profile-specific applied sources",
@@ -192,6 +197,9 @@ def _compare_main(argv: Sequence[str]) -> int:
     else:
         _print_comparison(args.root, args.cwd, args.instructions_dir, compared)
 
+    missing_required = args.require_instructions and any(
+        not item.has_applied_guidance for item in compared
+    )
     divergent = args.fail_on_divergence and any(item.divergent for item in compared)
     invalid_references = args.fail_on_invalid_references and any(
         item.invalid_reference_count > 0 for item in compared
@@ -199,7 +207,7 @@ def _compare_main(argv: Sequence[str]) -> int:
     invalid_sources = args.fail_on_invalid_sources and any(
         item.invalid_source_count > 0 for item in compared
     )
-    if divergent or invalid_references or invalid_sources:
+    if missing_required or divergent or invalid_references or invalid_sources:
         return 1
     return 0
 
@@ -313,6 +321,7 @@ def _print_comparison(
     )
     print(
         f"Targets: {len(compared)}; "
+        f"unguided targets: {sum(not item.has_applied_guidance for item in compared)}; "
         f"divergent targets: {sum(item.divergent for item in compared)}; "
         "invalid sources: "
         f"{sum(item.invalid_source_count for item in compared)}; "
@@ -320,7 +329,10 @@ def _print_comparison(
         f"{sum(item.invalid_reference_count for item in compared)}"
     )
     for item in compared:
-        state = "DIVERGENT" if item.divergent else "CONSISTENT"
+        if not item.has_applied_guidance:
+            state = "UNGUIDED"
+        else:
+            state = "DIVERGENT" if item.divergent else "CONSISTENT"
         print(
             f"\n{item.target}: {state}; "
             f"{item.invalid_source_count} invalid; "

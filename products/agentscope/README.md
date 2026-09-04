@@ -49,14 +49,17 @@ target, and document. Aggregates sum diagnostic occurrences per target/profile.
 
 Use `compare` to evaluate every target under both profiles. It reports common
 and profile-only applied source paths plus each profile's ordered invalid
-diagnostics in human or schema-v4 JSON form. Comparison is informational by
-default; `--fail-on-divergence` exits 1 when any target has a source applied by
-only one profile, `--fail-on-invalid-references` narrowly rejects broken import
-edges, and `--fail-on-invalid-sources` also rejects other invalid guidance. The
-gates compose with OR semantics and render the full report before failing.
-Invalidity remains separate from applied-path divergence.
+diagnostics in human or schema-v4 JSON form. A target is `UNGUIDED` only when no
+profile applies any source; one-profile coverage is instead `DIVERGENT`.
+Comparison is informational by default. `--require-instructions` exits 1 for an
+unguided target while intentionally allowing one-profile coverage;
+`--fail-on-divergence` is the separate stricter profile-parity policy.
+`--fail-on-invalid-references` narrowly rejects broken import edges, and
+`--fail-on-invalid-sources` also rejects other invalid guidance. The gates
+compose with OR semantics and render the full report before failing. Invalidity
+remains separate from applied-path divergence and guidance coverage.
 
-## Profiles in v0.12.0
+## Profiles in v0.13.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -119,7 +122,7 @@ packages/api/src/app.py: 1 applied, 0 invalid, 0 invalid references
 AgentScope comparison in /repo
 Session directory: .
 Additional instruction directories: none
-Targets: 1; divergent targets: 1; invalid sources: 0; invalid references: 0
+Targets: 1; unguided targets: 0; divergent targets: 1; invalid sources: 0; invalid references: 0
 
 packages/api/src/app.py: DIVERGENT; 0 invalid; 0 invalid references
   COMMON (1)
@@ -167,6 +170,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, define a comparison missing-guidance policy that can distinguish a target
-with no instructions in either profile from intentional profile-specific
-coverage, then add a CLI gate only if the semantics are useful and unambiguous.
+Next, retain explainable non-applied evidence in comparison output so ignored,
+duplicate, and shadowed sources do not disappear when maintainers compare
+profiles.

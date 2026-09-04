@@ -1207,10 +1207,80 @@ class AgentScopeTests(unittest.TestCase):
         comparison = compare_targets(self.root, ["planned/new.py"])[0]
 
         self.assertFalse(comparison.divergent)
+        self.assertFalse(comparison.has_applied_guidance)
         self.assertEqual(comparison.common_sources, ())
         self.assertTrue(
             all(not profile.applied_sources for profile in comparison.profiles)
         )
+
+    def test_compare_requirement_rejects_only_targets_uncovered_by_all_profiles(
+        self,
+    ) -> None:
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "src/**/*.py"\n---\nPython guidance.\n',
+        )
+        targets = ["src/app.py", "docs/readme.md"]
+
+        with redirect_stdout(io.StringIO()):
+            covered_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--require-instructions",
+                    targets[0],
+                ]
+            )
+            covered_divergence_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--require-instructions",
+                    "--fail-on-divergence",
+                    targets[0],
+                ]
+            )
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            mixed_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--require-instructions",
+                    *targets,
+                ]
+            )
+        payload = json.loads(output.getvalue())
+
+        empty_root = self.root / "empty"
+        empty_root.mkdir()
+        empty_output = io.StringIO()
+        with redirect_stdout(empty_output):
+            informational_exit = main(["compare", "--root", str(empty_root)])
+            empty_required_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(empty_root),
+                    "--require-instructions",
+                ]
+            )
+
+        self.assertEqual(covered_exit, 0)
+        self.assertEqual(covered_divergence_exit, 1)
+        self.assertEqual(mixed_exit, 1)
+        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["target_count"], 2)
+        self.assertTrue(payload["targets"][0]["divergent"])
+        self.assertFalse(payload["targets"][1]["divergent"])
+        self.assertEqual(informational_exit, 0)
+        self.assertEqual(empty_required_exit, 1)
+        self.assertIn("no applied instruction sources", empty_output.getvalue())
 
     def test_compare_retains_ordered_invalid_profile_evidence(self) -> None:
         self.write("AGENTS.md", "Shared guidance.\n")
@@ -1286,7 +1356,7 @@ class AgentScopeTests(unittest.TestCase):
         rendered = human.getvalue()
         self.assertEqual(divergence_exit, 0)
         self.assertEqual(invalid_exit, 1)
-        self.assertIn("src/app.py: CONSISTENT; 1 invalid", rendered)
+        self.assertIn("src/app.py: UNGUIDED; 1 invalid", rendered)
         self.assertIn("no applied instruction sources", rendered)
         self.assertIn("agents-md DIAGNOSTICS (0 invalid", rendered)
         self.assertIn("copilot-cli DIAGNOSTICS (1 invalid", rendered)
@@ -1428,6 +1498,8 @@ class AgentScopeTests(unittest.TestCase):
         with redirect_stdout(output):
             exit_code = main(["compare", "--root", str(empty_root)])
         self.assertEqual(exit_code, 0)
+        self.assertIn("unguided targets: 1", output.getvalue())
+        self.assertIn(".: UNGUIDED", output.getvalue())
         self.assertIn("no applied instruction sources", output.getvalue())
 
 
