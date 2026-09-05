@@ -1064,7 +1064,7 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(inspection["additional_instruction_directories"], ["custom"])
         self.assertEqual(inspection["invalid_source_count"], 1)
         self.assertEqual(comparison_exit, 0)
-        self.assertEqual(comparison["schema_version"], 4)
+        self.assertEqual(comparison["schema_version"], 5)
         self.assertEqual(comparison["additional_instruction_directories"], ["custom"])
         self.assertEqual(comparison["divergent_target_count"], 1)
 
@@ -1162,7 +1162,7 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(inspection["schema_version"], 5)
         self.assertEqual(inspection["session_directory"], "tools/session")
         self.assertEqual(comparison_exit, 0)
-        self.assertEqual(comparison["schema_version"], 4)
+        self.assertEqual(comparison["schema_version"], 5)
         self.assertEqual(comparison["session_directory"], "tools/session")
 
     def test_compare_finds_common_and_profile_specific_nested_sources(self) -> None:
@@ -1182,7 +1182,7 @@ class AgentScopeTests(unittest.TestCase):
             ("AGENTS.md", "packages/api/CLAUDE.md"),
         )
 
-    def test_compare_ignores_unmatched_path_rules_and_preserves_target_order(self) -> None:
+    def test_compare_retains_unmatched_path_rules_and_target_order(self) -> None:
         self.write("AGENTS.md")
         self.write(
             ".github/instructions/python.instructions.md",
@@ -1197,10 +1197,94 @@ class AgentScopeTests(unittest.TestCase):
         )
         self.assertFalse(comparisons[0].divergent)
         self.assertTrue(comparisons[1].divergent)
+        ignored = comparisons[0].profiles[1].non_applied_sources
+        self.assertEqual(
+            [(source.path, source.state) for source in ignored],
+            [(".github/instructions/python.instructions.md", "ignored")],
+        )
         python_profile = comparisons[1].profiles[1]
         self.assertEqual(
             python_profile.unique_sources,
             (".github/instructions/python.instructions.md",),
+        )
+
+    def test_compare_retains_ordered_non_applied_profile_evidence(self) -> None:
+        self.write("AGENTS.md", "Shared guidance.\n")
+        self.write("packages/api/AGENTS.md", "Nested guidance.\n")
+        self.write("CLAUDE.md", "Shared guidance.\n")
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\nPython guidance.\n',
+        )
+        targets = ["packages/api/app.py", "packages/api/readme.md"]
+
+        comparisons = compare_targets(self.root, targets)
+        first_portable, first_copilot = comparisons[0].profiles
+        second_portable, second_copilot = comparisons[1].profiles
+
+        self.assertEqual([item.target for item in comparisons], targets)
+        self.assertEqual(
+            [
+                (source.path, source.state)
+                for source in first_portable.non_applied_sources
+            ],
+            [("AGENTS.md", "shadowed")],
+        )
+        self.assertEqual(
+            [
+                (source.path, source.state)
+                for source in first_copilot.non_applied_sources
+            ],
+            [("CLAUDE.md", "duplicate")],
+        )
+        self.assertEqual(
+            [
+                (source.path, source.state)
+                for source in second_portable.non_applied_sources
+            ],
+            [("AGENTS.md", "shadowed")],
+        )
+        self.assertEqual(
+            [
+                (source.path, source.state)
+                for source in second_copilot.non_applied_sources
+            ],
+            [
+                ("CLAUDE.md", "duplicate"),
+                (".github/instructions/python.instructions.md", "ignored"),
+            ],
+        )
+        self.assertEqual(
+            [item.non_applied_source_count for item in comparisons], [2, 3]
+        )
+        self.assertTrue(all(item.divergent for item in comparisons))
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                ["compare", "--root", str(self.root), "--json", *targets]
+            )
+        payload = json.loads(output.getvalue())
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(payload["schema_version"], 5)
+        self.assertEqual(payload["non_applied_source_count"], 5)
+        serialized = payload["targets"][1]["profiles"]["copilot-cli"]
+        self.assertEqual(serialized["non_applied_source_count"], 2)
+        self.assertEqual(
+            [source["state"] for source in serialized["non_applied_sources"]],
+            ["duplicate", "ignored"],
+        )
+
+        human = io.StringIO()
+        with redirect_stdout(human):
+            main(["compare", "--root", str(self.root), *targets])
+        rendered = human.getvalue()
+        self.assertIn("non-applied sources: 5", rendered)
+        self.assertIn("agents-md NON-APPLIED (1)", rendered)
+        self.assertIn("SHADOWED AGENTS.md [agents-md]", rendered)
+        self.assertIn("DUPLICATE CLAUDE.md [claude-md]", rendered)
+        self.assertIn(
+            "IGNORED .github/instructions/python.instructions.md", rendered
         )
 
     def test_compare_empty_guidance_is_consistent(self) -> None:
@@ -1274,7 +1358,7 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(covered_exit, 0)
         self.assertEqual(covered_divergence_exit, 1)
         self.assertEqual(mixed_exit, 1)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["target_count"], 2)
         self.assertTrue(payload["targets"][0]["divergent"])
         self.assertFalse(payload["targets"][1]["divergent"])
@@ -1356,12 +1440,12 @@ class AgentScopeTests(unittest.TestCase):
         rendered = human.getvalue()
         self.assertEqual(divergence_exit, 0)
         self.assertEqual(invalid_exit, 1)
-        self.assertIn("src/app.py: UNGUIDED; 1 invalid", rendered)
+        self.assertIn("src/app.py: UNGUIDED; 0 non-applied; 1 invalid", rendered)
         self.assertIn("no applied instruction sources", rendered)
         self.assertIn("agents-md DIAGNOSTICS (0 invalid", rendered)
         self.assertIn("copilot-cli DIAGNOSTICS (1 invalid", rendered)
         self.assertIn("broken.instructions.md [copilot-path]", rendered)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["divergent_target_count"], 0)
         self.assertEqual(payload["invalid_source_count"], 1)
         self.assertEqual(payload["invalid_reference_count"], 0)
@@ -1433,7 +1517,7 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(broad_malformed_exit, 1)
         self.assertEqual(reference_exit, 1)
         self.assertEqual(combined_exit, 1)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["target_count"], 2)
         self.assertEqual(payload["divergent_target_count"], 2)
         self.assertEqual(payload["invalid_reference_count"], 2)
@@ -1466,7 +1550,7 @@ class AgentScopeTests(unittest.TestCase):
 
         payload = json.loads(output.getvalue())
         self.assertEqual(exit_code, 1)
-        self.assertEqual(payload["schema_version"], 4)
+        self.assertEqual(payload["schema_version"], 5)
         self.assertEqual(payload["invalid_source_count"], 0)
         self.assertEqual(payload["invalid_reference_count"], 0)
         self.assertEqual(payload["profiles"], ["agents-md", "copilot-cli"])

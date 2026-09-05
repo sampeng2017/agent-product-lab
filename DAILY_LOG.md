@@ -1158,3 +1158,39 @@ then built, isolated-installed, and smoke-tested AgentScope 0.13.0 and ProofRun
 also passed. No human input is needed. The next run should retain ignored,
 duplicate, and shadowed source evidence in comparison output so non-applied
 profile behavior remains explainable.
+
+## 2026-09-04 — AgentScope non-applied comparison evidence
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the 41-test v0.13.0 baseline passed with warnings treated as errors, and
+ProofRun remained frozen.
+
+AgentScope v0.14.0 now retains every `ignored`, `duplicate`, and `shadowed`
+source in each profile comparison. These source objects preserve inspection
+order, path, kind, state, reason, and any `applyTo` patterns. Invalid sources
+remain in their separate collection, while applied and profile-unique paths
+continue to drive divergence exactly as before. Missing-guidance classification
+and all existing policy exit contracts are unchanged.
+
+Human comparison output adds aggregate and per-target non-applied counts plus a
+separate per-profile `NON-APPLIED` section with state and explanation.
+Comparison JSON advances from schema v4 to v5 and adds
+`non_applied_source_count` at document, target, and profile levels plus ordered
+`non_applied_sources` arrays per profile. Inspection remains schema v5 because
+its complete source objects already represented these states.
+
+One new end-to-end regression plus an expanded unmatched-rule regression cover
+matched and ignored modular rules, normalized content duplicates, nested
+`AGENTS.md` shadowing, deterministic multi-target order, direct result objects,
+human output, and JSON output. The suite grew from 41 to 42 tests. Focused
+warning-strict tests, compilation, version inspection, comparison JSON parsing,
+and whitespace checks passed. The warning-strict Python 3.11 portfolio
+validator passed all 42 AgentScope tests and all 53 frozen ProofRun tests with
+one expected optional pytest-runtime skip, then built, isolated-installed, and
+smoke-tested AgentScope 0.14.0 and ProofRun 1.8.1 wheels. The default Python
+3.14 preflight correctly reported its missing declared build backend before the
+established Python 3.11 validation path was selected. No human input is needed.
+The next run should evaluate a narrow ignored-path policy without rejecting
+intentional duplicates or shadowed ancestors.

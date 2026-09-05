@@ -8,6 +8,7 @@ from typing import Iterable, Sequence
 
 PROFILES = ("agents-md", "copilot-cli")
 REFERENCE_DEPTH_LIMIT = 10
+NON_APPLIED_STATES = frozenset(("ignored", "duplicate", "shadowed"))
 
 
 @dataclass(frozen=True)
@@ -67,6 +68,11 @@ class ProfileSourceComparison:
     applied_sources: tuple[str, ...]
     unique_sources: tuple[str, ...]
     invalid_sources: tuple[InstructionSource, ...] = ()
+    non_applied_sources: tuple[InstructionSource, ...] = ()
+
+    @property
+    def non_applied_source_count(self) -> int:
+        return len(self.non_applied_sources)
 
     @property
     def invalid_source_count(self) -> int:
@@ -83,6 +89,10 @@ class ProfileSourceComparison:
             "applied_source_count": len(self.applied_sources),
             "applied_sources": list(self.applied_sources),
             "unique_sources": list(self.unique_sources),
+            "non_applied_source_count": self.non_applied_source_count,
+            "non_applied_sources": [
+                source.to_dict() for source in self.non_applied_sources
+            ],
             "invalid_source_count": self.invalid_source_count,
             "invalid_reference_count": self.invalid_reference_count,
             "invalid_sources": [source.to_dict() for source in self.invalid_sources],
@@ -108,6 +118,10 @@ class TargetComparison:
         return sum(profile.invalid_source_count for profile in self.profiles)
 
     @property
+    def non_applied_source_count(self) -> int:
+        return sum(profile.non_applied_source_count for profile in self.profiles)
+
+    @property
     def invalid_reference_count(self) -> int:
         return sum(profile.invalid_reference_count for profile in self.profiles)
 
@@ -115,6 +129,7 @@ class TargetComparison:
         return {
             "target": self.target,
             "divergent": self.divergent,
+            "non_applied_source_count": self.non_applied_source_count,
             "invalid_source_count": self.invalid_source_count,
             "invalid_reference_count": self.invalid_reference_count,
             "common_sources": list(self.common_sources),
@@ -164,7 +179,7 @@ def compare_targets(
     cwd: str | Path = ".",
     instruction_dirs: Sequence[str | Path] = (),
 ) -> list[TargetComparison]:
-    """Compare applied paths and retain invalid evidence for every profile."""
+    """Compare applied paths and retain diagnostic evidence for every profile."""
     inspected_by_profile = {
         profile: inspect_targets(
             root,
@@ -204,6 +219,11 @@ def compare_targets(
                     source
                     for source in inspections[profile].sources
                     if source.state == "invalid"
+                ),
+                non_applied_sources=tuple(
+                    source
+                    for source in inspections[profile].sources
+                    if source.state in NON_APPLIED_STATES
                 ),
             )
             for profile in PROFILES

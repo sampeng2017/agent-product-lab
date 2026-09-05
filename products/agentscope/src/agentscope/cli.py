@@ -287,7 +287,7 @@ def _comparison_json_result(
     compared: Sequence[TargetComparison],
 ) -> dict[str, object]:
     return {
-        "schema_version": 4,
+        "schema_version": 5,
         "root": str(root.resolve()),
         "session_directory": _session_label(root, cwd),
         "additional_instruction_directories": _instruction_directory_labels(
@@ -296,6 +296,9 @@ def _comparison_json_result(
         "profiles": list(PROFILES),
         "target_count": len(compared),
         "divergent_target_count": sum(item.divergent for item in compared),
+        "non_applied_source_count": sum(
+            item.non_applied_source_count for item in compared
+        ),
         "invalid_source_count": sum(
             item.invalid_source_count for item in compared
         ),
@@ -323,6 +326,8 @@ def _print_comparison(
         f"Targets: {len(compared)}; "
         f"unguided targets: {sum(not item.has_applied_guidance for item in compared)}; "
         f"divergent targets: {sum(item.divergent for item in compared)}; "
+        "non-applied sources: "
+        f"{sum(item.non_applied_source_count for item in compared)}; "
         "invalid sources: "
         f"{sum(item.invalid_source_count for item in compared)}; "
         "invalid references: "
@@ -335,6 +340,7 @@ def _print_comparison(
             state = "DIVERGENT" if item.divergent else "CONSISTENT"
         print(
             f"\n{item.target}: {state}; "
+            f"{item.non_applied_source_count} non-applied; "
             f"{item.invalid_source_count} invalid; "
             f"{item.invalid_reference_count} invalid references"
         )
@@ -350,6 +356,15 @@ def _print_comparison(
                 )
 
         for profile in item.profiles:
+            print(
+                f"  {profile.profile} NON-APPLIED "
+                f"({profile.non_applied_source_count})"
+            )
+            for source in profile.non_applied_sources:
+                print(
+                    f"    {source.state.upper()} {source.path} "
+                    f"[{source.kind}] — {source.reason}"
+                )
             print(
                 f"  {profile.profile} DIAGNOSTICS "
                 f"({profile.invalid_source_count} invalid; "
