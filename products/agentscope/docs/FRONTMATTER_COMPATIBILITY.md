@@ -43,8 +43,11 @@ Inspection remains informational by default. `--fail-on-invalid-sources` exits
 1 after rendering the full report when any target has an invalid source,
 including a malformed path instruction or an invalid `@` reference. The older
 `--fail-on-invalid-references` keeps its exact narrower behavior. Both policies
-can be combined with `--require-instructions` using OR semantics; invalid
-repository arguments still exit 2.
+can be combined with `--require-instructions` using OR semantics. The separate
+`--fail-on-ignored-sources` gate exits 1 for a readable, valid path instruction
+whose `applyTo` scalar does not match a requested target; it does not reject
+duplicates, shadowed ancestors, malformed sources, or missing guidance by
+itself. Invalid repository arguments still exit 2.
 
 Inspection JSON schema v5 retains `invalid_source_count` at the document and
 target levels. The existing `invalid_reference_count` remains and is always a

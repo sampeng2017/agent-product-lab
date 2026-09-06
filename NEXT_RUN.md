@@ -1,4 +1,4 @@
-# Next run: evaluate an ignored-path policy
+# Next run: evaluate modular-rule coverage output
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun feature work.
@@ -11,19 +11,20 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Evaluate and, if the semantics remain narrow and useful, add a policy for
-silently unmatched modular instruction rules.
+Evaluate a compact source-oriented view of modular instruction coverage across
+multiple requested targets.
 
-1. Decide whether the policy should be named `--fail-on-ignored-sources` or use
-   a more target-specific term; document that it does not reject duplicates or
-   shadowed ancestors.
-2. Apply the same policy vocabulary to direct inspection and comparison, render
-   complete output before exit 1, and preserve invalid-input exit 2.
-3. Keep ignored evidence informational without the gate and compose the new
-   condition with existing gates using OR semantics.
-4. Cover mixed matching, ignored, duplicate, shadowed, and invalid sources over
-   multiple targets so the policy cannot broaden accidentally.
-5. Run the root portfolio validator plus focused AgentScope checks, update all
+1. Decide whether this belongs in a `coverage` subcommand or an explicit output
+   option; keep existing inspection and comparison output unchanged by default.
+2. Group each discovered `*.instructions.md` source with its matched, ignored,
+   and invalid target occurrences while preserving caller target order.
+3. Avoid implying that every modular rule must match every target; the existing
+   `--fail-on-ignored-sources` gate remains the explicit strict policy.
+4. Keep duplicate, shadowed, referenced, and standard sources outside the
+   modular coverage matrix unless a clear use case justifies them.
+5. Cover shared sources, target-specific discovery, planned targets, invalid
+   frontmatter, multiple profiles where relevant, and stable human/JSON output.
+6. Run the root portfolio validator plus focused AgentScope checks, update all
    handoffs, and leave a clean descriptive commit.
 
 ## Guardrails
@@ -33,6 +34,6 @@ silently unmatched modular instruction rules.
 - Do not broaden the frontmatter parser or claim undocumented client behavior.
 - Keep comparison guidance defined as no applied source across any compared
   profile; do not silently turn it into a profile-parity rule.
-- Preserve applied-path divergence and keep invalid/non-applied evidence
-  separate.
+- Preserve applied-path divergence, evidence categories, and all current policy
+  gates.
 - Preserve the root CI matrix and temporary-output package smoke tests.

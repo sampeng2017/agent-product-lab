@@ -65,6 +65,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="exit 1 when any target has an invalid instruction source",
     )
+    parser.add_argument(
+        "--fail-on-ignored-sources",
+        action="store_true",
+        help="exit 1 when any target has an ignored path instruction",
+    )
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return parser
 
@@ -114,6 +119,11 @@ def build_compare_parser() -> argparse.ArgumentParser:
         "--fail-on-invalid-sources",
         action="store_true",
         help="exit 1 when any target has an invalid source in any profile",
+    )
+    parser.add_argument(
+        "--fail-on-ignored-sources",
+        action="store_true",
+        help="exit 1 when any target has an ignored path instruction in any profile",
     )
     return parser
 
@@ -167,7 +177,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     invalid_sources = args.fail_on_invalid_sources and any(
         item.invalid_source_count > 0 for item in inspected
     )
-    if missing_required or invalid_references or invalid_sources:
+    ignored_sources = args.fail_on_ignored_sources and any(
+        item.ignored_source_count > 0 for item in inspected
+    )
+    if missing_required or invalid_references or invalid_sources or ignored_sources:
         return 1
     return 0
 
@@ -207,7 +220,16 @@ def _compare_main(argv: Sequence[str]) -> int:
     invalid_sources = args.fail_on_invalid_sources and any(
         item.invalid_source_count > 0 for item in compared
     )
-    if missing_required or divergent or invalid_references or invalid_sources:
+    ignored_sources = args.fail_on_ignored_sources and any(
+        item.ignored_source_count > 0 for item in compared
+    )
+    if (
+        missing_required
+        or divergent
+        or invalid_references
+        or invalid_sources
+        or ignored_sources
+    ):
         return 1
     return 0
 

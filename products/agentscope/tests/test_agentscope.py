@@ -1287,6 +1287,112 @@ class AgentScopeTests(unittest.TestCase):
             "IGNORED .github/instructions/python.instructions.md", rendered
         )
 
+    def test_ignored_source_gate_is_narrow_and_composes_across_targets(self) -> None:
+        self.write("AGENTS.md", "Shared guidance.\n")
+        self.write("packages/api/AGENTS.md", "Nested guidance.\n")
+        self.write("CLAUDE.md", "Shared guidance.\n")
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\nPython guidance.\n',
+        )
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**/*.py"]\n---\n',
+        )
+        targets = ["packages/api/app.py", "packages/api/readme.md"]
+
+        inspections = inspect_targets(self.root, targets, profile="copilot-cli")
+        comparisons = compare_targets(self.root, targets)
+
+        self.assertEqual(
+            [item.ignored_source_count for item in inspections], [0, 1]
+        )
+        self.assertEqual(
+            [item.ignored_source_count for item in comparisons], [0, 1]
+        )
+        first_non_applied = {
+            source.state
+            for profile in comparisons[0].profiles
+            for source in profile.non_applied_sources
+        }
+        second_non_applied = {
+            source.state
+            for profile in comparisons[1].profiles
+            for source in profile.non_applied_sources
+        }
+        self.assertEqual(first_non_applied, {"duplicate", "shadowed"})
+        self.assertEqual(second_non_applied, {"duplicate", "ignored", "shadowed"})
+        self.assertTrue(all(item.invalid_source_count == 1 for item in inspections))
+
+        with redirect_stdout(io.StringIO()):
+            matching_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-ignored-sources",
+                    targets[0],
+                ]
+            )
+            shadowed_exit = main(
+                [
+                    "--root",
+                    str(self.root),
+                    "--fail-on-ignored-sources",
+                    *targets,
+                ]
+            )
+        with redirect_stderr(io.StringIO()):
+            invalid_input_exit = main(
+                [
+                    "--root",
+                    str(self.root / "missing"),
+                    "--fail-on-ignored-sources",
+                ]
+            )
+
+        inspection_output = io.StringIO()
+        with redirect_stdout(inspection_output):
+            inspection_exit = main(
+                [
+                    "--profile",
+                    "copilot-cli",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-ignored-sources",
+                    *targets,
+                ]
+            )
+
+        comparison_output = io.StringIO()
+        with redirect_stdout(comparison_output):
+            comparison_exit = main(
+                [
+                    "compare",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-ignored-sources",
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
+
+        inspection_payload = json.loads(inspection_output.getvalue())
+        comparison_payload = json.loads(comparison_output.getvalue())
+        self.assertEqual(matching_exit, 0)
+        self.assertEqual(shadowed_exit, 0)
+        self.assertEqual(invalid_input_exit, 2)
+        self.assertEqual(inspection_exit, 1)
+        self.assertEqual(comparison_exit, 1)
+        self.assertEqual(inspection_payload["schema_version"], 5)
+        self.assertEqual(inspection_payload["target_count"], 2)
+        self.assertEqual(comparison_payload["schema_version"], 5)
+        self.assertEqual(comparison_payload["target_count"], 2)
+        self.assertEqual(comparison_payload["invalid_source_count"], 2)
+
     def test_compare_empty_guidance_is_consistent(self) -> None:
         comparison = compare_targets(self.root, ["planned/new.py"])[0]
 

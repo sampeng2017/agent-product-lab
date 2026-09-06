@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-09-04.
+AgentScope's `copilot-cli` profile as of 2026-09-05.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -112,12 +112,15 @@ ignored, shadowed, and invalid sources do not create profile divergence. It
 separately retains each profile's ordered non-applied evidence and invalid
 diagnostics with counts. The comparison's narrow
 `--fail-on-invalid-references` or broad `--fail-on-invalid-sources` gate can
-enforce invalid evidence; non-applied evidence remains informational. Both
-document types record the effective, deduplicated additional-directory list.
+enforce invalid evidence. The separate `--fail-on-ignored-sources` gate rejects
+only `ignored` path-instruction occurrences; `duplicate` and `shadowed` evidence
+remains informational. Both document types record the effective, deduplicated
+additional-directory list. The gate does not change schema v5 because the
+triggering source state was already represented in both document types.
 
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.14.0. A discovered Copilot
+with interactive `/instructions` remain outside v0.15.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,

@@ -52,6 +52,10 @@ class TargetInspection:
     def invalid_source_count(self) -> int:
         return sum(source.state == "invalid" for source in self.sources)
 
+    @property
+    def ignored_source_count(self) -> int:
+        return sum(source.state == "ignored" for source in self.sources)
+
     def to_dict(self) -> dict[str, object]:
         return {
             "target": self.target,
@@ -77,6 +81,10 @@ class ProfileSourceComparison:
     @property
     def invalid_source_count(self) -> int:
         return len(self.invalid_sources)
+
+    @property
+    def ignored_source_count(self) -> int:
+        return sum(source.state == "ignored" for source in self.non_applied_sources)
 
     @property
     def invalid_reference_count(self) -> int:
@@ -124,6 +132,10 @@ class TargetComparison:
     @property
     def invalid_reference_count(self) -> int:
         return sum(profile.invalid_reference_count for profile in self.profiles)
+
+    @property
+    def ignored_source_count(self) -> int:
+        return sum(profile.ignored_source_count for profile in self.profiles)
 
     def to_dict(self) -> dict[str, object]:
         return {

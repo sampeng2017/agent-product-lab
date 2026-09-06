@@ -34,6 +34,9 @@ Unreadable or non-UTF-8 Copilot sources are reported as `invalid` with stable
 diagnostics that do not expose platform exception details. AgentScope does not
 content-compare them or expand apparent references from undecodable content.
 Use `--require-instructions` to turn missing applicable guidance into exit 1;
+use `--fail-on-ignored-sources` to reject a discovered path instruction whose
+`applyTo` patterns do not match a requested target without rejecting duplicate
+copies or shadowed ancestors;
 use `--fail-on-invalid-references` to reject cycles, missing imports, and other
 invalid Copilot reference edges. Use the broader `--fail-on-invalid-sources` to
 also reject malformed path-instruction frontmatter. Any requested gate exits 1
@@ -56,12 +59,14 @@ instead `DIVERGENT`.
 Comparison is informational by default. `--require-instructions` exits 1 for an
 unguided target while intentionally allowing one-profile coverage;
 `--fail-on-divergence` is the separate stricter profile-parity policy.
+`--fail-on-ignored-sources` narrowly rejects unmatched path rules, not other
+non-applied states such as duplicates or shadowed ancestors.
 `--fail-on-invalid-references` narrowly rejects broken import edges, and
 `--fail-on-invalid-sources` also rejects other invalid guidance. The gates
 compose with OR semantics and render the full report before failing. Invalidity
 remains separate from applied-path divergence and guidance coverage.
 
-## Profiles in v0.14.0
+## Profiles in v0.15.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -175,5 +180,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, evaluate an ignored-path policy that can reject silently unmatched modular
-guidance without treating intentional duplicate or shadowed sources as errors.
+Next, evaluate a source-oriented coverage view that groups matched and ignored
+modular rules across a requested target set, making policy failures easier to
+diagnose without changing target-oriented inspection.

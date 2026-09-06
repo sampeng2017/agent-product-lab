@@ -1194,3 +1194,33 @@ smoke-tested AgentScope 0.14.0 and ProofRun 1.8.1 wheels. The default Python
 established Python 3.11 validation path was selected. No human input is needed.
 The next run should evaluate a narrow ignored-path policy without rejecting
 intentional duplicates or shadowed ancestors.
+
+## 2026-09-05 — AgentScope ignored-source policy gate
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the warning-strict 42-test v0.14.0 baseline passed, and ProofRun remained frozen.
+
+AgentScope v0.15.0 adds `--fail-on-ignored-sources` to both direct inspection and
+profile comparison. The policy exits 1 only when a requested target has a
+source whose existing state is `ignored`: a readable, valid modular instruction
+whose `applyTo` patterns do not match that target. It renders the complete human
+or schema-v5 JSON report before failing and composes with all existing gates
+using OR semantics. Invalid repository inputs still exit 2.
+
+The implementation exposes composable ignored-source counts on inspection,
+profile-comparison, and target-comparison result objects. JSON schema v5 remains
+unchanged because ordered inspection sources and comparison non-applied sources
+already contain the exact `ignored` evidence. One new end-to-end regression
+mixes matched and ignored modular rules, normalized duplicates, ancestor
+shadowing, malformed sources, multiple targets, both profiles, full JSON output,
+and combined policy exits. The focused suite grew from 42 to 43 tests.
+
+Warning-strict Python 3.11 portfolio validation passed all 43 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.15.0 and ProofRun
+1.8.1 wheels. Focused compilation, CLI help inspection, and whitespace checks
+also passed. No human input is needed. The next run should evaluate a compact
+source-oriented modular coverage view so multi-target ignored-rule failures are
+easier to diagnose without changing the existing target-oriented schemas.

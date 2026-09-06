@@ -11,16 +11,16 @@ next.
   for agent-assisted development. The v1.8.1 local MVP was completed and frozen
   on 2026-08-19.
 - [AgentScope](products/agentscope/README.md) — local instruction-scope debugger
-  for coding-agent repositories. Version 0.14.0 compares named client profiles,
+  for coding-agent repositories. Version 0.15.0 compares named client profiles,
   models explicit Copilot CLI session, target, and additional-directory
   discovery, explains recursive references and duplicate instructions, and
-  preserves applied, non-applied, and invalid evidence with policy gates in
-  inspection and comparison.
+  preserves applied, non-applied, and invalid evidence with narrow policy gates
+  in inspection and comparison, including unmatched path rules.
 
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). Continue
-AgentScope from its tested v0.14.0 baseline; ProofRun should remain frozen unless
+AgentScope from its tested v0.15.0 baseline; ProofRun should remain frozen unless
 a regression threatens the preserved MVP.
 
 ## Portfolio validation
