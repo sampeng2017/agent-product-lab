@@ -67,6 +67,48 @@ class TargetInspection:
 
 
 @dataclass(frozen=True)
+class ModularRuleOccurrence:
+    target: str
+    state: str
+    reason: str
+
+    def to_dict(self) -> dict[str, str]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class ModularRuleCoverage:
+    path: str
+    patterns: tuple[str, ...]
+    target_occurrences: tuple[ModularRuleOccurrence, ...]
+
+    @property
+    def matched_target_count(self) -> int:
+        return sum(item.state == "matched" for item in self.target_occurrences)
+
+    @property
+    def ignored_target_count(self) -> int:
+        return sum(item.state == "ignored" for item in self.target_occurrences)
+
+    @property
+    def invalid_target_count(self) -> int:
+        return sum(item.state == "invalid" for item in self.target_occurrences)
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "path": self.path,
+            "patterns": list(self.patterns),
+            "discovered_target_count": len(self.target_occurrences),
+            "matched_target_count": self.matched_target_count,
+            "ignored_target_count": self.ignored_target_count,
+            "invalid_target_count": self.invalid_target_count,
+            "target_occurrences": [
+                occurrence.to_dict() for occurrence in self.target_occurrences
+            ],
+        }
+
+
+@dataclass(frozen=True)
 class ProfileSourceComparison:
     profile: str
     applied_sources: tuple[str, ...]
@@ -250,6 +292,40 @@ def compare_targets(
             )
         )
     return comparisons
+
+
+def cover_targets(
+    root: Path,
+    targets: Sequence[str | Path],
+    *,
+    cwd: str | Path = ".",
+    instruction_dirs: Sequence[str | Path] = (),
+) -> list[ModularRuleCoverage]:
+    """Group Copilot modular-rule outcomes by source across requested targets."""
+    inspected = inspect_targets(
+        root,
+        targets,
+        profile="copilot-cli",
+        cwd=cwd,
+        instruction_dirs=instruction_dirs,
+    )
+    grouped: dict[str, tuple[tuple[str, ...], list[ModularRuleOccurrence]]] = {}
+    for inspection in inspected:
+        for source in inspection.sources:
+            if source.kind != "copilot-path":
+                continue
+            patterns, occurrences = grouped.setdefault(
+                source.path, (source.patterns, [])
+            )
+            state = "matched" if source.state == "applied" else source.state
+            occurrences.append(
+                ModularRuleOccurrence(inspection.target, state, source.reason)
+            )
+
+    return [
+        ModularRuleCoverage(path, patterns, tuple(occurrences))
+        for path, (patterns, occurrences) in grouped.items()
+    ]
 
 
 def _resolve_session_directory(root: Path, cwd: Path) -> Path:

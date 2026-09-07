@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-09-05.
+AgentScope's `copilot-cli` profile as of 2026-09-06.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -118,9 +118,18 @@ remains informational. Both document types record the effective, deduplicated
 additional-directory list. The gate does not change schema v5 because the
 triggering source state was already represented in both document types.
 
+The separate `coverage` command transposes only `copilot-path` occurrences into
+a source-oriented schema v1 report. Sources retain first-discovery order and
+their occurrences retain caller target order. The report records a source's
+discovered-target count because a modular tree beneath a target-specific
+location may not be discovered for every requested target; absence is not an
+`ignored` result. Standard sources, references, content duplicates, and
+`agents-md` shadows are deliberately excluded. Coverage's optional ignored and
+invalid gates evaluate only the modular occurrences it reports.
+
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.15.0. A discovered Copilot
+with interactive `/instructions` remain outside v0.16.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,

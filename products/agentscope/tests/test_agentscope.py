@@ -13,6 +13,7 @@ from agentscope.core import (
     REFERENCE_DEPTH_LIMIT,
     _matches,
     compare_targets,
+    cover_targets,
     inspect_targets,
 )
 
@@ -1207,6 +1208,139 @@ class AgentScopeTests(unittest.TestCase):
             python_profile.unique_sources,
             (".github/instructions/python.instructions.md",),
         )
+
+    def test_modular_coverage_groups_discovery_aware_target_outcomes(self) -> None:
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "src/**/*.py"\n---\nUse Python.\n',
+        )
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**/*.py"]\n---\n',
+        )
+        self.write(
+            "src/.github/instructions/nested.instructions.md",
+            '---\napplyTo: "src/**"\n---\nNested.\n',
+        )
+        self.write(
+            "custom/shared.instructions.md",
+            '---\napplyTo: "**/*.md"\n---\nDocs.\n',
+        )
+        targets = ["docs/readme.md", "src/planned.py"]
+
+        covered = cover_targets(
+            self.root,
+            targets,
+            instruction_dirs=["custom"],
+        )
+
+        self.assertEqual(
+            [item.path for item in covered],
+            [
+                ".github/instructions/broken.instructions.md",
+                ".github/instructions/python.instructions.md",
+                "custom/shared.instructions.md",
+                "src/.github/instructions/nested.instructions.md",
+            ],
+        )
+        by_path = {item.path: item for item in covered}
+        python = by_path[".github/instructions/python.instructions.md"]
+        self.assertEqual(
+            [(item.target, item.state) for item in python.target_occurrences],
+            [("docs/readme.md", "ignored"), ("src/planned.py", "matched")],
+        )
+        nested = by_path["src/.github/instructions/nested.instructions.md"]
+        self.assertEqual(
+            [(item.target, item.state) for item in nested.target_occurrences],
+            [("src/planned.py", "matched")],
+        )
+        self.assertEqual(nested.matched_target_count, 1)
+        additional = by_path["custom/shared.instructions.md"]
+        self.assertEqual(additional.ignored_target_count, 1)
+        self.assertEqual(additional.matched_target_count, 1)
+        broken = by_path[".github/instructions/broken.instructions.md"]
+        self.assertEqual(broken.invalid_target_count, 2)
+
+    def test_coverage_cli_has_stable_json_human_and_policy_contracts(self) -> None:
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "src/**/*.py"\n---\nUse Python.\n',
+        )
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**/*.py"]\n---\n',
+        )
+        targets = ["docs/readme.md", "src/planned.py"]
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--fail-on-ignored-sources",
+                    *targets,
+                ]
+            )
+        payload = json.loads(output.getvalue())
+
+        self.assertEqual(exit_code, 1)
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["profile"], "copilot-cli")
+        self.assertEqual(payload["target_count"], 2)
+        self.assertEqual(payload["targets"], targets)
+        self.assertEqual(payload["modular_source_count"], 2)
+        self.assertEqual(payload["matched_target_count"], 1)
+        self.assertEqual(payload["ignored_target_count"], 1)
+        self.assertEqual(payload["invalid_target_count"], 2)
+        self.assertEqual(
+            payload["sources"][1]["target_occurrences"],
+            [
+                {
+                    "target": "docs/readme.md",
+                    "state": "ignored",
+                    "reason": "applyTo does not match docs/readme.md",
+                },
+                {
+                    "target": "src/planned.py",
+                    "state": "matched",
+                    "reason": "applyTo matches src/planned.py",
+                },
+            ],
+        )
+
+        human = io.StringIO()
+        with redirect_stdout(human):
+            invalid_exit = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
+        rendered = human.getvalue()
+        self.assertEqual(invalid_exit, 1)
+        self.assertIn(
+            "Targets: 2; modular sources: 2; matched: 1; ignored: 1; invalid: 2",
+            rendered,
+        )
+        self.assertIn(
+            "python.instructions.md: discovered for 2/2 targets", rendered
+        )
+        self.assertIn("MATCHED src/planned.py", rendered)
+        self.assertIn("INVALID docs/readme.md", rendered)
+
+        empty_root = self.root / "empty"
+        empty_root.mkdir()
+        empty = io.StringIO()
+        with redirect_stdout(empty):
+            empty_exit = main(["coverage", "--root", str(empty_root)])
+        self.assertEqual(empty_exit, 0)
+        self.assertIn("No modular instruction sources discovered", empty.getvalue())
 
     def test_compare_retains_ordered_non_applied_profile_evidence(self) -> None:
         self.write("AGENTS.md", "Shared guidance.\n")

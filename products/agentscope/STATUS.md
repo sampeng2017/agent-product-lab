@@ -2,7 +2,7 @@
 
 ## Product shape
 
-AgentScope v0.15.0 is a zero-runtime-dependency Python CLI for explaining the
+AgentScope v0.16.0 is a zero-runtime-dependency Python CLI for explaining the
 instruction files that apply to a repository target. Its `agents-md` profile
 models nearest-file precedence. Its `copilot-cli` profile uses explicit,
 repository-contained session and additional-directory inputs to discover
@@ -12,27 +12,29 @@ schema-v5 JSON output support missing-instructions, ignored-source,
 invalid-reference, invalid-source, and profile-divergence gates. Comparison
 preserves ordered per-profile applied, non-applied, and invalid evidence while
 keeping policy and divergence semantics distinct from explanatory source states.
+Its Copilot-specific coverage command transposes modular rules across requested
+targets in independent schema-v1 human and JSON reports.
 
-## Completed on 2026-09-05
+## Completed on 2026-09-06
 
-- Added `--fail-on-ignored-sources` with identical vocabulary and post-render
-  exit-1 behavior in direct inspection and comparison.
-- Defined the trigger strictly as source state `ignored`, which represents a
-  valid modular `applyTo` rule that does not match a requested target.
-- Kept duplicates, shadowed ancestors, invalid sources, missing guidance, and
-  divergence independent; existing gates continue to compose with OR semantics.
-- Preserved inspection and comparison schema v5 because existing ordered source
-  objects already expose the exact triggering state.
-- Added ignored-count properties and a multi-target regression covering matched,
-  ignored, duplicate, shadowed, and invalid sources.
-- Bumped the package to v0.15.0 and expanded the suite from 42 to 43 tests.
+- Added `agentscope coverage` and the public `cover_targets` API to group each
+  discovered `copilot-path` source's target outcomes.
+- Preserved first-discovery source order and caller target order, translating
+  applied modular evidence to the clearer coverage state `matched`.
+- Added discovered-target counts so a target outside a nested rule's discovery
+  route is absent instead of reported as a glob miss.
+- Added coverage schema v1 with ordered requested targets, aggregate occurrence
+  counts, patterns, reasons, and per-source target occurrences.
+- Added modular-only ignored and invalid gates that render full output before
+  exit 1; invalid repository input remains exit 2.
+- Added two end-to-end regressions and expanded the suite from 43 to 45 tests.
 
 ## Changes since the prior run
 
-Callers can now turn silently unmatched modular guidance into an enforceable CI
-failure without broadening the meaning of invalid guidance or non-applied
-evidence. The report remains complete and machine-readable before the process
-returns 1. ProofRun remains frozen.
+Callers can now inspect a modular rule once and see its coverage across a target
+set, avoiding repeated target-oriented evidence while retaining the exact
+discovery and glob semantics. Inspection and comparison schemas and policies
+remain unchanged. ProofRun remains frozen.
 
 ## Known issues
 
@@ -42,8 +44,8 @@ returns 1. ProofRun remains frozen.
 - GitHub documents additional directory source shapes but not precedence or
   nested `AGENTS.md` scope; AgentScope's direct-file and post-repository order is
   an explicit deterministic product contract.
-- Reports remain target-oriented and can repeat the same modular source across
-  many targets; there is no compact source-to-target coverage view.
+- Coverage is source-oriented but uses a vertical occurrence list; very large
+  rule/target sets may need an optional compact table or source/path filter.
 - Content normalization deliberately ignores line placement, blank lines, and
   surrounding line whitespace only; it does not attempt Markdown semantics.
 - A target above the session directory does not reclassify session-intermediate
@@ -77,15 +79,19 @@ returns 1. ProofRun remains frozen.
   invalid evidence; neither category changes applied-path divergence.
 - Let `--fail-on-ignored-sources` enforce only `ignored` evidence; duplicates
   and shadows remain informational unless a future explicit policy says otherwise.
+- Keep coverage specific to `copilot-path` sources. Standard instructions,
+  references, duplicates, and `agents-md` shadows remain in inspection or
+  comparison rather than the modular matrix.
+- Treat non-discovery as distinct from an ignored glob outcome and version
+  coverage independently at schema v1.
 - Treat comparison guidance as present when at least one profile applies a
   source; reserve `--fail-on-divergence` for cross-profile parity enforcement.
-- Keep schema v5 for inspection and comparison because the new gate consumes
-  existing source-state evidence rather than adding serialized fields.
+- Keep schema v5 for inspection and comparison while versioning the distinct
+  source-oriented coverage contract independently.
 - Keep portfolio validation in one root script, cover Python 3.10-3.14, promote
   warnings to errors on 3.10, and install wheels only in temporary environments.
 
 ## Recommended next step
 
-Evaluate a source-oriented coverage view that groups each modular rule's matched
-and ignored states across requested targets without changing target-oriented
-inspection or comparison schemas.
+Dogfood coverage on a larger rule/target set, then decide whether an optional
+compact table or source/path filters materially improve diagnosis.

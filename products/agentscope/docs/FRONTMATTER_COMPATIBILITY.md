@@ -53,11 +53,16 @@ Inspection JSON schema v5 retains `invalid_source_count` at the document and
 target levels. The existing `invalid_reference_count` remains and is always a
 subset of that broader total. Source objects are unchanged; v5 adds the
 effective additional-directory input documented by the discovery contract.
-Comparison JSON schema v4 keeps applied-path divergence separate while adding
+Comparison JSON schema v5 keeps applied-path divergence separate while adding
 ordered invalid diagnostics and counts for every profile. Its
 `--fail-on-invalid-sources` gate rejects malformed path instructions after
 rendering the full comparison report, while
 `--fail-on-invalid-references` deliberately does not reject them.
+
+Coverage JSON schema v1 groups the same path-instruction results by source and
+uses `matched`, `ignored`, and `invalid` occurrence states. Its optional gates
+apply only to these modular rules and also render the complete report before
+returning exit 1.
 
 ## Deliberate boundary
 

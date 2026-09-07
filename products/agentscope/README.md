@@ -13,6 +13,7 @@ cd products/agentscope
 PYTHONPATH=src python3 -m agentscope --root ../.. products/agentscope/src/agentscope/core.py
 PYTHONPATH=src python3 -m agentscope --profile copilot-cli --root ../.. --cwd products/agentscope --json products/agentscope/src/agentscope/core.py
 PYTHONPATH=src python3 -m agentscope compare --root ../.. --cwd products/agentscope products/agentscope/src/agentscope/core.py
+PYTHONPATH=src python3 -m agentscope coverage --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 ```
 
 `--cwd` is an explicit Copilot session directory; relative values are anchored
@@ -66,7 +67,19 @@ non-applied states such as duplicates or shadowed ancestors.
 compose with OR semantics and render the full report before failing. Invalidity
 remains separate from applied-path divergence and guidance coverage.
 
-## Profiles in v0.15.0
+`coverage` provides the complementary source-oriented view for the
+`copilot-cli` profile. It groups only discovered modular
+`*.instructions.md` sources and lists their matched, ignored, or invalid
+occurrences in caller target order. Each source reports how many requested
+targets actually discovered it; a target outside a nested discovery location
+is absent rather than incorrectly classified as ignored. Standard instructions,
+references, duplicates, and `agents-md` shadows stay outside this focused view.
+Coverage JSON has its own schema v1 and includes the ordered requested targets,
+aggregate occurrence counts, patterns, and per-source target occurrences.
+`coverage --fail-on-ignored-sources` and `--fail-on-invalid-sources` retain the
+post-render exit-1 behavior of inspection while applying only to modular rules.
+
+## Profiles in v0.16.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -180,6 +193,5 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, evaluate a source-oriented coverage view that groups matched and ignored
-modular rules across a requested target set, making policy failures easier to
-diagnose without changing target-oriented inspection.
+Next, evaluate an optional concise table form for large coverage sets and
+whether source/path filtering is needed before expanding the command surface.

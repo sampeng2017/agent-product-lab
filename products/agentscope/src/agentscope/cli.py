@@ -9,9 +9,11 @@ from typing import Sequence
 from . import __version__
 from .core import (
     PROFILES,
+    ModularRuleCoverage,
     TargetComparison,
     TargetInspection,
     compare_targets,
+    cover_targets,
     inspect_targets,
     resolve_instruction_directories,
 )
@@ -21,7 +23,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="agentscope",
         description="Explain which repository instructions apply to a target path.",
-        epilog="Run 'agentscope compare --help' to compare all supported profiles.",
+        epilog=(
+            "Run 'agentscope compare --help' to compare profiles or "
+            "'agentscope coverage --help' to group modular rules by target."
+        ),
     )
     parser.add_argument("targets", nargs="*", help="files or directories (default: .)")
     parser.add_argument(
@@ -128,10 +133,51 @@ def build_compare_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def build_coverage_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="agentscope coverage",
+        description="Group Copilot modular-instruction coverage across targets.",
+    )
+    parser.add_argument("targets", nargs="*", help="files or directories (default: .)")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="repository root (default: current directory)",
+    )
+    parser.add_argument(
+        "--cwd",
+        type=Path,
+        default=Path("."),
+        help="Copilot session directory; relative paths use root (default: root)",
+    )
+    parser.add_argument(
+        "--instructions-dir",
+        type=Path,
+        action="append",
+        default=[],
+        help="additional contained Copilot instruction directory (repeatable)",
+    )
+    parser.add_argument("--json", action="store_true", help="emit versioned JSON")
+    parser.add_argument(
+        "--fail-on-ignored-sources",
+        action="store_true",
+        help="exit 1 when a discovered modular rule ignores any requested target",
+    )
+    parser.add_argument(
+        "--fail-on-invalid-sources",
+        action="store_true",
+        help="exit 1 when any discovered modular rule is invalid",
+    )
+    return parser
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = list(argv) if argv is not None else sys.argv[1:]
     if arguments and arguments[0] == "compare":
         return _compare_main(arguments[1:])
+    if arguments and arguments[0] == "coverage":
+        return _coverage_main(arguments[1:])
 
     args = build_parser().parse_args(arguments)
     try:
@@ -234,6 +280,51 @@ def _compare_main(argv: Sequence[str]) -> int:
     return 0
 
 
+def _coverage_main(argv: Sequence[str]) -> int:
+    args = build_coverage_parser().parse_args(argv)
+    try:
+        covered = cover_targets(
+            args.root,
+            args.targets,
+            cwd=args.cwd,
+            instruction_dirs=args.instructions_dir,
+        )
+    except (OSError, ValueError) as exc:
+        print(f"agentscope: {exc}", file=sys.stderr)
+        return 2
+
+    targets = args.targets or (Path("."),)
+    if args.json:
+        print(
+            json.dumps(
+                _coverage_json_result(
+                    args.root,
+                    args.cwd,
+                    args.instructions_dir,
+                    targets,
+                    covered,
+                ),
+                indent=2,
+            )
+        )
+    else:
+        _print_coverage(
+            args.root,
+            args.cwd,
+            args.instructions_dir,
+            targets,
+            covered,
+        )
+
+    ignored = args.fail_on_ignored_sources and any(
+        item.ignored_target_count > 0 for item in covered
+    )
+    invalid = args.fail_on_invalid_sources and any(
+        item.invalid_target_count > 0 for item in covered
+    )
+    return 1 if ignored or invalid else 0
+
+
 def _json_result(
     root: Path,
     cwd: Path,
@@ -331,6 +422,71 @@ def _comparison_json_result(
     }
 
 
+def _coverage_json_result(
+    root: Path,
+    cwd: Path,
+    instruction_dirs: Sequence[Path],
+    targets: Sequence[str | Path],
+    covered: Sequence[ModularRuleCoverage],
+) -> dict[str, object]:
+    target_labels = _target_labels(root, targets)
+    return {
+        "schema_version": 1,
+        "profile": "copilot-cli",
+        "root": str(root.resolve()),
+        "session_directory": _session_label(root, cwd),
+        "additional_instruction_directories": _instruction_directory_labels(
+            root, instruction_dirs
+        ),
+        "target_count": len(target_labels),
+        "targets": target_labels,
+        "modular_source_count": len(covered),
+        "matched_target_count": sum(item.matched_target_count for item in covered),
+        "ignored_target_count": sum(item.ignored_target_count for item in covered),
+        "invalid_target_count": sum(item.invalid_target_count for item in covered),
+        "sources": [item.to_dict() for item in covered],
+    }
+
+
+def _print_coverage(
+    root: Path,
+    cwd: Path,
+    instruction_dirs: Sequence[Path],
+    targets: Sequence[str | Path],
+    covered: Sequence[ModularRuleCoverage],
+) -> None:
+    print(f"AgentScope modular coverage in {root.resolve()}")
+    print("Profile: copilot-cli")
+    print(f"Session directory: {_session_label(root, cwd)}")
+    labels = _instruction_directory_labels(root, instruction_dirs)
+    print(
+        "Additional instruction directories: "
+        + (", ".join(labels) if labels else "none")
+    )
+    print(
+        f"Targets: {len(targets)}; modular sources: {len(covered)}; "
+        f"matched: {sum(item.matched_target_count for item in covered)}; "
+        f"ignored: {sum(item.ignored_target_count for item in covered)}; "
+        f"invalid: {sum(item.invalid_target_count for item in covered)}"
+    )
+    if not covered:
+        print("\nNo modular instruction sources discovered.")
+        return
+    for item in covered:
+        patterns = ", ".join(item.patterns) if item.patterns else "unavailable"
+        print(
+            f"\n{item.path}: discovered for {len(item.target_occurrences)}/"
+            f"{len(targets)} targets; {item.matched_target_count} matched; "
+            f"{item.ignored_target_count} ignored; {item.invalid_target_count} invalid"
+        )
+        print(f"  applyTo: {patterns}")
+        for occurrence in item.target_occurrences:
+            print(
+                f"  {occurrence.state.upper():7} {occurrence.target} — "
+                f"{occurrence.reason}"
+            )
+
+
 def _print_comparison(
     root: Path,
     cwd: Path,
@@ -415,5 +571,16 @@ def _instruction_directory_labels(
     labels: list[str] = []
     for directory in resolve_instruction_directories(resolved_root, directories):
         relative = directory.relative_to(resolved_root)
+        labels.append("." if relative == Path(".") else relative.as_posix())
+    return labels
+
+
+def _target_labels(root: Path, targets: Sequence[str | Path]) -> list[str]:
+    resolved_root = root.resolve()
+    labels: list[str] = []
+    for target in targets:
+        requested = Path(target)
+        candidate = requested if requested.is_absolute() else resolved_root / requested
+        relative = candidate.resolve(strict=False).relative_to(resolved_root)
         labels.append("." if relative == Path(".") else relative.as_posix())
     return labels

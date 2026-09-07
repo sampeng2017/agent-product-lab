@@ -8,7 +8,7 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains AgentScope v0.15.0, 43 tests, source-linked
+- `products/agentscope/` contains AgentScope v0.16.0, 45 tests, source-linked
   compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
@@ -23,27 +23,29 @@ supported recursive imports, diagnoses invalid sources, and explains duplicate
 instruction content. Inspection and comparison emit human or schema-v5 JSON,
 preserve applied, non-applied, and invalid evidence, and can gate missing
 guidance, ignored path rules, applied-path divergence, invalid references, or
-all invalid guidance.
+all invalid guidance. A separate coverage schema groups modular rules across
+requested targets without changing the target-oriented inspection contracts.
 
-## Completed today (2026-09-05)
+## Completed today (2026-09-06)
 
-- Added `--fail-on-ignored-sources` to inspection and comparison, exiting 1
-  after complete output when any requested target has an `ignored` path rule.
-- Kept duplicate copies, shadowed ancestors, malformed sources, missing
-  guidance, and profile divergence outside the narrow gate unless their own
-  independent policies are also enabled.
-- Added composable ignored-count properties without changing schema v5; the
-  existing ordered source objects already identify every trigger.
-- Added a multi-target regression mixing matched and ignored path rules,
-  duplicates, shadows, and invalid sources; the suite grew from 42 to 43 tests.
-- Bumped AgentScope to v0.15.0 and kept ProofRun frozen.
+- Added `agentscope coverage`, a Copilot-specific source-oriented view that
+  groups modular instruction outcomes across requested targets.
+- Preserved caller target order within each source and first-discovery source
+  order, including shared, target-nested, additional-directory, planned-target,
+  and malformed-frontmatter behavior.
+- Distinguished discovery from matching: each rule reports its discovered
+  target count, so targets outside a nested discovery location are absent rather
+  than mislabeled ignored.
+- Added coverage schema v1, human output, and modular-only ignored/invalid policy
+  gates with complete-before-exit rendering.
+- Bumped AgentScope to v0.16.0 and expanded the suite from 43 to 45 tests.
 
 ## Changes since the prior run
 
-Maintainers can now enforce path-rule coverage in CI without conflating a valid
-nonmatch with malformed guidance, deliberate copies, or nearest-file shadowing.
-The same flag and exit contract work in inspection and comparison, compose with
-all existing gates, and leave the established JSON representation intact.
+Maintainers can now diagnose an ignored-source failure once per modular rule
+instead of scanning repeated target-oriented reports. Existing inspection and
+comparison schema v5 output is unchanged; coverage uses an independent schema
+v1 and keeps its policy surface deliberately limited to modular rules.
 
 ## Known issues
 
@@ -52,8 +54,8 @@ all existing gates, and leave the established JSON representation intact.
   file disabling remain out of scope.
 - GitHub does not document precedence or nested `AGENTS.md` scope for configured
   directories; AgentScope's direct-file and post-repository order is explicit.
-- Multi-target output is target-oriented; it does not yet provide a compact
-  source-oriented matrix of which requested targets match each modular rule.
+- Coverage output is source-oriented but vertically lists occurrences; very
+  large source/target sets may benefit from an optional compact table or filter.
 - Content normalization ignores line placement, blank lines, and surrounding
   line whitespace but deliberately avoids semantic similarity.
 - The dependency-free frontmatter parser supports only scalar `applyTo` values;
@@ -86,11 +88,14 @@ all existing gates, and leave the established JSON representation intact.
   as the union of applied sources across profiles.
 - Gate `ignored` path rules separately from duplicate and shadowed sources;
   render complete output before returning policy exit 1.
+- Keep modular coverage Copilot-specific, exclude standards/references/copies/
+  shadows, and distinguish not-discovered targets from ignored occurrences.
+- Version coverage independently at schema v1 rather than changing established
+  inspection or comparison schema v5.
 - Validate all stable supported Python minors in root CI, keep external
   permissions read-only, and build/smoke-install packages outside the checkout.
 
 ## Recommended next step
 
-Evaluate a source-oriented coverage view for modular instructions so a
-multi-target ignored-rule failure can be diagnosed as a compact rule-to-target
-matrix while preserving the current target-oriented schemas.
+Evaluate whether large coverage reports need an optional compact table or
+source/path filters, using real dogfood before expanding the interface.

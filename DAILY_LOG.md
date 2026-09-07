@@ -1224,3 +1224,44 @@ then built, isolated-installed, and smoke-tested AgentScope 0.15.0 and ProofRun
 also passed. No human input is needed. The next run should evaluate a compact
 source-oriented modular coverage view so multi-target ignored-rule failures are
 easier to diagnose without changing the existing target-oriented schemas.
+
+## 2026-09-06 — AgentScope modular coverage view
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the warning-strict 43-test v0.15.0 baseline passed, and ProofRun remained frozen.
+
+AgentScope v0.16.0 adds `agentscope coverage`, a Copilot-specific source-oriented
+view of modular instructions across multiple requested targets. The public
+`cover_targets` API groups only `copilot-path` evidence, preserves the first
+discovery order of sources and caller order of target occurrences, and maps an
+applied modular rule to the clearer coverage state `matched`. Standard sources,
+references, normalized-content duplicates, and `agents-md` shadows remain in
+the existing inspection and comparison views.
+
+Coverage schema v1 records the ordered requested targets, effective session and
+additional-directory context, aggregate matched/ignored/invalid occurrence
+counts, source patterns, discovered-target counts, and ordered per-source target
+outcomes with reasons. The discovered count is intentionally separate from the
+requested target count: a target outside a target-nested modular tree's discovery
+route is absent rather than falsely classified as an ignored glob. Human output
+expresses the same distinction. Optional `--fail-on-ignored-sources` and
+`--fail-on-invalid-sources` gates apply only to modular evidence, render the full
+report before exit 1, and retain exit 2 for invalid repository input. Existing
+inspection and comparison schema v5 contracts are unchanged.
+
+Two end-to-end regressions cover shared root rules, target-specific discovery,
+planned targets, explicit additional directories, malformed frontmatter,
+first-discovery ordering, caller target ordering, direct result objects, human
+and JSON output, empty repositories, and both policy gates. The focused suite
+grew from 43 to 45 tests. Documentation was updated throughout, including two
+stale comparison-schema references corrected from v4 to v5.
+
+Warning-strict Python 3.11 portfolio validation passed all 45 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.16.0 and ProofRun
+1.8.1 wheels. Focused Python 3.14 tests, compilation, coverage help/version and
+JSON parsing, and whitespace checks also passed. No human input is needed. The
+next run should dogfood coverage on a larger source/target set before deciding
+whether an optional compact table or source/path filters are warranted.

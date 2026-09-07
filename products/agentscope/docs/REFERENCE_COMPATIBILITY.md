@@ -44,7 +44,7 @@ invalid-reference counts. Inspection schema-v5 JSON exposes the same counts as
 `invalid_reference_count`, alongside the broader `invalid_source_count`; the
 document-level values sum diagnostic occurrences reported for each target. The
 existing `sources` object shape is unchanged from schema v1. Profile comparison
-schema v4 continues to calculate divergence only from applied paths, so valid
+schema v5 continues to calculate divergence only from applied paths, so valid
 imported content participates while invalid edges do not. Invalid edges are
 retained as ordered per-profile diagnostics and contribute to comparison
 invalid-source and invalid-reference counts.
