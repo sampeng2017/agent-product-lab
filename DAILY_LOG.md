@@ -1265,3 +1265,35 @@ then built, isolated-installed, and smoke-tested AgentScope 0.16.0 and ProofRun
 JSON parsing, and whitespace checks also passed. No human input is needed. The
 next run should dogfood coverage on a larger source/target set before deciding
 whether an optional compact table or source/path filters are warranted.
+
+## 2026-09-07 — AgentScope compact coverage matrix
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, root and product handoffs, active `To-Sam/` messages, all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the warning-strict 45-test v0.16.0 baseline passed, and ProofRun remained frozen.
+
+Dogfooding the detailed coverage presentation with mixed root and target-nested
+rules showed that one line per discovered source/target occurrence makes the
+cross-target pattern difficult to scan. AgentScope v0.17.0 therefore adds
+`coverage --compact`, an opt-in human rule-by-target matrix. Its `M`, `I`, `X`,
+and `-` cells distinguish matched, ignored, invalid, and not-discovered evidence.
+Numbered legends preserve full source paths, `applyTo` patterns, first-discovery
+order, full target paths, and caller order; the default view remains the place
+for per-occurrence reasons.
+
+Compact and JSON output are mutually exclusive. The feature is presentation-
+only: public `cover_targets` results, coverage schema v1, aggregate counts,
+discovery semantics, and ignored/invalid policy exits are unchanged. The new
+end-to-end regression covers mixed states, target-nested non-discovery, ordering,
+policy behavior, output-option validation, and double-digit target labels across
+a ten-target fixture. The focused suite grew from 45 to 46 tests.
+
+Warning-strict Python 3.11 portfolio validation passed all 46 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.17.0 and ProofRun
+1.8.1 wheels. Focused compact-matrix tests, compilation, help inspection, and
+whitespace checks also passed. No human input is needed. The next run should
+exercise compact coverage on a real high-cardinality repository and add
+deterministic column chunking or filters only if horizontal growth is a proven
+problem.

@@ -2,7 +2,7 @@
 
 ## Product shape
 
-AgentScope v0.16.0 is a zero-runtime-dependency Python CLI for explaining the
+AgentScope v0.17.0 is a zero-runtime-dependency Python CLI for explaining the
 instruction files that apply to a repository target. Its `agents-md` profile
 models nearest-file precedence. Its `copilot-cli` profile uses explicit,
 repository-contained session and additional-directory inputs to discover
@@ -13,28 +13,27 @@ invalid-reference, invalid-source, and profile-divergence gates. Comparison
 preserves ordered per-profile applied, non-applied, and invalid evidence while
 keeping policy and divergence semantics distinct from explanatory source states.
 Its Copilot-specific coverage command transposes modular rules across requested
-targets in independent schema-v1 human and JSON reports.
+targets in independent schema-v1 human and JSON reports, with an opt-in compact
+matrix for larger source/target sets.
 
-## Completed on 2026-09-06
+## Completed on 2026-09-07
 
-- Added `agentscope coverage` and the public `cover_targets` API to group each
-  discovered `copilot-path` source's target outcomes.
-- Preserved first-discovery source order and caller target order, translating
-  applied modular evidence to the clearer coverage state `matched`.
-- Added discovered-target counts so a target outside a nested rule's discovery
-  route is absent instead of reported as a glob miss.
-- Added coverage schema v1 with ordered requested targets, aggregate occurrence
-  counts, patterns, reasons, and per-source target occurrences.
-- Added modular-only ignored and invalid gates that render full output before
-  exit 1; invalid repository input remains exit 2.
-- Added two end-to-end regressions and expanded the suite from 43 to 45 tests.
+- Dogfooded the vertical coverage view with mixed root/nested modular rules and
+  up to ten targets, confirming repeated lines obscure the cross-target shape.
+- Added `coverage --compact`, a numbered rule-by-target matrix with distinct
+  matched, ignored, invalid, and not-discovered cells.
+- Preserved full paths and patterns in first-discovery order, full target paths
+  in caller order, and directed reason-seeking users to the detailed view.
+- Made `--compact` and `--json` mutually exclusive while leaving schema v1,
+  `cover_targets`, aggregate counts, and all policy exits unchanged.
+- Bumped AgentScope to v0.17.0 and expanded the suite from 45 to 46 tests.
 
 ## Changes since the prior run
 
-Callers can now inspect a modular rule once and see its coverage across a target
-set, avoiding repeated target-oriented evidence while retaining the exact
-discovery and glob semantics. Inspection and comparison schemas and policies
-remain unchanged. ProofRun remains frozen.
+Large human reviews now expose their cross-target pattern in one compact matrix
+instead of requiring maintainers to mentally join repeated occurrence blocks.
+The detailed view still carries reasons, and machine consumers see the same
+schema-v1 shape. Inspection and comparison remain unchanged; ProofRun is frozen.
 
 ## Known issues
 
@@ -44,8 +43,8 @@ remain unchanged. ProofRun remains frozen.
 - GitHub documents additional directory source shapes but not precedence or
   nested `AGENTS.md` scope; AgentScope's direct-file and post-repository order is
   an explicit deterministic product contract.
-- Coverage is source-oriented but uses a vertical occurrence list; very large
-  rule/target sets may need an optional compact table or source/path filter.
+- Compact matrices still grow horizontally with target count; real-world use
+  should justify any future chunking or filtering rather than adding it now.
 - Content normalization deliberately ignores line placement, blank lines, and
   surrounding line whitespace only; it does not attempt Markdown semantics.
 - A target above the session directory does not reclassify session-intermediate
@@ -84,6 +83,8 @@ remain unchanged. ProofRun remains frozen.
   comparison rather than the modular matrix.
 - Treat non-discovery as distinct from an ignored glob outcome and version
   coverage independently at schema v1.
+- Keep compact coverage presentation-only, retain full rule/target legends, and
+  preserve the detailed vertical view for reasons.
 - Treat comparison guidance as present when at least one profile applies a
   source; reserve `--fail-on-divergence` for cross-profile parity enforcement.
 - Keep schema v5 for inspection and comparison while versioning the distinct
@@ -93,5 +94,5 @@ remain unchanged. ProofRun remains frozen.
 
 ## Recommended next step
 
-Dogfood coverage on a larger rule/target set, then decide whether an optional
-compact table or source/path filters materially improve diagnosis.
+Exercise compact coverage on a real repository with many modular rules; add
+chunking or filters only if horizontal growth remains a practical obstacle.

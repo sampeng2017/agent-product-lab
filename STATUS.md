@@ -8,7 +8,7 @@ ProofRun v1.8.1 remains a preserved completed local MVP.
 
 ## Product shape
 
-- `products/agentscope/` contains AgentScope v0.16.0, 45 tests, source-linked
+- `products/agentscope/` contains AgentScope v0.17.0, 46 tests, source-linked
   compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
   its complete product history.
@@ -24,28 +24,27 @@ instruction content. Inspection and comparison emit human or schema-v5 JSON,
 preserve applied, non-applied, and invalid evidence, and can gate missing
 guidance, ignored path rules, applied-path divergence, invalid references, or
 all invalid guidance. A separate coverage schema groups modular rules across
-requested targets without changing the target-oriented inspection contracts.
+requested targets without changing the target-oriented inspection contracts;
+an opt-in compact matrix scales human review while preserving detailed output.
 
-## Completed today (2026-09-06)
+## Completed today (2026-09-07)
 
-- Added `agentscope coverage`, a Copilot-specific source-oriented view that
-  groups modular instruction outcomes across requested targets.
-- Preserved caller target order within each source and first-discovery source
-  order, including shared, target-nested, additional-directory, planned-target,
-  and malformed-frontmatter behavior.
-- Distinguished discovery from matching: each rule reports its discovered
-  target count, so targets outside a nested discovery location are absent rather
-  than mislabeled ignored.
-- Added coverage schema v1, human output, and modular-only ignored/invalid policy
-  gates with complete-before-exit rendering.
-- Bumped AgentScope to v0.16.0 and expanded the suite from 43 to 45 tests.
+- Evaluated the vertical report across mixed source states and up to ten targets,
+  finding the repeated occurrence layout hard to scan.
+- Added `coverage --compact`, a numbered source-by-target matrix that explicitly
+  distinguishes matched, ignored, invalid, and not-discovered outcomes.
+- Kept complete source paths/patterns and target paths in ordered legends, with
+  the default view retained for per-occurrence reasons.
+- Kept coverage schema v1, direct API results, counts, and policy exits stable;
+  `--compact` and `--json` are mutually exclusive presentation choices.
+- Bumped AgentScope to v0.17.0 and expanded the suite from 45 to 46 tests.
 
 ## Changes since the prior run
 
-Maintainers can now diagnose an ignored-source failure once per modular rule
-instead of scanning repeated target-oriented reports. Existing inspection and
-comparison schema v5 output is unchanged; coverage uses an independent schema
-v1 and keeps its policy surface deliberately limited to modular rules.
+Maintainers can now see the entire modular source/target relationship at a
+glance while retaining the detailed explanation view and unchanged JSON for
+automation. Inspection and comparison schema v5 output remains unchanged;
+coverage stays on independent schema v1.
 
 ## Known issues
 
@@ -54,8 +53,8 @@ v1 and keeps its policy surface deliberately limited to modular rules.
   file disabling remain out of scope.
 - GitHub does not document precedence or nested `AGENTS.md` scope for configured
   directories; AgentScope's direct-file and post-repository order is explicit.
-- Coverage output is source-oriented but vertically lists occurrences; very
-  large source/target sets may benefit from an optional compact table or filter.
+- Compact coverage still expands horizontally with the requested target count;
+  chunking or filters need evidence from real large repositories.
 - Content normalization ignores line placement, blank lines, and surrounding
   line whitespace but deliberately avoids semantic similarity.
 - The dependency-free frontmatter parser supports only scalar `applyTo` values;
@@ -92,10 +91,12 @@ v1 and keeps its policy surface deliberately limited to modular rules.
   shadows, and distinguish not-discovered targets from ignored occurrences.
 - Version coverage independently at schema v1 rather than changing established
   inspection or comparison schema v5.
+- Keep compact coverage presentation-only and preserve ordered full-path legends
+  plus the detailed reason-bearing default view.
 - Validate all stable supported Python minors in root CI, keep external
   permissions read-only, and build/smoke-install packages outside the checkout.
 
 ## Recommended next step
 
-Evaluate whether large coverage reports need an optional compact table or
-source/path filters, using real dogfood before expanding the interface.
+Exercise compact coverage on a real repository with many modular rules and add
+chunking or filters only if horizontal growth is demonstrably troublesome.

@@ -1,4 +1,4 @@
-# Next run: dogfood modular coverage at scale
+# Next run: validate compact coverage at real scale
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun feature work.
@@ -11,18 +11,18 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Exercise `agentscope coverage` against a realistic repository with multiple
-modular sources and a representative target set, then make one evidence-backed
-usability improvement if needed.
+Exercise `agentscope coverage --compact` against a real repository with many
+modular sources and representative target paths, then improve it only if a
+specific scaling problem appears.
 
-1. Evaluate whether the vertical source/occurrence output stays scannable for a
-   larger source-by-target set.
-2. If it does not, prefer an explicit compact-table option or narrow source/path
-   filters; keep the default schema-v1 JSON stable.
-3. Preserve caller target order, first-discovery source order, and the distinction
-   between not discovered, ignored, matched, and invalid.
-4. Do not imply that every modular rule should match every requested target;
-   `--fail-on-ignored-sources` must remain an explicit strict policy.
+1. Check matrix width, long paths, and higher-cardinality sets while retaining
+   mixed matched, ignored, invalid, and not-discovered cells.
+2. Compare the compact overview with the default reason-bearing view; keep each
+   format's role clear rather than merging them.
+3. If horizontal growth is genuinely troublesome, prefer deterministic column
+   chunking before adding source/path filtering with ambiguous gate semantics.
+4. Preserve caller target order, first-discovery source order, full legends,
+   schema-v1 JSON, and all current policy exits.
 5. Keep standard sources, references, duplicates, and `agents-md` shadows out of
    modular coverage unless real usage demonstrates a clear need.
 6. Run the root portfolio validator plus focused AgentScope checks, update all

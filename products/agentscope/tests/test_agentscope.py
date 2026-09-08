@@ -1342,6 +1342,92 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(empty_exit, 0)
         self.assertIn("No modular instruction sources discovered", empty.getvalue())
 
+    def test_coverage_compact_matrix_preserves_order_and_non_discovery(self) -> None:
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\nPython.\n',
+        )
+        self.write(
+            ".github/instructions/docs.instructions.md",
+            '---\napplyTo: "docs/**"\n---\nDocs.\n',
+        )
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**"]\n---\n',
+        )
+        self.write(
+            "src/.github/instructions/nested.instructions.md",
+            '---\napplyTo: "src/**"\n---\nNested.\n',
+        )
+        targets = ["docs/readme.md", "src/app.py", "src/app.ts"]
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--compact",
+                    "--fail-on-ignored-sources",
+                    *targets,
+                ]
+            )
+
+        rendered = output.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertIn(
+            "Coverage matrix (M=matched, I=ignored, X=invalid, -=not discovered)",
+            rendered,
+        )
+        self.assertIn("RULE | 1 | 2 | 3", rendered)
+        self.assertIn("R1   | X | X | X", rendered)
+        self.assertIn("R2   | M | I | I", rendered)
+        self.assertIn("R3   | I | M | I", rendered)
+        self.assertIn("R4   | - | M | M", rendered)
+        self.assertLess(
+            rendered.index("R1 .github/instructions/broken.instructions.md"),
+            rendered.index("R4 src/.github/instructions/nested.instructions.md"),
+        )
+        self.assertLess(
+            rendered.index("1 docs/readme.md"),
+            rendered.index("3 src/app.ts"),
+        )
+        self.assertIn("Use the default coverage view for occurrence reasons", rendered)
+
+        errors = io.StringIO()
+        with redirect_stderr(errors), self.assertRaises(SystemExit) as raised:
+            main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--compact",
+                    *targets,
+                ]
+            )
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("not allowed with argument --json", errors.getvalue())
+
+        scaled_targets = [f"src/file{index}.py" for index in range(1, 11)]
+        scaled = io.StringIO()
+        with redirect_stdout(scaled):
+            scaled_exit = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--compact",
+                    *scaled_targets,
+                ]
+            )
+        scaled_rendered = scaled.getvalue()
+        self.assertEqual(scaled_exit, 0)
+        self.assertIn("RULE |  1 |  2 |  3", scaled_rendered)
+        self.assertIn("|  9 | 10", scaled_rendered)
+        self.assertIn("  10 src/file10.py", scaled_rendered)
+
     def test_compare_retains_ordered_non_applied_profile_evidence(self) -> None:
         self.write("AGENTS.md", "Shared guidance.\n")
         self.write("packages/api/AGENTS.md", "Nested guidance.\n")

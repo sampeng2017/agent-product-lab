@@ -158,7 +158,13 @@ def build_coverage_parser() -> argparse.ArgumentParser:
         default=[],
         help="additional contained Copilot instruction directory (repeatable)",
     )
-    parser.add_argument("--json", action="store_true", help="emit versioned JSON")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--json", action="store_true", help="emit versioned JSON")
+    output.add_argument(
+        "--compact",
+        action="store_true",
+        help="emit a compact human-readable source-by-target matrix",
+    )
     parser.add_argument(
         "--fail-on-ignored-sources",
         action="store_true",
@@ -306,6 +312,14 @@ def _coverage_main(argv: Sequence[str]) -> int:
                 ),
                 indent=2,
             )
+        )
+    elif args.compact:
+        _print_coverage_compact(
+            args.root,
+            args.cwd,
+            args.instructions_dir,
+            targets,
+            covered,
         )
     else:
         _print_coverage(
@@ -455,20 +469,7 @@ def _print_coverage(
     targets: Sequence[str | Path],
     covered: Sequence[ModularRuleCoverage],
 ) -> None:
-    print(f"AgentScope modular coverage in {root.resolve()}")
-    print("Profile: copilot-cli")
-    print(f"Session directory: {_session_label(root, cwd)}")
-    labels = _instruction_directory_labels(root, instruction_dirs)
-    print(
-        "Additional instruction directories: "
-        + (", ".join(labels) if labels else "none")
-    )
-    print(
-        f"Targets: {len(targets)}; modular sources: {len(covered)}; "
-        f"matched: {sum(item.matched_target_count for item in covered)}; "
-        f"ignored: {sum(item.ignored_target_count for item in covered)}; "
-        f"invalid: {sum(item.invalid_target_count for item in covered)}"
-    )
+    _print_coverage_header(root, cwd, instruction_dirs, targets, covered)
     if not covered:
         print("\nNo modular instruction sources discovered.")
         return
@@ -485,6 +486,74 @@ def _print_coverage(
                 f"  {occurrence.state.upper():7} {occurrence.target} — "
                 f"{occurrence.reason}"
             )
+
+
+def _print_coverage_compact(
+    root: Path,
+    cwd: Path,
+    instruction_dirs: Sequence[Path],
+    targets: Sequence[str | Path],
+    covered: Sequence[ModularRuleCoverage],
+) -> None:
+    _print_coverage_header(root, cwd, instruction_dirs, targets, covered)
+    if not covered:
+        print("\nNo modular instruction sources discovered.")
+        return
+
+    target_labels = _target_labels(root, targets)
+    rule_width = max(len("RULE"), len(f"R{len(covered)}"))
+    target_width = max(1, len(str(len(target_labels))))
+    header_cells = [
+        f"{index:>{target_width}}" for index in range(1, len(target_labels) + 1)
+    ]
+    separator_cells = ["-" * target_width for _ in target_labels]
+    symbols = {"matched": "M", "ignored": "I", "invalid": "X"}
+
+    print("\nCoverage matrix (M=matched, I=ignored, X=invalid, -=not discovered)")
+    print(f"{'RULE':<{rule_width}} | " + " | ".join(header_cells))
+    print(f"{'-' * rule_width}-+-" + "-+-".join(separator_cells) + "-")
+    for index, item in enumerate(covered, start=1):
+        state_by_target = {
+            occurrence.target: symbols[occurrence.state]
+            for occurrence in item.target_occurrences
+        }
+        state_cells = [
+            f"{state_by_target.get(target, '-'):>{target_width}}"
+            for target in target_labels
+        ]
+        print(f"{f'R{index}':<{rule_width}} | " + " | ".join(state_cells))
+
+    print("\nRules (first-discovery order):")
+    for index, item in enumerate(covered, start=1):
+        patterns = ", ".join(item.patterns) if item.patterns else "unavailable"
+        print(f"  R{index} {item.path} — applyTo: {patterns}")
+    print("\nTargets (caller order):")
+    for index, target in enumerate(target_labels, start=1):
+        print(f"  {index} {target}")
+    print("\nUse the default coverage view for occurrence reasons.")
+
+
+def _print_coverage_header(
+    root: Path,
+    cwd: Path,
+    instruction_dirs: Sequence[Path],
+    targets: Sequence[str | Path],
+    covered: Sequence[ModularRuleCoverage],
+) -> None:
+    print(f"AgentScope modular coverage in {root.resolve()}")
+    print("Profile: copilot-cli")
+    print(f"Session directory: {_session_label(root, cwd)}")
+    labels = _instruction_directory_labels(root, instruction_dirs)
+    print(
+        "Additional instruction directories: "
+        + (", ".join(labels) if labels else "none")
+    )
+    print(
+        f"Targets: {len(targets)}; modular sources: {len(covered)}; "
+        f"matched: {sum(item.matched_target_count for item in covered)}; "
+        f"ignored: {sum(item.ignored_target_count for item in covered)}; "
+        f"invalid: {sum(item.invalid_target_count for item in covered)}"
+    )
 
 
 def _print_comparison(

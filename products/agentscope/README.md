@@ -14,6 +14,7 @@ PYTHONPATH=src python3 -m agentscope --root ../.. products/agentscope/src/agents
 PYTHONPATH=src python3 -m agentscope --profile copilot-cli --root ../.. --cwd products/agentscope --json products/agentscope/src/agentscope/core.py
 PYTHONPATH=src python3 -m agentscope compare --root ../.. --cwd products/agentscope products/agentscope/src/agentscope/core.py
 PYTHONPATH=src python3 -m agentscope coverage --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
+PYTHONPATH=src python3 -m agentscope coverage --compact --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 ```
 
 `--cwd` is an explicit Copilot session directory; relative values are anchored
@@ -76,10 +77,16 @@ is absent rather than incorrectly classified as ignored. Standard instructions,
 references, duplicates, and `agents-md` shadows stay outside this focused view.
 Coverage JSON has its own schema v1 and includes the ordered requested targets,
 aggregate occurrence counts, patterns, and per-source target occurrences.
+Use `coverage --compact` for a source-by-target human matrix: `M`, `I`, and `X`
+represent matched, ignored, and invalid occurrences, while `-` means the source
+was not discovered for that target. Numbered rule and target legends preserve
+full paths, patterns, first-discovery order, and caller order; use the default
+view when occurrence reasons are needed. `--compact` and `--json` are mutually
+exclusive, and compact presentation does not change policy results.
 `coverage --fail-on-ignored-sources` and `--fail-on-invalid-sources` retain the
 post-render exit-1 behavior of inspection while applying only to modular rules.
 
-## Profiles in v0.16.0
+## Profiles in v0.17.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -193,5 +200,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, evaluate an optional concise table form for large coverage sets and
-whether source/path filtering is needed before expanding the command surface.
+Next, exercise the compact matrix on real repositories with many modular rules
+before adding filters; preserve the detailed default view as the explanation
+surface.
