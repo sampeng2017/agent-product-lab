@@ -1,4 +1,4 @@
-# Next run: validate compact coverage at real scale
+# Next run: evaluate display-only coverage filtering
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun feature work.
@@ -11,29 +11,24 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Exercise `agentscope coverage --compact` against a real repository with many
-modular sources and representative target paths, then improve it only if a
-specific scaling problem appears.
+Evaluate whether a source-dense modular coverage report benefits from an
+optional presentation filter after v0.18.0 bounded target width.
 
-1. Check matrix width, long paths, and higher-cardinality sets while retaining
-   mixed matched, ignored, invalid, and not-discovered cells.
-2. Compare the compact overview with the default reason-bearing view; keep each
-   format's role clear rather than merging them.
-3. If horizontal growth is genuinely troublesome, prefer deterministic column
-   chunking before adding source/path filtering with ambiguous gate semantics.
-4. Preserve caller target order, first-discovery source order, full legends,
-   schema-v1 JSON, and all current policy exits.
-5. Keep standard sources, references, duplicates, and `agents-md` shadows out of
-   modular coverage unless real usage demonstrates a clear need.
-6. Run the root portfolio validator plus focused AgentScope checks, update all
-   handoffs, and leave a clean descriptive commit.
+1. Use a fixture with many modular sources, mixed states, and nested discovery.
+2. Prefer a repeatable source-path selector only if it materially reduces noise.
+3. Make filtering explicitly display-only: ignored/invalid gates must evaluate
+   the complete unfiltered coverage result so a hidden source cannot pass CI.
+4. Preserve caller target order, source discovery order, full legends, detailed
+   reasons, schema-v1 JSON, and the 12-column compact chunks.
+5. Do not add target filters; callers already select targets positionally.
+6. Run the root validator and focused checks, update handoffs, and leave a clean
+   descriptive commit.
 
 ## Guardrails
 
 - Preserve AgentScope's read-only, zero-runtime-dependency first experience.
 - Keep ProofRun frozen unless its preserved MVP fails validation.
 - Do not broaden the frontmatter parser or claim undocumented client behavior.
-- Preserve applied-path divergence, evidence categories, all existing gates, and
-  inspection/comparison schema v5.
-- Preserve coverage schema v1 unless a breaking contract change is justified.
+- Preserve inspection/comparison schema v5 and coverage schema v1.
+- Preserve all existing evidence categories, discovery semantics, and exits.
 - Preserve the root CI matrix and temporary-output package smoke tests.

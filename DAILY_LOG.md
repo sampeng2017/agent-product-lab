@@ -1297,3 +1297,34 @@ whitespace checks also passed. No human input is needed. The next run should
 exercise compact coverage on a real high-cardinality repository and add
 deterministic column chunking or filters only if horizontal growth is a proven
 problem.
+
+## 2026-09-08 — AgentScope bounded compact coverage
+
+Continued AgentScope after inspecting the clean Git state and recent history,
+automation memory, root and product handoffs, active `To-Sam/` messages, and
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the warning-strict 46-test v0.17.0 baseline passed, and ProofRun remained frozen.
+
+A 25-target exercise demonstrated the concrete scaling issue left by v0.17.0:
+the compact matrix's rule rows exceeded 130 columns and grew without a bound.
+AgentScope v0.18.0 now renders deterministic consecutive chunks of at most 12
+target columns. Each chunk names its global caller-order range and repeats all
+rule rows, while the single rule and target legends retain complete paths,
+patterns, first-discovery source order, and caller target order. Reports with at
+most 12 targets keep their established one-table layout.
+
+This is a presentation-only change. Public `cover_targets` results, coverage
+schema v1 JSON, detailed reason-bearing output, matched/ignored/invalid/not-
+discovered semantics, aggregate counts, and ignored/invalid policy exits are
+unchanged. The existing compact regression now covers 25 targets, verifies
+three exact chunks and global labels, and bounds rule rows at 65 characters.
+The focused suite remains at 46 tests.
+
+Warning-strict Python 3.11 portfolio validation passed all 46 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.18.0 and ProofRun
+1.8.1 wheels. The default Python 3.14 validator preflight correctly reported its
+missing declared `setuptools>=68` build backend. Focused chunking, compilation,
+and whitespace checks also passed. No human input is needed. The next run should
+evaluate a display-only modular-source filter on a source-dense fixture, with
+all policy gates continuing to inspect the complete unfiltered result.

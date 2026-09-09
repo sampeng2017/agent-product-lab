@@ -1410,7 +1410,7 @@ class AgentScopeTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, 2)
         self.assertIn("not allowed with argument --json", errors.getvalue())
 
-        scaled_targets = [f"src/file{index}.py" for index in range(1, 11)]
+        scaled_targets = [f"src/file{index}.py" for index in range(1, 26)]
         scaled = io.StringIO()
         with redirect_stdout(scaled):
             scaled_exit = main(
@@ -1424,9 +1424,24 @@ class AgentScopeTests(unittest.TestCase):
             )
         scaled_rendered = scaled.getvalue()
         self.assertEqual(scaled_exit, 0)
-        self.assertIn("RULE |  1 |  2 |  3", scaled_rendered)
-        self.assertIn("|  9 | 10", scaled_rendered)
-        self.assertIn("  10 src/file10.py", scaled_rendered)
+        self.assertIn("Targets 1-12 of 25", scaled_rendered)
+        self.assertIn("Targets 13-24 of 25", scaled_rendered)
+        self.assertIn("Targets 25-25 of 25", scaled_rendered)
+        headers = [
+            line for line in scaled_rendered.splitlines() if line.startswith("RULE |")
+        ]
+        self.assertEqual(len(headers), 3)
+        self.assertIn("| 11 | 12", headers[0])
+        self.assertNotIn("13", headers[0])
+        self.assertIn("RULE | 13 | 14", headers[1])
+        self.assertIn("| 23 | 24", headers[1])
+        self.assertEqual(headers[2], "RULE | 25")
+        rule_rows = [
+            line for line in scaled_rendered.splitlines() if line.startswith("R1 ")
+        ]
+        self.assertEqual(len(rule_rows), 3)
+        self.assertTrue(all(len(line) <= 65 for line in rule_rows))
+        self.assertIn("  25 src/file25.py", scaled_rendered)
 
     def test_compare_retains_ordered_non_applied_profile_evidence(self) -> None:
         self.write("AGENTS.md", "Shared guidance.\n")

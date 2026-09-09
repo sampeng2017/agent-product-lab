@@ -19,6 +19,9 @@ from .core import (
 )
 
 
+COMPACT_TARGET_COLUMNS = 12
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="agentscope",
@@ -503,25 +506,37 @@ def _print_coverage_compact(
     target_labels = _target_labels(root, targets)
     rule_width = max(len("RULE"), len(f"R{len(covered)}"))
     target_width = max(1, len(str(len(target_labels))))
-    header_cells = [
-        f"{index:>{target_width}}" for index in range(1, len(target_labels) + 1)
-    ]
-    separator_cells = ["-" * target_width for _ in target_labels]
     symbols = {"matched": "M", "ignored": "I", "invalid": "X"}
+    rows = [
+        (
+            f"R{index}",
+            {
+                occurrence.target: symbols[occurrence.state]
+                for occurrence in item.target_occurrences
+            },
+        )
+        for index, item in enumerate(covered, start=1)
+    ]
 
     print("\nCoverage matrix (M=matched, I=ignored, X=invalid, -=not discovered)")
-    print(f"{'RULE':<{rule_width}} | " + " | ".join(header_cells))
-    print(f"{'-' * rule_width}-+-" + "-+-".join(separator_cells) + "-")
-    for index, item in enumerate(covered, start=1):
-        state_by_target = {
-            occurrence.target: symbols[occurrence.state]
-            for occurrence in item.target_occurrences
-        }
-        state_cells = [
-            f"{state_by_target.get(target, '-'):>{target_width}}"
-            for target in target_labels
+    chunked = len(target_labels) > COMPACT_TARGET_COLUMNS
+    for start in range(0, len(target_labels), COMPACT_TARGET_COLUMNS):
+        stop = min(start + COMPACT_TARGET_COLUMNS, len(target_labels))
+        chunk_targets = target_labels[start:stop]
+        if chunked:
+            print(f"\nTargets {start + 1}-{stop} of {len(target_labels)}")
+        header_cells = [
+            f"{index:>{target_width}}" for index in range(start + 1, stop + 1)
         ]
-        print(f"{f'R{index}':<{rule_width}} | " + " | ".join(state_cells))
+        separator_cells = ["-" * target_width for _ in chunk_targets]
+        print(f"{'RULE':<{rule_width}} | " + " | ".join(header_cells))
+        print(f"{'-' * rule_width}-+-" + "-+-".join(separator_cells) + "-")
+        for rule_label, state_by_target in rows:
+            state_cells = [
+                f"{state_by_target.get(target, '-'):>{target_width}}"
+                for target in chunk_targets
+            ]
+            print(f"{rule_label:<{rule_width}} | " + " | ".join(state_cells))
 
     print("\nRules (first-discovery order):")
     for index, item in enumerate(covered, start=1):

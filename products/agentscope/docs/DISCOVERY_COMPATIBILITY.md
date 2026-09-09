@@ -1,7 +1,7 @@
 # Copilot CLI repository discovery compatibility
 
 This document records the repository-scoped discovery contract modeled by
-AgentScope's `copilot-cli` profile as of 2026-09-07.
+AgentScope's `copilot-cli` profile as of 2026-09-08.
 
 GitHub's current [Copilot CLI custom-instructions
 documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions)
@@ -131,12 +131,15 @@ The optional `coverage --compact` human view transposes the same schema-v1
 evidence into a numbered source-by-target matrix. It uses distinct symbols for
 matched, ignored, invalid, and not-discovered cells, retains complete source
 paths and patterns in first-discovery order, and retains complete target paths
-in caller order. The default vertical view remains available for occurrence
-reasons. Compact output is presentation-only and cannot be combined with JSON.
+in caller order. When more than 12 targets are requested, the matrix repeats its
+rule rows in deterministic consecutive column chunks while keeping a single
+ordered rule and target legend. The default vertical view remains available for
+occurrence reasons. Compact output is presentation-only and cannot be combined
+with JSON.
 
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.17.0. A discovered Copilot
+with interactive `/instructions` remain outside v0.18.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,

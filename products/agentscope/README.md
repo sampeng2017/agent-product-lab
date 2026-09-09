@@ -81,12 +81,14 @@ Use `coverage --compact` for a source-by-target human matrix: `M`, `I`, and `X`
 represent matched, ignored, and invalid occurrences, while `-` means the source
 was not discovered for that target. Numbered rule and target legends preserve
 full paths, patterns, first-discovery order, and caller order; use the default
-view when occurrence reasons are needed. `--compact` and `--json` are mutually
-exclusive, and compact presentation does not change policy results.
+view when occurrence reasons are needed. Matrices wider than 12 targets are
+split into consecutive, labeled column chunks so each table stays scannable.
+`--compact` and `--json` are mutually exclusive, and compact presentation does
+not change policy results.
 `coverage --fail-on-ignored-sources` and `--fail-on-invalid-sources` retain the
 post-render exit-1 behavior of inspection while applying only to modular rules.
 
-## Profiles in v0.17.0
+## Profiles in v0.18.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -200,6 +202,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, exercise the compact matrix on real repositories with many modular rules
-before adding filters; preserve the detailed default view as the explanation
-surface.
+Next, evaluate whether maintainers need opt-in source/path filters after using
+the chunked compact matrix; preserve the detailed default view as the
+explanation surface and keep gate semantics over the complete result set.
