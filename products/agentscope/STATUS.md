@@ -2,34 +2,34 @@
 
 ## Product shape
 
-AgentScope v0.18.0 is a zero-runtime-dependency Python CLI for explaining the
+AgentScope v0.19.0 is a zero-runtime-dependency Python CLI for explaining the
 instruction files that apply to repository targets. Its `agents-md` profile
 models nearest-file precedence. Its `copilot-cli` profile models explicit
 repository, session, target-nested, and additional-directory discovery,
 including modular globs, recursive imports, invalid guidance, and conservative
 deduplication. Human and schema-v5 JSON inspection/comparison provide narrow
 policy gates. Independent schema-v1 coverage transposes Copilot modular rules
-across targets, with detailed and compact human presentations.
+across targets, with detailed and compact human presentations plus display-only
+source-path filtering.
 
-## Completed on 2026-09-08
+## Completed on 2026-09-09
 
-- Simulated a realistic high-cardinality compact review with 25 targets and
-  confirmed the former matrix exceeded 130 columns.
-- Added deterministic chunks of at most 12 target columns. Each chunk names its
-  global caller-order range and repeats every rule row for direct comparison.
-- Kept one ordered full-path rule legend and one ordered target legend, plus the
-  default detailed view for occurrence reasons.
-- Preserved the prior one-table presentation through 12 targets and left the
-  public API, coverage schema v1, aggregate counts, ordering, and gates intact.
-- Bumped AgentScope to v0.18.0; the 46-test suite now exercises 25-target
-  chunking and bounds rendered row width.
+- Built a 14-source coverage fixture with API/docs rule families, malformed
+  guidance, mixed match/ignore states, and target-nested discovery.
+- Added repeatable `coverage --source PATH-GLOB` selectors to both detailed and
+  compact human reports, preserving first-discovery order.
+- Kept the header's complete counts and made displayed-versus-total scope plus
+  full-result gate behavior explicit in filtered output.
+- Rejected `--source` with JSON, preserving schema-v1 completeness, and proved
+  that a filtered-out invalid source still fails its requested policy gate.
+- Bumped AgentScope to v0.19.0; the suite now has 47 tests.
 
 ## Changes since the prior run
 
-The compact view is now width-bounded for practical multi-target reviews. A
-25-target report renders three labeled chunks and preserves every global target
-number, source state, full path, and policy outcome. Inspection and comparison
-remain unchanged.
+Dense human coverage reports can now be narrowed by subsystem without narrowing
+evidence or enforcement. Repeated filters use existing path-glob semantics and
+OR composition; filtered detailed and compact views retain source and target
+ordering. Inspection, comparison, the public API, and JSON remain unchanged.
 
 ## Known issues
 
@@ -38,8 +38,8 @@ remain unchanged.
   directory remain out of scope.
 - GitHub documents additional-directory source shapes but not precedence or
   nested `AGENTS.md` scope; the deterministic AgentScope order is explicit.
-- Compact coverage has no source/path filtering. Any filter needs explicit
-  display-only semantics so ignored/invalid gates cannot hide failures.
+- Coverage has no occurrence-state display selector for showing only sources
+  with ignored or invalid outcomes.
 - Content normalization is deliberately conservative and not Markdown-semantic.
 - Frontmatter supports scalar comma-separated `applyTo` only; `excludeAgent`,
   lists, mappings, multiline values, character classes, brace expansion, and
@@ -59,18 +59,20 @@ remain unchanged.
 - Preserve inspection/comparison schema v5 and coverage schema v1.
 - Keep compact rendering presentation-only, use 12-column deterministic chunks,
   retain global caller-order numbering, and keep full legends outside chunks.
-- Future display filters must not narrow policy evaluation.
+- Keep source filtering human-only and display-only; JSON, totals, and policy
+  evaluation always use complete evidence.
+- Future display filters must state displayed versus complete scope and must not
+  narrow policy evaluation.
 
 ## Validation
 
-- Warning-strict Python 3.11 portfolio validation passed all 46 AgentScope and
+- Warning-strict Python 3.11 portfolio validation passed all 47 AgentScope and
   53 frozen ProofRun tests with one expected optional skip.
-- AgentScope 0.18.0 and ProofRun 1.8.1 wheels built, isolated-installed, and
+- AgentScope 0.19.0 and ProofRun 1.8.1 wheels built, isolated-installed, and
   passed console smokes; temporary output was removed.
-- Focused chunking, compile, and whitespace checks passed.
+- Focused source-filter, compile, help, and whitespace checks passed.
 
 ## Recommended next step
 
-Test a display-only modular-source filter on a source-dense fixture and retain
-complete-result policy gates; do not add target filtering because callers
-already select targets explicitly.
+Evaluate a display-only occurrence-state selector for quickly isolating ignored
+or invalid rules; keep aggregate counts and gates over complete evidence.

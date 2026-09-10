@@ -1,4 +1,4 @@
-# Next run: evaluate display-only coverage filtering
+# Next run: evaluate occurrence-state coverage filtering
 
 AgentScope is the active product. Continue it rather than restarting discovery
 or resuming ProofRun feature work.
@@ -11,17 +11,18 @@ status/history and rerun the current AgentScope suite before editing.
 
 ## Recommended outcome
 
-Evaluate whether a source-dense modular coverage report benefits from an
-optional presentation filter after v0.18.0 bounded target width.
+Evaluate whether source-dense coverage reports benefit from a display-only
+occurrence-state selector after v0.19.0 source-path filtering.
 
-1. Use a fixture with many modular sources, mixed states, and nested discovery.
-2. Prefer a repeatable source-path selector only if it materially reduces noise.
-3. Make filtering explicitly display-only: ignored/invalid gates must evaluate
-   the complete unfiltered coverage result so a hidden source cannot pass CI.
-4. Preserve caller target order, source discovery order, full legends, detailed
-   reasons, schema-v1 JSON, and the 12-column compact chunks.
-5. Do not add target filters; callers already select targets positionally.
-6. Run the root validator and focused checks, update handoffs, and leave a clean
+1. Use mixed matched, ignored, invalid, and not-discovered evidence.
+2. Prefer a selector only if it makes gate failures materially faster to scan.
+3. Keep filtering human-only and presentation-only: aggregate counts and every
+   ignored/invalid gate must evaluate the complete unfiltered result.
+4. Define source-level selection clearly when one source has mixed outcomes.
+5. Preserve discovery/caller order, detailed reasons, compact chunks, full
+   legends, the public API, and complete coverage schema-v1 JSON.
+6. Do not add target filters; callers already select targets positionally.
+7. Run the root validator and focused checks, update handoffs, and leave a clean
    descriptive commit.
 
 ## Guardrails

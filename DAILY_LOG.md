@@ -1328,3 +1328,41 @@ missing declared `setuptools>=68` build backend. Focused chunking, compilation,
 and whitespace checks also passed. No human input is needed. The next run should
 evaluate a display-only modular-source filter on a source-dense fixture, with
 all policy gates continuing to inspect the complete unfiltered result.
+
+## 2026-09-09 — AgentScope display-only source filtering
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, root/product handoffs, active `To-Sam/` messages, and all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the warning-strict 46-test v0.18.0 baseline passed, and ProofRun remained
+frozen.
+
+A source-dense exercise used 14 modular rules split across API and documentation
+families, plus malformed guidance, mixed match/ignore outcomes, two requested
+targets, and target-nested discovery. The unfiltered matrix and legend contained
+twice the rows needed for an API-focused review, demonstrating a concrete need
+for a source-path selector.
+
+AgentScope v0.19.0 adds repeatable `coverage --source PATH-GLOB` selectors to
+both detailed and compact human output. Selectors reuse the documented
+repository-relative `*`, `**`, and `?` matcher, combine with OR semantics, and
+retain first-discovery order. Filtered reports show the selected and complete
+source counts while the header retains complete matched, ignored, and invalid
+totals. A selector matching no source produces an explicit display-filter
+message.
+
+Filtering is presentation-only. Ignored and invalid gates still evaluate the
+complete unfiltered result, so a hidden malformed rule continues to fail a
+requested policy. `--source` is rejected with `--json`, keeping coverage schema
+v1 complete and unchanged; the public `cover_targets` API, inspection and
+comparison schema v5, discovery semantics, target ordering, detailed reasons,
+and 12-target compact chunks are also unchanged. One dense end-to-end regression
+expanded the focused suite from 46 to 47 tests.
+
+Warning-strict Python 3.11 portfolio validation passed all 47 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.19.0 and ProofRun
+1.8.1 wheels. Focused source-filter testing, compilation, CLI help/version, and
+whitespace checks passed. No human input is needed. The next run should evaluate
+a display-only occurrence-state selector for quickly isolating ignored or
+invalid modular rules while preserving complete-result policy gates.

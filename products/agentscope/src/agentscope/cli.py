@@ -12,6 +12,7 @@ from .core import (
     ModularRuleCoverage,
     TargetComparison,
     TargetInspection,
+    _matches,
     compare_targets,
     cover_targets,
     inspect_targets,
@@ -169,6 +170,16 @@ def build_coverage_parser() -> argparse.ArgumentParser:
         help="emit a compact human-readable source-by-target matrix",
     )
     parser.add_argument(
+        "--source",
+        action="append",
+        default=[],
+        metavar="PATH-GLOB",
+        help=(
+            "display modular sources whose repository-relative path matches this "
+            "glob (repeatable; human output only)"
+        ),
+    )
+    parser.add_argument(
         "--fail-on-ignored-sources",
         action="store_true",
         help="exit 1 when a discovered modular rule ignores any requested target",
@@ -290,7 +301,10 @@ def _compare_main(argv: Sequence[str]) -> int:
 
 
 def _coverage_main(argv: Sequence[str]) -> int:
-    args = build_coverage_parser().parse_args(argv)
+    parser = build_coverage_parser()
+    args = parser.parse_args(argv)
+    if args.json and args.source:
+        parser.error("--source is only available for human-readable output")
     try:
         covered = cover_targets(
             args.root,
@@ -303,6 +317,7 @@ def _coverage_main(argv: Sequence[str]) -> int:
         return 2
 
     targets = args.targets or (Path("."),)
+    displayed = _select_coverage_sources(covered, args.source)
     if args.json:
         print(
             json.dumps(
@@ -322,7 +337,9 @@ def _coverage_main(argv: Sequence[str]) -> int:
             args.cwd,
             args.instructions_dir,
             targets,
-            covered,
+            displayed,
+            all_covered=covered,
+            source_filters=args.source,
         )
     else:
         _print_coverage(
@@ -330,7 +347,9 @@ def _coverage_main(argv: Sequence[str]) -> int:
             args.cwd,
             args.instructions_dir,
             targets,
-            covered,
+            displayed,
+            all_covered=covered,
+            source_filters=args.source,
         )
 
     ignored = args.fail_on_ignored_sources and any(
@@ -471,10 +490,15 @@ def _print_coverage(
     instruction_dirs: Sequence[Path],
     targets: Sequence[str | Path],
     covered: Sequence[ModularRuleCoverage],
+    *,
+    all_covered: Sequence[ModularRuleCoverage] | None = None,
+    source_filters: Sequence[str] = (),
 ) -> None:
-    _print_coverage_header(root, cwd, instruction_dirs, targets, covered)
+    complete = covered if all_covered is None else all_covered
+    _print_coverage_header(root, cwd, instruction_dirs, targets, complete)
+    _print_coverage_filter(source_filters, len(covered), len(complete))
     if not covered:
-        print("\nNo modular instruction sources discovered.")
+        _print_no_coverage_sources(source_filters)
         return
     for item in covered:
         patterns = ", ".join(item.patterns) if item.patterns else "unavailable"
@@ -497,10 +521,15 @@ def _print_coverage_compact(
     instruction_dirs: Sequence[Path],
     targets: Sequence[str | Path],
     covered: Sequence[ModularRuleCoverage],
+    *,
+    all_covered: Sequence[ModularRuleCoverage] | None = None,
+    source_filters: Sequence[str] = (),
 ) -> None:
-    _print_coverage_header(root, cwd, instruction_dirs, targets, covered)
+    complete = covered if all_covered is None else all_covered
+    _print_coverage_header(root, cwd, instruction_dirs, targets, complete)
+    _print_coverage_filter(source_filters, len(covered), len(complete))
     if not covered:
-        print("\nNo modular instruction sources discovered.")
+        _print_no_coverage_sources(source_filters)
         return
 
     target_labels = _target_labels(root, targets)
@@ -546,6 +575,36 @@ def _print_coverage_compact(
     for index, target in enumerate(target_labels, start=1):
         print(f"  {index} {target}")
     print("\nUse the default coverage view for occurrence reasons.")
+
+
+def _select_coverage_sources(
+    covered: Sequence[ModularRuleCoverage], source_filters: Sequence[str]
+) -> list[ModularRuleCoverage]:
+    if not source_filters:
+        return list(covered)
+    return [
+        item
+        for item in covered
+        if any(_matches(item.path, pattern) for pattern in source_filters)
+    ]
+
+
+def _print_coverage_filter(
+    source_filters: Sequence[str], displayed_count: int, total_count: int
+) -> None:
+    if source_filters:
+        print(
+            "Source display filter: "
+            f"{', '.join(source_filters)}; displaying {displayed_count} of "
+            f"{total_count} modular sources (policy gates use all {total_count})"
+        )
+
+
+def _print_no_coverage_sources(source_filters: Sequence[str]) -> None:
+    if source_filters:
+        print("\nNo modular instruction sources matched the display filter.")
+    else:
+        print("\nNo modular instruction sources discovered.")
 
 
 def _print_coverage_header(

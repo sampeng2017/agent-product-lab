@@ -15,6 +15,7 @@ PYTHONPATH=src python3 -m agentscope --profile copilot-cli --root ../.. --cwd pr
 PYTHONPATH=src python3 -m agentscope compare --root ../.. --cwd products/agentscope products/agentscope/src/agentscope/core.py
 PYTHONPATH=src python3 -m agentscope coverage --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 PYTHONPATH=src python3 -m agentscope coverage --compact --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
+PYTHONPATH=src python3 -m agentscope coverage --compact --source 'products/agentscope/**' --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 ```
 
 `--cwd` is an explicit Copilot session directory; relative values are anchored
@@ -83,12 +84,19 @@ was not discovered for that target. Numbered rule and target legends preserve
 full paths, patterns, first-discovery order, and caller order; use the default
 view when occurrence reasons are needed. Matrices wider than 12 targets are
 split into consecutive, labeled column chunks so each table stays scannable.
-`--compact` and `--json` are mutually exclusive, and compact presentation does
-not change policy results.
+Repeat `--source PATH-GLOB` to display only modular sources whose
+repository-relative paths match at least one selector. It works in detailed and
+compact human output, uses the same documented `*`, `**`, and `?` path-glob
+semantics as `applyTo`, preserves first-discovery order, and reports the
+displayed and complete source counts. It is rejected with `--json` so coverage
+schema v1 always remains complete. Both source filtering and compact rendering
+are presentation-only: aggregate counts and ignored/invalid policy gates still
+evaluate every discovered modular source, including hidden ones.
+`--compact` and `--json` are mutually exclusive.
 `coverage --fail-on-ignored-sources` and `--fail-on-invalid-sources` retain the
 post-render exit-1 behavior of inspection while applying only to modular rules.
 
-## Profiles in v0.18.0
+## Profiles in v0.19.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -202,6 +210,7 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, evaluate whether maintainers need opt-in source/path filters after using
-the chunked compact matrix; preserve the detailed default view as the
-explanation surface and keep gate semantics over the complete result set.
+Next, evaluate whether a display-only occurrence-state selector would make
+ignored or invalid rule failures faster to diagnose in source-dense reports.
+Preserve the detailed default view as the explanation surface and keep every
+policy gate over the complete result set.

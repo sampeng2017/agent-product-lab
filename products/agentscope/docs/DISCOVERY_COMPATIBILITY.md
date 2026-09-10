@@ -137,9 +137,18 @@ ordered rule and target legend. The default vertical view remains available for
 occurrence reasons. Compact output is presentation-only and cannot be combined
 with JSON.
 
+Human coverage output also accepts repeatable `--source PATH-GLOB` selectors.
+Selectors use the same repository-relative `*`, `**`, and `?` matching contract
+as `applyTo`, combine with OR semantics, and retain the first-discovery order of
+matching sources. The header continues to report complete aggregate evidence
+and explicitly states the displayed and total source counts. Filtering is
+presentation-only: ignored and invalid gates evaluate the complete unfiltered
+coverage result. `--source` is rejected with `--json`, preserving complete
+schema-v1 documents rather than silently returning a filtered payload.
+
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.18.0. A discovered Copilot
+with interactive `/instructions` remain outside v0.19.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,

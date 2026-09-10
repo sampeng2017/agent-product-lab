@@ -1443,6 +1443,95 @@ class AgentScopeTests(unittest.TestCase):
         self.assertTrue(all(len(line) <= 65 for line in rule_rows))
         self.assertIn("  25 src/file25.py", scaled_rendered)
 
+    def test_coverage_source_filter_reduces_dense_human_output_only(self) -> None:
+        for index in range(1, 7):
+            self.write(
+                f".github/instructions/api-{index}.instructions.md",
+                '---\napplyTo: "services/api/**"\n---\nAPI.\n',
+            )
+            self.write(
+                f".github/instructions/docs-{index}.instructions.md",
+                '---\napplyTo: "docs/**"\n---\nDocs.\n',
+            )
+        self.write(
+            ".github/instructions/zz-broken.instructions.md",
+            '---\napplyTo: ["**"]\n---\n',
+        )
+        self.write(
+            "services/api/.github/instructions/nested.instructions.md",
+            '---\napplyTo: "services/api/**"\n---\nNested.\n',
+        )
+        targets = ["docs/readme.md", "services/api/app.py"]
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--compact",
+                    "--source",
+                    ".github/instructions/api-*.instructions.md",
+                    "--source",
+                    "services/api/**/*.instructions.md",
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
+
+        rendered = output.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertIn(
+            "Targets: 2; modular sources: 14; matched: 13; ignored: 12; invalid: 2",
+            rendered,
+        )
+        self.assertIn("displaying 7 of 14 modular sources", rendered)
+        self.assertIn("policy gates use all 14", rendered)
+        self.assertIn("R1   | I | M", rendered)
+        self.assertIn("R7   | - | M", rendered)
+        self.assertIn("api-1.instructions.md", rendered)
+        self.assertIn("nested.instructions.md", rendered)
+        self.assertNotIn("docs-1.instructions.md", rendered)
+        self.assertNotIn("zz-broken.instructions.md", rendered)
+
+        no_matches = io.StringIO()
+        with redirect_stdout(no_matches):
+            no_matches_exit = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--source",
+                    "missing/**",
+                    *targets,
+                ]
+            )
+        self.assertEqual(no_matches_exit, 0)
+        self.assertIn(
+            "No modular instruction sources matched the display filter",
+            no_matches.getvalue(),
+        )
+
+        errors = io.StringIO()
+        with redirect_stderr(errors), self.assertRaises(SystemExit) as raised:
+            main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--source",
+                    "**/api-*.instructions.md",
+                    *targets,
+                ]
+            )
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn(
+            "--source is only available for human-readable output",
+            errors.getvalue(),
+        )
+
     def test_compare_retains_ordered_non_applied_profile_evidence(self) -> None:
         self.write("AGENTS.md", "Shared guidance.\n")
         self.write("packages/api/AGENTS.md", "Nested guidance.\n")
