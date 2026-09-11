@@ -146,9 +146,17 @@ presentation-only: ignored and invalid gates evaluate the complete unfiltered
 coverage result. `--source` is rejected with `--json`, preserving complete
 schema-v1 documents rather than silently returning a filtered payload.
 
+Repeatable `--state STATE` selectors retain a source when any of its occurrences
+is `matched`, `ignored`, `invalid`, or `not-discovered`; the last state means the
+source was absent from at least one requested target's discovery scope. Repeated
+states use OR semantics. A selected mixed-state source retains every occurrence,
+and state filtering composes with source-path filtering using AND semantics.
+Both filters preserve first-discovery source order, are rejected with JSON, and
+leave aggregate counts and policy evaluation over complete evidence.
+
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.19.0. A discovered Copilot
+with interactive `/instructions` remain outside v0.20.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,

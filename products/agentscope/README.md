@@ -16,6 +16,7 @@ PYTHONPATH=src python3 -m agentscope compare --root ../.. --cwd products/agentsc
 PYTHONPATH=src python3 -m agentscope coverage --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 PYTHONPATH=src python3 -m agentscope coverage --compact --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 PYTHONPATH=src python3 -m agentscope coverage --compact --source 'products/agentscope/**' --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
+PYTHONPATH=src python3 -m agentscope coverage --state ignored --state invalid --root ../.. products/agentscope/src/agentscope/core.py products/agentscope/README.md
 ```
 
 `--cwd` is an explicit Copilot session directory; relative values are anchored
@@ -92,11 +93,18 @@ displayed and complete source counts. It is rejected with `--json` so coverage
 schema v1 always remains complete. Both source filtering and compact rendering
 are presentation-only: aggregate counts and ignored/invalid policy gates still
 evaluate every discovered modular source, including hidden ones.
+Repeat `--state STATE` to display sources with at least one `matched`, `ignored`,
+`invalid`, or `not-discovered` outcome. Repeated states use OR semantics; when a
+mixed-outcome source is selected, all of its occurrences remain visible so the
+report keeps its context. Source-path and state selectors compose with AND
+semantics and retain first-discovery order. Like `--source`, `--state` is human-
+only and presentation-only, and the report states displayed versus complete
+scope.
 `--compact` and `--json` are mutually exclusive.
 `coverage --fail-on-ignored-sources` and `--fail-on-invalid-sources` retain the
 post-render exit-1 behavior of inspection while applying only to modular rules.
 
-## Profiles in v0.19.0
+## Profiles in v0.20.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -210,7 +218,6 @@ shadow or unmatched path rule before an agent task begins.
 
 ## Near-term scope
 
-Next, evaluate whether a display-only occurrence-state selector would make
-ignored or invalid rule failures faster to diagnose in source-dense reports.
-Preserve the detailed default view as the explanation surface and keep every
-policy gate over the complete result set.
+Next, perform a release-readiness audit of the v0.20.0 CLI and packaging. Freeze
+AgentScope if that audit finds no concrete product gap, then evaluate the next
+small product opportunity instead of adding speculative filters.

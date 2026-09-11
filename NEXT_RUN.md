@@ -1,35 +1,30 @@
-# Next run: evaluate occurrence-state coverage filtering
+# Next run: AgentScope release-readiness audit
 
-AgentScope is the active product. Continue it rather than restarting discovery
-or resuming ProofRun feature work.
+AgentScope is the active product at v0.20.0. Continue it long enough to decide
+whether it should become the second frozen MVP; do not resume ProofRun work.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, and all AgentScope documentation, tests, and implementation. Check Git
-status/history and rerun the current AgentScope suite before editing.
+messages, and all AgentScope documentation, tests, packaging, and implementation.
+Check Git status/history and rerun the portfolio validator before editing.
 
 ## Recommended outcome
 
-Evaluate whether source-dense coverage reports benefit from a display-only
-occurrence-state selector after v0.19.0 source-path filtering.
-
-1. Use mixed matched, ignored, invalid, and not-discovered evidence.
-2. Prefer a selector only if it makes gate failures materially faster to scan.
-3. Keep filtering human-only and presentation-only: aggregate counts and every
-   ignored/invalid gate must evaluate the complete unfiltered result.
-4. Define source-level selection clearly when one source has mixed outcomes.
-5. Preserve discovery/caller order, detailed reasons, compact chunks, full
-   legends, the public API, and complete coverage schema-v1 JSON.
-6. Do not add target filters; callers already select targets positionally.
-7. Run the root validator and focused checks, update handoffs, and leave a clean
-   descriptive commit.
+1. Exercise the installed wheel and all three command surfaces against a
+   realistic repository fixture, including failure exits and human/JSON output.
+2. Audit help text, versioning, package contents, documentation links, and clean
+   installation behavior for a credible local v1 candidate.
+3. Fix only concrete defects discovered by that audit; avoid adding another
+   speculative display filter or broadening undocumented client behavior.
+4. If no meaningful defect remains, document AgentScope as a frozen MVP and
+   select the next product opportunity using current evidence.
+5. Run the root validator, update handoffs, and leave a clean descriptive commit.
 
 ## Guardrails
 
-- Preserve AgentScope's read-only, zero-runtime-dependency first experience.
-- Keep ProofRun frozen unless its preserved MVP fails validation.
-- Do not broaden the frontmatter parser or claim undocumented client behavior.
+- Preserve AgentScope's read-only, zero-runtime-dependency experience.
 - Preserve inspection/comparison schema v5 and coverage schema v1.
-- Preserve all existing evidence categories, discovery semantics, and exits.
-- Preserve the root CI matrix and temporary-output package smoke tests.
+- Keep display filters human-only; totals, JSON, and gates use complete evidence.
+- Keep ProofRun frozen unless its preserved MVP fails validation.
+- Do not claim unsupported client behavior or add target filtering.

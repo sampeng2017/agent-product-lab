@@ -1366,3 +1366,37 @@ then built, isolated-installed, and smoke-tested AgentScope 0.19.0 and ProofRun
 whitespace checks passed. No human input is needed. The next run should evaluate
 a display-only occurrence-state selector for quickly isolating ignored or
 invalid modular rules while preserving complete-result policy gates.
+
+## 2026-09-10 — AgentScope occurrence-state filtering
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, root/product handoffs, active `To-Sam/` messages, and all
+AgentScope documentation, implementation, and tests. No Sam request was active,
+the warning-strict 47-test v0.19.0 baseline passed, and ProofRun remained frozen.
+
+A mixed fixture with matched, ignored, invalid, and target-nested not-discovered
+outcomes confirmed that path filtering alone still left policy diagnosis tied to
+prior source knowledge. AgentScope v0.20.0 therefore adds repeatable
+`coverage --state STATE` selectors for all four compact-matrix states in both
+detailed and compact human output.
+
+Selection occurs at source level: any requested outcome selects a source, after
+which all of its occurrences remain visible so mixed-state context and detailed
+reasons are not lost. Repeated states use OR semantics, while state and source-
+path filter families compose with AND. Reports preserve first-discovery order
+and explicitly disclose displayed versus complete scope. Filtering remains
+presentation-only; headers and ignored/invalid gates use all evidence, and
+`--state` is rejected with JSON so coverage schema v1 remains complete. Public
+APIs, discovery behavior, inspection/comparison schema v5, compact chunks, and
+existing exits are unchanged. One end-to-end regression expanded the suite from
+47 to 48 tests.
+
+Warning-strict Python 3.11 portfolio validation passed all 48 AgentScope tests
+and all 53 frozen ProofRun tests with one expected optional pytest-runtime skip,
+then built, isolated-installed, and smoke-tested AgentScope 0.20.0 and ProofRun
+1.8.1 wheels. Focused tests, compilation, help inspection, and whitespace checks
+passed. Post-commit ProofRun receipt #68 is valid; the chain contains 62 valid
+sealed and 6 legacy unsealed receipts, and named `unit` evidence applies. No
+human input is needed. The next run should audit the installed v0.20.0 wheel,
+help, docs, and all command surfaces for release readiness; if no concrete
+product gap remains, freeze AgentScope and select the next opportunity.

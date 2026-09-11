@@ -1532,6 +1532,99 @@ class AgentScopeTests(unittest.TestCase):
             errors.getvalue(),
         )
 
+    def test_coverage_state_filter_selects_without_narrowing_evidence(self) -> None:
+        self.write(
+            ".github/instructions/python.instructions.md",
+            '---\napplyTo: "**/*.py"\n---\nPython.\n',
+        )
+        self.write(
+            ".github/instructions/docs.instructions.md",
+            '---\napplyTo: "docs/**"\n---\nDocs.\n',
+        )
+        self.write(
+            ".github/instructions/broken.instructions.md",
+            '---\napplyTo: ["**"]\n---\n',
+        )
+        self.write(
+            "src/.github/instructions/nested.instructions.md",
+            '---\napplyTo: "src/**"\n---\nNested.\n',
+        )
+        targets = ["docs/readme.md", "src/app.py", "src/app.ts"]
+
+        output = io.StringIO()
+        with redirect_stdout(output):
+            exit_code = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--state",
+                    "ignored",
+                    "--state",
+                    "not-discovered",
+                    "--source",
+                    "**/instructions/*.instructions.md",
+                    "--fail-on-invalid-sources",
+                    *targets,
+                ]
+            )
+
+        rendered = output.getvalue()
+        self.assertEqual(exit_code, 1)
+        self.assertIn(
+            "Targets: 3; modular sources: 4; matched: 4; ignored: 4; invalid: 3",
+            rendered,
+        )
+        self.assertIn(
+            "Occurrence-state display filter: ignored, not-discovered", rendered
+        )
+        self.assertIn("displaying 3 of 4 modular sources", rendered)
+        self.assertIn("policy gates use all 4", rendered)
+        self.assertIn("python.instructions.md", rendered)
+        self.assertIn("docs.instructions.md", rendered)
+        self.assertIn("nested.instructions.md", rendered)
+        self.assertNotIn("broken.instructions.md:", rendered)
+        self.assertIn("MATCHED src/app.py", rendered)
+        self.assertIn("IGNORED src/app.ts", rendered)
+
+        compact = io.StringIO()
+        with redirect_stdout(compact):
+            compact_exit = main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--compact",
+                    "--state",
+                    "invalid",
+                    *targets,
+                ]
+            )
+        self.assertEqual(compact_exit, 0)
+        compact_rendered = compact.getvalue()
+        self.assertIn("displaying 1 of 4 modular sources", compact_rendered)
+        self.assertIn("R1   | X | X | X", compact_rendered)
+        self.assertNotIn("python.instructions.md", compact_rendered)
+
+        errors = io.StringIO()
+        with redirect_stderr(errors), self.assertRaises(SystemExit) as raised:
+            main(
+                [
+                    "coverage",
+                    "--root",
+                    str(self.root),
+                    "--json",
+                    "--state",
+                    "ignored",
+                    *targets,
+                ]
+            )
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn(
+            "--state is only available for human-readable output",
+            errors.getvalue(),
+        )
+
     def test_compare_retains_ordered_non_applied_profile_evidence(self) -> None:
         self.write("AGENTS.md", "Shared guidance.\n")
         self.write("packages/api/AGENTS.md", "Nested guidance.\n")
