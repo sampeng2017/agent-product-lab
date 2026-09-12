@@ -104,7 +104,7 @@ scope.
 `coverage --fail-on-ignored-sources` and `--fail-on-invalid-sources` retain the
 post-render exit-1 behavior of inspection while applying only to modular rules.
 
-## Profiles in v0.20.0
+## Profiles in v1.0.0
 
 - `agents-md` models the open format's closest-file-wins rule. It shows the
   nearest `AGENTS.md` as applied and names any ancestor files it shadows.
@@ -193,9 +193,9 @@ PYTHONPATH=src python3 -m compileall -q src tests
 
 The first two commands are the focused AgentScope checks. The root validator
 also runs frozen ProofRun, builds both wheels outside the checkout, installs
-them into isolated environments, and smokes their console commands. Root
-Portfolio CI runs that validator on Python 3.10 through 3.14 and treats warnings
-as errors on 3.10.
+them into isolated environments, and exercises AgentScope's human, JSON, and
+policy-exit command surfaces. Root Portfolio CI runs that validator on Python
+3.10 through 3.14 and treats warnings as errors on 3.10.
 
 See [`docs/OPPORTUNITIES.md`](docs/OPPORTUNITIES.md) for the opportunity
 selection evidence, [`docs/GLOB_COMPATIBILITY.md`](docs/GLOB_COMPATIBILITY.md)
@@ -216,8 +216,10 @@ signal is repeat use on repositories with nested instructions or two supported
 formats; a practical technical signal is that the CLI catches an unintended
 shadow or unmatched path rule before an agent task begins.
 
-## Near-term scope
+## Maintenance status
 
-Next, perform a release-readiness audit of the v0.20.0 CLI and packaging. Freeze
-AgentScope if that audit finds no concrete product gap, then evaluate the next
-small product opportunity instead of adding speculative filters.
+AgentScope v1.0.0 is a frozen local MVP. Its focused suite and the portfolio
+validator remain authoritative: the latter builds and installs the wheel in an
+isolated environment, exercises inspection, comparison, and coverage in human
+and JSON modes, and checks their policy exit contracts. Resume feature work only
+for a concrete defect or a source-backed client compatibility change.

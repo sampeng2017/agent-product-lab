@@ -1400,3 +1400,37 @@ sealed and 6 legacy unsealed receipts, and named `unit` evidence applies. No
 human input is needed. The next run should audit the installed v0.20.0 wheel,
 help, docs, and all command surfaces for release readiness; if no concrete
 product gap remains, freeze AgentScope and select the next opportunity.
+
+## 2026-09-11 — AgentScope v1.0.0 release audit and freeze
+
+Continued AgentScope after inspecting the clean Git state and history,
+automation memory, root/product handoffs, active `To-Sam/` messages, all product
+documentation, package metadata, implementation, tests, and the existing
+portfolio validator. No Sam request was active. The warning-strict Python 3.11
+baseline passed all 48 AgentScope and 53 frozen ProofRun tests with one expected
+optional skip, built both wheels, and installed them in fresh environments.
+
+The release audit inspected AgentScope's wheel contents and installed metadata,
+all three help surfaces, version reporting, documentation links, and existing
+human/JSON/policy tests. No behavior or schema defect remained, but the audit
+found that portfolio CI exercised only the installed `agentscope --version`;
+meaningful packaged commands could regress while source tests still passed.
+
+Portfolio validation now uses a checked-in realistic repository fixture with
+shared and profile-only standard instructions plus matching, ignored, and
+malformed modular rules. After isolated wheel installation it runs inspection,
+comparison, and coverage in human mode, then checks schema-v5 inspection,
+schema-v5 comparison, and schema-v1 coverage JSON policy failures. It requires
+exact exit 1 behavior and asserts representative target, divergence, match,
+ignore, invalid, and schema counts. The enhanced validator passes end to end.
+
+With no product defect or release blocker left, AgentScope was promoted from
+v0.20.0 to v1.0.0 and frozen as the portfolio's second local MVP. Product and
+root docs now record its maintenance boundary and stronger artifact validation.
+Current packaging and adjacent-tool evidence was compared for four possible
+follow-ons. An installed-artifact behavior contract runner was selected over a
+wheel-content linter, metadata/README checker, and general environment runner;
+those broader jobs are already covered by `check-wheel-contents`, `twine check`,
+and tox. The next run should extract the proven AgentScope audit into the
+smallest standalone TOML-driven prototype and retain it only if it is materially
+clearer than the equivalent shell. No human input is needed.

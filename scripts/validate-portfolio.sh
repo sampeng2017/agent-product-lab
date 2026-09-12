@@ -55,7 +55,73 @@ validate_product() {
     "$environment_dir/bin/$console_command" "$smoke_argument"
 }
 
+expect_policy_exit() {
+    output_path=$1
+    shift
+    if "$@" >"$output_path"; then
+        echo "Expected policy exit 1 from: $*" >&2
+        return 1
+    else
+        policy_status=$?
+    fi
+    if [ "$policy_status" -ne 1 ]; then
+        echo "Expected policy exit 1, got $policy_status from: $*" >&2
+        return 1
+    fi
+}
+
+validate_agentscope_distribution() {
+    agentscope_command=$1
+    fixture_root="$portfolio_root/products/agentscope/tests/fixtures/release-repository"
+    audit_root="$validation_temp/agentscope-release-audit"
+    mkdir -p "$audit_root"
+
+    "$agentscope_command" --root "$fixture_root" src/app.py >/dev/null
+    "$agentscope_command" compare --root "$fixture_root" src/app.py >/dev/null
+    "$agentscope_command" coverage \
+        --root "$fixture_root" docs/readme.md src/app.py >/dev/null
+
+    expect_policy_exit "$audit_root/inspection.json" \
+        "$agentscope_command" --profile copilot-cli --json \
+        --fail-on-invalid-sources --root "$fixture_root" src/app.py
+    expect_policy_exit "$audit_root/comparison.json" \
+        "$agentscope_command" compare --json --fail-on-divergence \
+        --root "$fixture_root" src/app.py
+    expect_policy_exit "$audit_root/coverage.json" \
+        "$agentscope_command" coverage --json --fail-on-ignored-sources \
+        --fail-on-invalid-sources --root "$fixture_root" \
+        docs/readme.md src/app.py
+
+    "$portfolio_python" -c '
+import json
+import pathlib
+import sys
+
+inspection, comparison, coverage = (
+    json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+    for path in sys.argv[1:]
+)
+assert inspection["schema_version"] == 5
+assert inspection["target_count"] == 1
+assert inspection["invalid_source_count"] == 1
+assert comparison["schema_version"] == 5
+assert comparison["divergent_target_count"] == 1
+assert comparison["invalid_source_count"] == 1
+assert coverage["schema_version"] == 1
+assert coverage["target_count"] == 2
+assert coverage["matched_target_count"] == 1
+assert coverage["ignored_target_count"] == 1
+assert coverage["invalid_target_count"] == 2
+' \
+        "$audit_root/inspection.json" \
+        "$audit_root/comparison.json" \
+        "$audit_root/coverage.json"
+    echo "AgentScope installed command surfaces and policy exits passed."
+}
+
 validate_product agentscope agentscope --version
+validate_agentscope_distribution \
+    "$validation_temp/environments/agentscope/bin/agentscope"
 validate_product proofrun proofrun --help
 
 echo "Portfolio validation passed; temporary build output was removed."

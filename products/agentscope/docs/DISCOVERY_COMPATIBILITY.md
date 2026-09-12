@@ -156,7 +156,7 @@ leave aggregate counts and policy evaluation over complete evidence.
 
 User-home locations, `COPILOT_HOME`, implicit environment loading, nested
 `AGENTS.md` interpretation inside an additional directory, and files disabled
-with interactive `/instructions` remain outside v0.20.0. A discovered Copilot
+with interactive `/instructions` remain outside v1.0.0. A discovered Copilot
 source must be readable UTF-8 before it can be applied or content-compared.
 Decode failures use `instruction file is not valid UTF-8`; other read failures
 use `instruction file could not be read`. Both are stable `invalid` diagnostics,

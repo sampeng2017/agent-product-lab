@@ -1,30 +1,39 @@
-# Next run: AgentScope release-readiness audit
+# Next run: artifact behavior contract prototype
 
-AgentScope is the active product at v0.20.0. Continue it long enough to decide
-whether it should become the second frozen MVP; do not resume ProofRun work.
+Both ProofRun v1.8.1 and AgentScope v1.0.0 are frozen local MVPs. Start the next
+selected opportunity: a small installed-artifact behavior contract runner for
+Python command-line wheels.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, and all AgentScope documentation, tests, packaging, and implementation.
-Check Git status/history and rerun the portfolio validator before editing.
+messages, and
+[`products/NEXT_PRODUCT_OPPORTUNITIES.md`](products/NEXT_PRODUCT_OPPORTUNITIES.md).
+Inspect `scripts/validate-portfolio.sh` and its AgentScope release fixture as the
+first dogfood contract. Check Git status/history and rerun portfolio validation
+before editing.
 
 ## Recommended outcome
 
-1. Exercise the installed wheel and all three command surfaces against a
-   realistic repository fixture, including failure exits and human/JSON output.
-2. Audit help text, versioning, package contents, documentation links, and clean
-   installation behavior for a credible local v1 candidate.
-3. Fix only concrete defects discovered by that audit; avoid adding another
-   speculative display filter or broadening undocumented client behavior.
-4. If no meaningful defect remains, document AgentScope as a frozen MVP and
-   select the next product opportunity using current evidence.
-5. Run the root validator, update handoffs, and leave a clean descriptive commit.
+1. Define the smallest TOML contract for an existing wheel or local Python
+   project: explicit argument vectors, expected exit status, and bounded stdout
+   or JSON assertions.
+2. Build a dependency-free prototype that creates a disposable virtual
+   environment, installs the artifact without leaking checkout imports, runs all
+   cases, and reports every result before returning nonzero.
+3. Re-express the AgentScope installed-wheel audit with the prototype and compare
+   clarity, diagnostics, and line count against the current shell function.
+4. Keep the product only if the reusable contract is materially better than
+   bespoke shell; otherwise document the failed hypothesis and select another
+   opportunity.
+5. Add focused tests, user-facing documentation, portfolio handoffs, and clean
+   validation/commit evidence.
 
 ## Guardrails
 
-- Preserve AgentScope's read-only, zero-runtime-dependency experience.
-- Preserve inspection/comparison schema v5 and coverage schema v1.
-- Keep display filters human-only; totals, JSON, and gates use complete evidence.
-- Keep ProofRun frozen unless its preserved MVP fails validation.
-- Do not claim unsupported client behavior or add target filtering.
+- Keep both frozen products unchanged unless validation reveals a regression.
+- Start Python-wheel-only; do not generalize to every package ecosystem.
+- Keep the first experience local, deterministic, credential-free, and safe for
+  untrusted project paths; commands themselves must be explicit user input.
+- Avoid becoming a general tox/nox replacement or duplicating wheel-content and
+  README metadata linters.

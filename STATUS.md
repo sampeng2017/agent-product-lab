@@ -2,88 +2,81 @@
 
 ## Current direction
 
-AgentScope is the active product. It is a local, read-only CLI that explains
-which coding-agent repository instructions apply to a target path and why.
-ProofRun v1.8.1 remains a preserved completed local MVP.
+ProofRun v1.8.1 and AgentScope v1.0.0 are frozen local MVPs. The next selected
+opportunity is an installed-artifact behavior contract runner for Python CLI
+wheels. Its first dogfood case now lives in portfolio validation; the next run
+should test whether extracting that case produces a genuinely clearer reusable
+tool than bespoke shell.
 
 ## Product shape
 
-- `products/agentscope/` contains AgentScope v0.20.0, 48 tests, source-linked
-  compatibility contracts, and product documentation.
 - `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
-  its complete product history.
-- Root documentation coordinates portfolio decisions and run handoffs. A
-  read-only portfolio CI workflow validates both products on Python 3.10-3.14.
+  product history.
+- `products/agentscope/` contains the frozen AgentScope v1.0.0 implementation,
+  48 focused tests, compatibility contracts, and a realistic release fixture.
+- `products/NEXT_PRODUCT_OPPORTUNITIES.md` records the next-product selection,
+  adjacent tools, risk, and smallest useful wedge.
+- `scripts/validate-portfolio.sh` runs both suites, builds and isolated-installs
+  both wheels, and exercises AgentScope's installed human, JSON, and policy-exit
+  surfaces.
 
-AgentScope models explicit `agents-md` and `copilot-cli` profiles. Inspection
-and comparison emit human or schema-v5 JSON, preserve applied, non-applied, and
-invalid evidence, and provide narrow policy gates. Independent schema-v1
-coverage groups Copilot modular rules across targets; its detailed and compact
-human views support display-only source-path and occurrence-state filtering.
+## Completed today (2026-09-11)
 
-## Completed today (2026-09-10)
-
-- Revalidated the clean v0.19.0 baseline and found no active Sam message.
-- Exercised mixed matched, ignored, invalid, and not-discovered modular evidence
-  and confirmed state-focused output makes failure diagnosis materially smaller.
-- Added repeatable `coverage --state STATE` filtering for all four outcomes in
-  detailed and compact human reports.
-- Defined source-level mixed-state behavior, AND composition with source globs,
-  complete totals and gates, and JSON rejection to preserve schema v1.
-- Bumped AgentScope to v0.20.0 and expanded the focused suite to 48 tests.
+- Audited AgentScope's implementation, packaging, documentation, help, wheel
+  contents, isolated install, and inspection/comparison/coverage surfaces.
+- Added a realistic packaged-command fixture and release guard covering all
+  three human surfaces plus schema-v5 inspection/comparison and schema-v1
+  coverage JSON failure contracts.
+- Verified exact policy exit 1 semantics and key aggregate evidence from the
+  installed wheel rather than source-checkout imports.
+- Promoted AgentScope to v1.0.0 and froze it after finding no remaining concrete
+  product defect or release blocker.
+- Compared four follow-on opportunities using the observed gap and current
+  packaging/tool documentation; selected the narrow artifact behavior runner.
 
 ## Changes since the prior run
 
-Maintainers can now isolate sources involved in ignored, invalid, matched, or
-not-discovered outcomes while retaining every occurrence of a selected source.
-Repeated states use OR semantics; state and source-path filters use AND
-semantics. First-discovery order, full-result gates and totals, public APIs, and
-all JSON schemas remain unchanged.
+AgentScope behavior and JSON schemas are unchanged. Portfolio validation now
+guards the actual artifact-facing workflows that users rely on, not only package
+installation and `--version`. The portfolio has moved from one active and one
+frozen product to two frozen MVPs plus a selected, evidence-backed next wedge.
 
 ## Known issues
 
-- User-home locations, `COPILOT_HOME`, implicit environment loading, nested
-  `AGENTS.md` interpretation inside additional directories, and interactive
-  file disabling remain out of scope.
-- GitHub does not document precedence or nested `AGENTS.md` scope for configured
-  directories; AgentScope's direct-file and post-repository order is explicit.
-- Content normalization ignores line placement, blank lines, and surrounding
-  line whitespace but deliberately avoids semantic similarity.
-- The dependency-free frontmatter parser supports only scalar `applyTo` values;
-  lists, mappings, multiline values, and `excludeAgent` behavior are not modeled.
-- Character classes, brace expansion, glob negation, the client's unpublished
-  import size limit, and interactive source disabling are not modeled.
-- Client behavior can evolve, so profile assumptions require source-linked tests
-  and explicit schema/version changes.
-- Root CI currently runs on Ubuntu only; Windows/macOS behavior remains covered
-  by portable implementation design and focused platform code, not hosted jobs.
+- AgentScope intentionally does not model user-home instruction locations,
+  implicit environment loading, interactive disabling, general YAML, or
+  undocumented client precedence and import limits.
+- AgentScope's hosted portfolio CI remains Ubuntu-only.
+- The next-product hypothesis overlaps partly with tox and with short custom CI
+  scripts. It should be rejected unless a small declarative contract produces
+  materially clearer reuse and diagnostics.
+- The repository has no configured Git remote, so local release milestones are
+  preserved here but not published.
 
 ## Decisions
 
-- AgentScope, not ProofRun, remains active pending a v0.20.0 release audit.
-- Keep the first experience read-only, credential-free, dependency-free, and
-  explicit about the modeled client profile.
-- Preserve inspection/comparison schema v5 and coverage schema v1.
-- Keep modular coverage Copilot-specific and treat not-discovered targets
-  separately from ignored glob outcomes.
-- Keep compact coverage presentation-only and chunk after 12 targets.
-- Keep `--source` and `--state` human-only and display-only. Repeated values use
-  OR within a selector family, the two families compose with AND, and filtering
-  never narrows JSON, aggregate counts, or policy evaluation.
-- Avoid adding more filters without demonstrated need; audit release readiness
-  and freeze the product if no concrete gap remains.
+- Freeze AgentScope at v1.0.0; resume only for a concrete defect or a source-
+  backed client compatibility change.
+- Preserve AgentScope inspection/comparison schema v5 and coverage schema v1.
+- Keep ProofRun frozen at v1.8.1.
+- Prototype only installed Python-wheel behavior contracts next; do not expand
+  into general environment orchestration, content linting, or metadata checks.
+- Treat the existing AgentScope shell audit as the baseline the prototype must
+  beat rather than assuming a standalone product is justified.
 
 ## Validation
 
-- Warning-strict Python 3.11 portfolio validation passed 48 AgentScope tests and
-  53 ProofRun tests with one expected optional skip.
-- Both wheels built, installed in isolated temporary environments, and passed
-  console smokes; AgentScope reported version 0.20.0.
-- Focused tests, source compilation, help inspection, and whitespace checks
-  pass. Post-commit ProofRun receipt #68 is valid; the chain has 62 valid sealed
-  and 6 legacy unsealed receipts.
+- Warning-strict Python 3.11 portfolio validation passes all 48 AgentScope tests
+  and 53 ProofRun tests with one expected optional skip.
+- Both wheels build and install in isolated temporary environments; AgentScope
+  reports v1.0.0 and ProofRun reports v1.8.1.
+- Installed AgentScope inspection, comparison, and coverage human paths pass;
+  their JSON policy cases return exit 1 and expose the expected schemas/counts.
+- Shell syntax, source compilation, documentation links, and whitespace checks
+  pass.
 
 ## Recommended next step
 
-Perform a release-readiness audit of the v0.20.0 wheel, documentation, help, and
-all command surfaces; freeze AgentScope if it reveals no concrete product gap.
+Build the smallest standalone artifact behavior contract prototype described in
+`NEXT_RUN.md`, dogfood it against AgentScope, and keep it only if it clearly
+improves on the current shell function.

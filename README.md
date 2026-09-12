@@ -11,20 +11,21 @@ next.
   for agent-assisted development. The v1.8.1 local MVP was completed and frozen
   on 2026-08-19.
 - [AgentScope](products/agentscope/README.md) — local instruction-scope debugger
-  for coding-agent repositories. Version 0.20.0 compares named client profiles,
-  models explicit Copilot CLI session, target, and additional-directory
+  for coding-agent repositories. The v1.0.0 local MVP compares named client
+  profiles, models explicit Copilot CLI session, target, and additional-directory
   discovery, explains recursive references and duplicate instructions, and
   preserves applied, non-applied, and invalid evidence with narrow policy gates
   in inspection and comparison. A source-oriented coverage view summarizes
   modular-rule outcomes across multiple targets and offers an opt-in compact
   matrix with deterministic column chunking and display-only source-path and
-  occurrence-state filtering for larger reviews.
+  occurrence-state filtering for larger reviews. It was frozen on 2026-09-11.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). Continue
-AgentScope from its tested v0.20.0 baseline; ProofRun should remain frozen unless
-a regression threatens the preserved MVP.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). Both existing
+products are frozen. The next selected opportunity is a small installed-artifact
+behavior contract runner, with its first dogfood contract embedded in portfolio
+validation.
 
 ## Portfolio validation
 
@@ -32,8 +33,9 @@ The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
 both products on every supported stable Python line from 3.10 through 3.14. It
 runs both unit suites, promotes warnings to errors on the oldest supported
 version, compiles the sources, builds each wheel, and installs each artifact in
-a fresh environment before exercising its console command. GitHub permissions
-are read-only and checkout credentials are not retained.
+a fresh environment. It then exercises installed console behavior, including
+AgentScope's human, JSON, and policy-exit surfaces. GitHub permissions are
+read-only and checkout credentials are not retained.
 
 Run the same validation with the active local interpreter:
 
