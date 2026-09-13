@@ -19,23 +19,28 @@ next.
   modular-rule outcomes across multiple targets and offers an opt-in compact
   matrix with deterministic column chunking and display-only source-path and
   occurrence-state filtering for larger reviews. It was frozen on 2026-09-11.
+- [WheelContract](products/wheelcontract/README.md) — installed Python CLI wheel
+  behavior contracts. The v0.1.0 prototype builds or accepts one wheel,
+  isolated-installs it, and checks explicit exit, stdout, and top-level JSON
+  behavior from strict TOML.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). Both existing
-products are frozen. The next selected opportunity is a small installed-artifact
-behavior contract runner, with its first dogfood contract embedded in portfolio
-validation.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). ProofRun and
+AgentScope are frozen. WheelContract is the active prototype, and its first
+dogfood contract now replaces the bespoke installed AgentScope audit in
+portfolio validation.
 
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
-both products on every supported stable Python line from 3.10 through 3.14. It
-runs both unit suites, promotes warnings to errors on the oldest supported
-version, compiles the sources, builds each wheel, and installs each artifact in
-a fresh environment. It then exercises installed console behavior, including
-AgentScope's human, JSON, and policy-exit surfaces. GitHub permissions are
-read-only and checkout credentials are not retained.
+all three products on every supported stable Python line from 3.10 through
+3.14. It runs every unit suite, promotes warnings to errors on the oldest
+supported version, compiles the sources, builds each wheel, and installs each
+artifact in a fresh environment. Installed WheelContract then verifies
+AgentScope's human, JSON, and policy-exit surfaces from
+[`wheelcontract.toml`](wheelcontract.toml). GitHub permissions are read-only and
+checkout credentials are not retained.
 
 Run the same validation with the active local interpreter:
 

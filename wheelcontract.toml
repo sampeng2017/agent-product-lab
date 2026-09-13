@@ -1,0 +1,52 @@
+schema_version = 1
+
+[artifact]
+source = "products/agentscope"
+
+[run]
+timeout_seconds = 30
+max_output_bytes = 65536
+
+[[case]]
+name = "inspection-human"
+argv = ["agentscope", "--root", "{manifest_dir}/products/agentscope/tests/fixtures/release-repository", "src/app.py"]
+stdout_contains = ["AgentScope: agents-md profile", "src/app.py: 1 applied"]
+
+[[case]]
+name = "comparison-human"
+argv = ["agentscope", "compare", "--root", "{manifest_dir}/products/agentscope/tests/fixtures/release-repository", "src/app.py"]
+stdout_contains = ["src/app.py: DIVERGENT", "copilot-cli ONLY (2)"]
+
+[[case]]
+name = "coverage-human"
+argv = ["agentscope", "coverage", "--root", "{manifest_dir}/products/agentscope/tests/fixtures/release-repository", "docs/readme.md", "src/app.py"]
+stdout_contains = ["AgentScope modular coverage", "matched: 1; ignored: 1; invalid: 2"]
+
+[[case]]
+name = "inspection-json-policy"
+argv = ["agentscope", "--profile", "copilot-cli", "--json", "--fail-on-invalid-sources", "--root", "{manifest_dir}/products/agentscope/tests/fixtures/release-repository", "src/app.py"]
+exit = 1
+[case.json]
+schema_version = 5
+target_count = 1
+invalid_source_count = 1
+
+[[case]]
+name = "comparison-json-policy"
+argv = ["agentscope", "compare", "--json", "--fail-on-divergence", "--root", "{manifest_dir}/products/agentscope/tests/fixtures/release-repository", "src/app.py"]
+exit = 1
+[case.json]
+schema_version = 5
+divergent_target_count = 1
+invalid_source_count = 1
+
+[[case]]
+name = "coverage-json-policy"
+argv = ["agentscope", "coverage", "--json", "--fail-on-ignored-sources", "--fail-on-invalid-sources", "--root", "{manifest_dir}/products/agentscope/tests/fixtures/release-repository", "docs/readme.md", "src/app.py"]
+exit = 1
+[case.json]
+schema_version = 1
+target_count = 2
+matched_target_count = 1
+ignored_target_count = 1
+invalid_target_count = 2

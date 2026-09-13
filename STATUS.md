@@ -2,81 +2,87 @@
 
 ## Current direction
 
-ProofRun v1.8.1 and AgentScope v1.0.0 are frozen local MVPs. The next selected
-opportunity is an installed-artifact behavior contract runner for Python CLI
-wheels. Its first dogfood case now lives in portfolio validation; the next run
-should test whether extracting that case produces a genuinely clearer reusable
-tool than bespoke shell.
+WheelContract v0.1.0 is the active prototype. It checks installed Python CLI
+wheel behavior from strict TOML. ProofRun v1.8.1 and AgentScope v1.0.0 remain
+frozen local MVPs.
 
 ## Product shape
 
-- `products/proofrun/` contains the frozen ProofRun v1.8.1 implementation and
-  product history.
-- `products/agentscope/` contains the frozen AgentScope v1.0.0 implementation,
-  48 focused tests, compatibility contracts, and a realistic release fixture.
-- `products/NEXT_PRODUCT_OPPORTUNITIES.md` records the next-product selection,
-  adjacent tools, risk, and smallest useful wedge.
-- `scripts/validate-portfolio.sh` runs both suites, builds and isolated-installs
-  both wheels, and exercises AgentScope's installed human, JSON, and policy-exit
-  surfaces.
+- `products/wheelcontract/` contains the dependency-free implementation, six
+  focused tests, user documentation, and product status.
+- `wheelcontract.toml` is the first real contract: six installed AgentScope
+  human, JSON, and policy-exit cases.
+- `scripts/validate-portfolio.sh` tests, builds, and isolated-installs all three
+  products, then invokes the installed WheelContract against the already-built
+  AgentScope wheel.
+- `products/proofrun/` and `products/agentscope/` contain the two frozen MVPs.
 
-## Completed today (2026-09-11)
+## Completed today (2026-09-12)
 
-- Audited AgentScope's implementation, packaging, documentation, help, wheel
-  contents, isolated install, and inspection/comparison/coverage surfaces.
-- Added a realistic packaged-command fixture and release guard covering all
-  three human surfaces plus schema-v5 inspection/comparison and schema-v1
-  coverage JSON failure contracts.
-- Verified exact policy exit 1 semantics and key aggregate evidence from the
-  installed wheel rather than source-checkout imports.
-- Promoted AgentScope to v1.0.0 and froze it after finding no remaining concrete
-  product defect or release blocker.
-- Compared four follow-on opportunities using the observed gap and current
-  packaging/tool documentation; selected the narrow artifact behavior runner.
+- Built WheelContract v0.1.0 with project-build and prebuilt-wheel inputs,
+  disposable virtual environments, dependency-free installs, and execution
+  outside the checkout with Python import-leak variables removed.
+- Added strict schema-v1 parsing for ordered cases, explicit installed entry
+  points, expected exits, stdout fragments, and top-level scalar JSON fields.
+- Added case timeouts, bounded output diagnostics, all-results-before-failure
+  reporting, and distinct behavior mismatch (1) versus setup/contract (2) exits.
+- Added a Python 3.10 fallback for the documented TOML subset and six focused
+  tests using a real minimal wheel.
+- Re-expressed the installed AgentScope audit as `wheelcontract.toml`. All six
+  cases pass against a built wheel.
+- Removed 67 lines of bespoke shell/embedded Python validation and replaced
+  them with a reusable installed runner invocation. This demonstrated enough
+  clarity and diagnostic reuse to retain the product hypothesis.
 
 ## Changes since the prior run
 
-AgentScope behavior and JSON schemas are unchanged. Portfolio validation now
-guards the actual artifact-facing workflows that users rely on, not only package
-installation and `--version`. The portfolio has moved from one active and one
-frozen product to two frozen MVPs plus a selected, evidence-backed next wedge.
+The portfolio has moved from a selected opportunity to a runnable third product.
+Frozen-product behavior is unchanged. The release audit added yesterday is now
+declarative and exercised by WheelContract itself, while portfolio validation
+adds WheelContract's tests, wheel build, isolated install, and console smoke.
 
 ## Known issues
 
-- AgentScope intentionally does not model user-home instruction locations,
-  implicit environment loading, interactive disabling, general YAML, or
-  undocumented client precedence and import limits.
-- AgentScope's hosted portfolio CI remains Ubuntu-only.
-- The next-product hypothesis overlaps partly with tox and with short custom CI
-  scripts. It should be rejected unless a small declarative contract produces
-  materially clearer reuse and diagnostics.
-- The repository has no configured Git remote, so local release milestones are
-  preserved here but not published.
+- JSON assertions support top-level scalar fields only; there are no nested
+  paths, arrays, regexes, or schema validation.
+- The runner deliberately has no dependency resolution, environment matrix,
+  arbitrary shell, hooks, or configurable working directory.
+- Child output is spooled to disposable files before bounded diagnostic reads;
+  the limit protects memory/report size, not temporary disk usage.
+- Building a local project uses the invoking interpreter with build isolation
+  disabled, so its declared build backend must already be present.
+- Hosted portfolio CI is Ubuntu-only, and the repository has no Git remote.
 
 ## Decisions
 
-- Freeze AgentScope at v1.0.0; resume only for a concrete defect or a source-
-  backed client compatibility change.
-- Preserve AgentScope inspection/comparison schema v5 and coverage schema v1.
-- Keep ProofRun frozen at v1.8.1.
-- Prototype only installed Python-wheel behavior contracts next; do not expand
-  into general environment orchestration, content linting, or metadata checks.
-- Treat the existing AgentScope shell audit as the baseline the prototype must
-  beat rather than assuming a standalone product is justified.
+- Continue WheelContract beyond the prototype because one 52-line declarative
+  contract replaced 67 lines of one-off validator logic and centralizes tested
+  failure handling without broadening into tox/nox territory.
+- Keep schema v1, explicit argv, shell-free execution, no-dependency install,
+  full-result reporting, and one artifact/environment per run as current
+  product boundaries.
+- Keep ProofRun and AgentScope frozen unless a concrete defect appears.
 
 ## Validation
 
-- Warning-strict Python 3.11 portfolio validation passes all 48 AgentScope tests
-  and 53 ProofRun tests with one expected optional skip.
-- Both wheels build and install in isolated temporary environments; AgentScope
-  reports v1.0.0 and ProofRun reports v1.8.1.
-- Installed AgentScope inspection, comparison, and coverage human paths pass;
-  their JSON policy cases return exit 1 and expose the expected schemas/counts.
-- Shell syntax, source compilation, documentation links, and whitespace checks
-  pass.
+- Warning-strict Python 3.11 portfolio validation passes 6 WheelContract, 48
+  AgentScope, and 53 ProofRun tests with one expected optional skip.
+- All three wheels build and install in fresh environments; their console
+  smokes pass, and installed WheelContract passes all six AgentScope contracts.
+- Focused compile, shell/YAML syntax, and whitespace checks pass. Python 3.10
+  fallback behavior is unit-covered; no local Python 3.10 interpreter is
+  available, while portfolio CI retains its Python 3.10 job.
 
-## Recommended next step
+## Recommended next steps
 
-Build the smallest standalone artifact behavior contract prototype described in
-`NEXT_RUN.md`, dogfood it against AgentScope, and keep it only if it clearly
-improves on the current shell function.
+1. Deliberately break one copied AgentScope fixture expectation and inspect
+   installed-runner diagnostics in both local and CI-shaped output.
+2. If diagnosis is weak, add a small `--json` runner report containing setup
+   identity, ordered case results, assertion failures, exit codes, and bounded
+   output previews; otherwise avoid a new output schema.
+3. Add a second compact contract against WheelContract's own installed CLI to
+   test whether the manifest remains clear outside the motivating product.
+4. Reassess product value after that second contract before adding deeper JSON
+   selectors or broader environment controls.
+
+No human input is required.

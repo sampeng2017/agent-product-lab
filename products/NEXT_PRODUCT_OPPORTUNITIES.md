@@ -55,6 +55,22 @@ should extract only this proven pattern into a standalone prototype and compare
 its manifest/diagnostics against the equivalent shell before committing to the
 product.
 
+## Prototype result — 2026-09-12
+
+WheelContract v0.1.0 validates the hypothesis strongly enough to continue. Its
+strict 52-line contract expresses six AgentScope human, JSON, and policy-exit
+cases while the portfolio validator sheds 67 lines of bespoke shell and embedded
+Python parsing. The same installed runner produces ordered per-case results and
+aggregated failures, applies time and output bounds, removes checkout import
+variables, and can consume the already-built wheel.
+
+This is a clarity and reuse improvement even though the contract itself is not
+shorter than the command list alone: expectations are adjacent to each case,
+failure semantics are shared and tested, and the CI shell no longer implements
+a one-off assertion framework. Continue WheelContract narrowly, using real
+contract diagnostics as the evidence for the next feature rather than expanding
+into general environment orchestration.
+
 ## Sources inspected
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)

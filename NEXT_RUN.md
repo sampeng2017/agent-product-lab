@@ -1,39 +1,35 @@
-# Next run: artifact behavior contract prototype
+# Next run: WheelContract diagnostic dogfood
 
-Both ProofRun v1.8.1 and AgentScope v1.0.0 are frozen local MVPs. Start the next
-selected opportunity: a small installed-artifact behavior contract runner for
-Python command-line wheels.
+WheelContract v0.1.0 is the active prototype. ProofRun v1.8.1 and AgentScope
+v1.0.0 are frozen.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, and
-[`products/NEXT_PRODUCT_OPPORTUNITIES.md`](products/NEXT_PRODUCT_OPPORTUNITIES.md).
-Inspect `scripts/validate-portfolio.sh` and its AgentScope release fixture as the
-first dogfood contract. Check Git status/history and rerun portfolio validation
-before editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, WheelContract's README and
+STATUS, implementation, tests, `wheelcontract.toml`, and portfolio validation.
+Check Git status/history and rerun portfolio validation before editing.
 
 ## Recommended outcome
 
-1. Define the smallest TOML contract for an existing wheel or local Python
-   project: explicit argument vectors, expected exit status, and bounded stdout
-   or JSON assertions.
-2. Build a dependency-free prototype that creates a disposable virtual
-   environment, installs the artifact without leaking checkout imports, runs all
-   cases, and reports every result before returning nonzero.
-3. Re-express the AgentScope installed-wheel audit with the prototype and compare
-   clarity, diagnostics, and line count against the current shell function.
-4. Keep the product only if the reusable contract is materially better than
-   bespoke shell; otherwise document the failed hypothesis and select another
-   opportunity.
-5. Add focused tests, user-facing documentation, portfolio handoffs, and clean
-   validation/commit evidence.
+1. Copy the AgentScope contract to a temporary location and deliberately make
+   one human assertion, one expected exit, and one JSON field fail. Judge the
+   resulting output as a maintainer diagnosing CI without source context.
+2. Add a structured runner report only if that exercise demonstrates a real
+   diagnostic or integration gap. Keep human output stable if it is already
+   sufficient.
+3. Add a compact contract against WheelContract's installed CLI to test whether
+   schema v1 remains clearer for a second artifact and to expose assumptions
+   coupled to AgentScope.
+4. Preserve full-result execution, strict parsing, shell-free argv, isolated
+   installation, output/time bounds, and exit 0/1/2 semantics.
+5. Update product/root handoffs, validate every product, and commit cleanly.
 
 ## Guardrails
 
+- Do not add dependency resolution, environment matrices, hooks, arbitrary
+  shell, or general task-runner features.
+- Do not deepen JSON selection or add regexes without a demonstrated contract.
 - Keep both frozen products unchanged unless validation reveals a regression.
-- Start Python-wheel-only; do not generalize to every package ecosystem.
-- Keep the first experience local, deterministic, credential-free, and safe for
-  untrusted project paths; commands themselves must be explicit user input.
-- Avoid becoming a general tox/nox replacement or duplicating wheel-content and
-  README metadata linters.
+- Retain the product only while contracts and diagnostics are materially clearer
+  than focused shell for real installed-artifact behavior.

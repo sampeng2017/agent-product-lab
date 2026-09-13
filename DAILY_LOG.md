@@ -1434,3 +1434,41 @@ those broader jobs are already covered by `check-wheel-contents`, `twine check`,
 and tox. The next run should extract the proven AgentScope audit into the
 smallest standalone TOML-driven prototype and retain it only if it is materially
 clearer than the equivalent shell. No human input is needed.
+
+## 2026-09-12 — WheelContract v0.1.0 prototype
+
+Started the selected third-product opportunity after inspecting the clean Git
+state and history, automation memory, all root/product handoffs, active
+`To-Sam/` messages, the AgentScope release fixture, and the existing bespoke
+artifact audit. No Sam request was active. The warning-strict Python 3.11
+baseline passed 48 AgentScope and 53 ProofRun tests with one expected optional
+skip, built both wheels, isolated-installed them, and passed the six installed
+AgentScope surfaces.
+
+Built WheelContract v0.1.0, a zero-runtime-dependency installed Python CLI wheel
+behavior runner. Schema-v1 TOML names one local project or prebuilt wheel and
+ordered cases with explicit installed entry-point argument vectors, expected
+exits, bounded stdout fragments, and top-level scalar JSON expectations. The
+runner builds when needed, installs without dependencies in a disposable virtual
+environment, runs outside the checkout with Python import-leak variables
+removed, applies per-case time and output bounds, reports every result, and
+distinguishes behavior failures (exit 1) from contract/setup failures (exit 2).
+Python 3.10 uses a focused fallback parser for the documented schema.
+
+Six focused tests use a real minimal wheel to cover successful text/JSON/exit
+contracts, aggregate failures, output bounds, strict and safe command parsing,
+missing installed commands, and Python 3.10 fallback behavior. The checked-in
+`wheelcontract.toml` then passed all six human, JSON, and policy-exit cases
+against a newly built AgentScope wheel.
+
+The portfolio validator now tests, builds, and isolated-installs WheelContract,
+then uses its installed command with the already-built AgentScope artifact. This
+removed 67 lines of one-off shell and embedded Python assertion logic in favor
+of a three-line reusable invocation and a 52-line expectation-adjacent contract.
+That is a material clarity and diagnostic reuse improvement, so the product
+hypothesis is retained. Warning-strict portfolio validation passed all 6
+WheelContract, 48 AgentScope, and 53 ProofRun tests (one expected skip), all
+three wheel builds and isolated installs, console smokes, and the six-case
+installed artifact contract. No human input is needed. Next, deliberately
+exercise failure diagnostics and add structured runner output only if the
+dogfood shows a concrete gap.
