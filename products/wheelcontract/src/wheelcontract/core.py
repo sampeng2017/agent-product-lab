@@ -26,6 +26,7 @@ class Case:
     argv: tuple[str, ...]
     expected_exit: int
     stdout_contains: tuple[str, ...]
+    stderr_contains: tuple[str, ...]
     json_fields: tuple[tuple[str, object], ...]
 
 
@@ -87,7 +88,11 @@ def load_contract(path: Path) -> Contract:
     for index, raw_case in enumerate(raw_cases, start=1):
         label = f"[[case]] #{index}"
         case = _require_table(raw_case, label)
-        _reject_unknown(case, {"name", "argv", "exit", "stdout_contains", "json"}, label)
+        _reject_unknown(
+            case,
+            {"name", "argv", "exit", "stdout_contains", "stderr_contains", "json"},
+            label,
+        )
         name = case.get("name")
         if not isinstance(name, str) or not name:
             raise ContractError(f"{label}.name must be a non-empty string")
@@ -111,6 +116,11 @@ def load_contract(path: Path) -> Contract:
             isinstance(fragment, str) and fragment for fragment in contains
         ):
             raise ContractError(f"case {name!r} stdout_contains must be a string array")
+        stderr_contains = case.get("stderr_contains", [])
+        if not isinstance(stderr_contains, list) or not all(
+            isinstance(fragment, str) and fragment for fragment in stderr_contains
+        ):
+            raise ContractError(f"case {name!r} stderr_contains must be a string array")
         json_table = case.get("json", {})
         json_table = _require_table(json_table, f"case {name!r} json")
         for key, value in json_table.items():
@@ -126,6 +136,7 @@ def load_contract(path: Path) -> Contract:
                 argv=tuple(argv),
                 expected_exit=expected_exit,
                 stdout_contains=tuple(contains),
+                stderr_contains=tuple(stderr_contains),
                 json_fields=tuple(json_table.items()),
             )
         )
@@ -270,6 +281,9 @@ def _run_case(
     for fragment in case.stdout_contains:
         if fragment not in stdout:
             errors.append(f"stdout missing {fragment!r}")
+    for fragment in case.stderr_contains:
+        if fragment not in stderr:
+            errors.append(f"stderr missing {fragment!r}")
     if case.json_fields:
         try:
             document = json.loads(stdout)

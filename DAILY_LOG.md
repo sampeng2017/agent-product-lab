@@ -1472,3 +1472,33 @@ three wheel builds and isolated installs, console smokes, and the six-case
 installed artifact contract. No human input is needed. Next, deliberately
 exercise failure diagnostics and add structured runner output only if the
 dogfood shows a concrete gap.
+
+## 2026-09-13 — WheelContract v0.2.0 stderr and self-contract
+
+Continued WheelContract after inspecting the clean Git state and history,
+automation memory, root/product handoffs, active `To-Sam/` messages, product
+implementation and tests, both frozen products, and portfolio validation. No
+Sam request was active, and the warning-strict Python 3.11 baseline passed all
+6 WheelContract, 48 AgentScope, and 53 ProofRun tests with one expected skip.
+
+A copied AgentScope contract then deliberately introduced a missing human text
+fragment, a wrong expected exit, and a wrong top-level JSON value while retaining
+a passing control. The existing report named all four cases, gave exact actual
+and expected values, showed bounded output previews, and returned aggregate exit
+1. That was sufficient for source-free CI diagnosis, so no structured runner
+output or new output schema was added. The suite now pins those details.
+
+The prescribed second-artifact contract exposed one concrete assumption from
+the AgentScope origin: WheelContract could assert stdout but not stable stderr
+diagnostics. Version 0.2.0 adds symmetric `stderr_contains` arrays within schema
+version 1. A new compact self-contract verifies the installed version, a
+missing-contract exit-2 stderr diagnostic, and help output. Portfolio validation
+now runs this contract against the built WheelContract wheel before using the
+same installed runner for the six-case AgentScope contract.
+
+Warning-strict Python 3.11 portfolio validation passed all 6 WheelContract, 48
+AgentScope, and 53 ProofRun tests with one expected skip; all wheels built and
+isolated-installed, both contracts passed, and compilation, shell syntax, and
+diff checks were clean. The next run should probe timeout behavior with a
+child-spawning installed command and add process-tree cleanup only if a real
+descendant lifecycle problem is reproduced.

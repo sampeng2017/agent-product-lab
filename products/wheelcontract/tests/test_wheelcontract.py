@@ -24,6 +24,9 @@ class WheelContractTests(unittest.TestCase):
                 "fixture_cli/__main__.py",
                 "import json, sys\n"
                 "if '--large' in sys.argv:\n    print('x' * 200)\n"
+                "elif '--error' in sys.argv:\n"
+                "    print('fixture warning', file=sys.stderr)\n"
+                "    raise SystemExit(4)\n"
                 "elif '--json' in sys.argv:\n"
                 "    print(json.dumps({'schema': 3, 'ready': True}))\n"
                 "    raise SystemExit(3)\n"
@@ -72,12 +75,20 @@ exit = 3
 [case.json]
 schema = 3
 ready = true
+
+[[case]]
+name = "stderr"
+argv = ["python", "-m", "fixture_cli", "--error"]
+exit = 4
+stderr_contains = ["fixture warning"]
 """
         )
 
         results = run_contract(load_contract(manifest))
 
-        self.assertEqual([result.name for result in results], ["human", "policy-json"])
+        self.assertEqual(
+            [result.name for result in results], ["human", "policy-json", "stderr"]
+        )
         self.assertTrue(all(result.passed for result in results))
 
     def test_reports_every_failure_and_returns_one(self) -> None:
@@ -92,6 +103,13 @@ exit = 0
 name = "missing-text"
 argv = ["python", "-m", "fixture_cli"]
 stdout_contains = ["not present"]
+
+[[case]]
+name = "wrong-json-field"
+argv = ["python", "-m", "fixture_cli", "--json"]
+exit = 3
+[case.json]
+ready = false
 """
         )
         output = io.StringIO()
@@ -101,8 +119,12 @@ stdout_contains = ["not present"]
 
         self.assertEqual(exit_code, 1)
         self.assertIn("FAIL wrong-exit", output.getvalue())
+        self.assertIn("exit was 3; expected 0", output.getvalue())
         self.assertIn("FAIL missing-text", output.getvalue())
-        self.assertIn("Result: 0 passed, 2 failed, 2 total", output.getvalue())
+        self.assertIn("stdout missing 'not present'", output.getvalue())
+        self.assertIn("FAIL wrong-json-field", output.getvalue())
+        self.assertIn("JSON field 'ready' was True; expected False", output.getvalue())
+        self.assertIn("Result: 0 passed, 3 failed, 3 total", output.getvalue())
 
     def test_enforces_output_limit(self) -> None:
         manifest = self.write_contract(
@@ -146,6 +168,7 @@ unexpected = "value"
 name = "json"
 argv = ["python", "-m", "fixture_cli", "--json"]
 exit = 3
+stderr_contains = ["warning"]
 [case.json]
 schema = 3
 ready = true
@@ -158,6 +181,7 @@ ready = true
         self.assertEqual(
             contract.cases[0].json_fields, (("schema", 3), ("ready", True))
         )
+        self.assertEqual(contract.cases[0].stderr_contains, ("warning",))
 
     def test_distinguishes_missing_command_from_setup_failure(self) -> None:
         manifest = self.write_contract(

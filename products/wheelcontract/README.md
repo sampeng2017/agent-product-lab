@@ -5,7 +5,7 @@ wheel. It builds a local project or accepts an existing `.whl`, installs that
 single artifact without dependencies in a disposable virtual environment, and
 runs explicit argument vectors from a small TOML contract.
 
-The v0.1 prototype focuses on the release gap demonstrated by this portfolio:
+The v0.2 prototype focuses on the release gap demonstrated by this portfolio:
 source tests can pass while an installed command, JSON shape, or documented
 policy exit has regressed.
 
@@ -28,6 +28,12 @@ argv = ["example", "--version"]
 stdout_contains = ["example 1.0"]
 
 [[case]]
+name = "usage-error"
+argv = ["example", "--unknown-option"]
+exit = 2
+stderr_contains = ["unrecognized arguments: --unknown-option"]
+
+[[case]]
 name = "policy-json"
 argv = ["example", "check", "--json", "--strict"]
 exit = 1
@@ -42,7 +48,8 @@ evaluation and command paths are rejected. Arguments may include
 `{manifest_dir}` to refer to checked-in fixtures without relying on the caller's
 working directory. Every case runs from a clean temporary directory with common
 Python import-leak variables removed. Cases default to exit 0, and repeated
-`stdout_contains` fragments plus top-level scalar JSON fields are supported.
+`stdout_contains` and `stderr_contains` fragments plus top-level scalar JSON
+fields are supported.
 
 The runner executes every case and reports every failure. Exit 0 means all
 contracts passed, 1 means behavior differed, and 2 means the manifest, build, or
@@ -54,6 +61,7 @@ truncated in diagnostics; each case also has a timeout.
 ```bash
 PYTHONPATH=src python3 -m wheelcontract path/to/wheelcontract.toml
 PYTHONPATH=src python3 -m wheelcontract --wheel dist/example.whl wheelcontract.toml
+PYTHONPATH=src python3 -m wheelcontract wheelcontract.toml
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
@@ -73,3 +81,5 @@ strings, integers, booleans, and string arrays.
 These boundaries keep WheelContract an artifact behavior check rather than a
 tox/nox replacement. The prototype should continue only if real dogfooding
 shows its contract and diagnostics remain clearer than bespoke CI scripting.
+This repository exercises both the six-case AgentScope contract at the portfolio
+root and the compact three-case self-contract in this directory.

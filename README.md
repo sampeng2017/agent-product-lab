@@ -20,16 +20,16 @@ next.
   matrix with deterministic column chunking and display-only source-path and
   occurrence-state filtering for larger reviews. It was frozen on 2026-09-11.
 - [WheelContract](products/wheelcontract/README.md) — installed Python CLI wheel
-  behavior contracts. The v0.1.0 prototype builds or accepts one wheel,
-  isolated-installs it, and checks explicit exit, stdout, and top-level JSON
-  behavior from strict TOML.
+  behavior contracts. The v0.2.0 prototype builds or accepts one wheel,
+  isolated-installs it, and checks explicit exit, stdout, stderr, and top-level
+  JSON behavior from strict TOML. Checked-in contracts cover AgentScope and
+  WheelContract itself.
 
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). ProofRun and
-AgentScope are frozen. WheelContract is the active prototype, and its first
-dogfood contract now replaces the bespoke installed AgentScope audit in
-portfolio validation.
+AgentScope are frozen. WheelContract is the active prototype; portfolio
+validation runs its installed self-contract and the AgentScope behavior contract.
 
 ## Portfolio validation
 
@@ -37,10 +37,10 @@ The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
 all three products on every supported stable Python line from 3.10 through
 3.14. It runs every unit suite, promotes warnings to errors on the oldest
 supported version, compiles the sources, builds each wheel, and installs each
-artifact in a fresh environment. Installed WheelContract then verifies
-AgentScope's human, JSON, and policy-exit surfaces from
-[`wheelcontract.toml`](wheelcontract.toml). GitHub permissions are read-only and
-checkout credentials are not retained.
+artifact in a fresh environment. Installed WheelContract then verifies its own
+version, help, and error behavior before checking AgentScope's human, JSON, and
+policy-exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub
+permissions are read-only and checkout credentials are not retained.
 
 Run the same validation with the active local interpreter:
 

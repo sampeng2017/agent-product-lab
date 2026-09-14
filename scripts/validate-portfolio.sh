@@ -56,6 +56,9 @@ validate_product() {
 }
 
 validate_product wheelcontract wheelcontract --version
+"$validation_temp/environments/wheelcontract/bin/wheelcontract" \
+    --wheel "$validation_temp/wheels/wheelcontract"/*.whl \
+    "$portfolio_root/products/wheelcontract/wheelcontract.toml"
 validate_product agentscope agentscope --version
 "$validation_temp/environments/wheelcontract/bin/wheelcontract" \
     --wheel "$validation_temp/wheels/agentscope"/*.whl \

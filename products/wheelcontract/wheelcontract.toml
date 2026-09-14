@@ -1,0 +1,24 @@
+schema_version = 1
+
+[artifact]
+source = "."
+
+[run]
+timeout_seconds = 30
+max_output_bytes = 65536
+
+[[case]]
+name = "version"
+argv = ["wheelcontract", "--version"]
+stdout_contains = ["wheelcontract 0.2.0"]
+
+[[case]]
+name = "missing-contract-error"
+argv = ["wheelcontract", "missing.toml"]
+exit = 2
+stderr_contains = ["wheelcontract: error: contract not found: missing.toml"]
+
+[[case]]
+name = "help"
+argv = ["wheelcontract", "--help"]
+stdout_contains = ["Verify installed Python CLI wheel behavior from TOML.", "contract path (default: wheelcontract.toml)"]
