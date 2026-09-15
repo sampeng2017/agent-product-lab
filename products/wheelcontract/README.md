@@ -5,7 +5,7 @@ wheel. It builds a local project or accepts an existing `.whl`, installs that
 single artifact without dependencies in a disposable virtual environment, and
 runs explicit argument vectors from a small TOML contract.
 
-The v0.2 prototype focuses on the release gap demonstrated by this portfolio:
+The v0.3 prototype focuses on the release gap demonstrated by this portfolio:
 source tests can pass while an installed command, JSON shape, or documented
 policy exit has regressed.
 
@@ -51,6 +51,11 @@ Python import-leak variables removed. Cases default to exit 0, and repeated
 `stdout_contains` and `stderr_contains` fragments plus top-level scalar JSON
 fields are supported.
 
+Each case runs in a distinct process group. On timeout, WheelContract terminates
+the full group, waits for a short fixed grace period, then force-kills residual
+descendants before removing the disposable environment. Unix uses session and
+process-group signals; Windows uses native process-tree termination.
+
 The runner executes every case and reports every failure. Exit 0 means all
 contracts passed, 1 means behavior differed, and 2 means the manifest, build, or
 installation was invalid. Output beyond `max_output_bytes` fails the case and is
@@ -74,6 +79,8 @@ strings, integers, booleans, and string arrays.
 - One Python project or wheel and one disposable environment per contract.
 - No dependency resolution, environment matrix, shell, hooks, or arbitrary
   working-directory configuration.
+- Process-tree cleanup applies to timed-out cases; commands that intentionally
+  daemonize and exit successfully are outside the contract model.
 - JSON assertions address top-level scalar fields only.
 - Build isolation is disabled, so the invoking interpreter must already provide
   the project's declared build backend.

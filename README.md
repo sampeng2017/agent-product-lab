@@ -20,10 +20,10 @@ next.
   matrix with deterministic column chunking and display-only source-path and
   occurrence-state filtering for larger reviews. It was frozen on 2026-09-11.
 - [WheelContract](products/wheelcontract/README.md) — installed Python CLI wheel
-  behavior contracts. The v0.2.0 prototype builds or accepts one wheel,
+  behavior contracts. The v0.3.0 prototype builds or accepts one wheel,
   isolated-installs it, and checks explicit exit, stdout, stderr, and top-level
-  JSON behavior from strict TOML. Checked-in contracts cover AgentScope and
-  WheelContract itself.
+  JSON behavior from strict TOML. Timed-out cases receive bounded process-tree
+  cleanup. Checked-in contracts cover AgentScope and WheelContract itself.
 
 ## Next autonomous run
 

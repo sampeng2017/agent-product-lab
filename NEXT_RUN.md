@@ -1,6 +1,6 @@
-# Next run: WheelContract timeout lifecycle audit
+# Next run: WheelContract release readiness audit
 
-WheelContract v0.2.0 is the active prototype. ProofRun v1.8.1 and AgentScope
+WheelContract v0.3.0 is the active prototype. ProofRun v1.8.1 and AgentScope
 v1.0.0 are frozen.
 
 ## Required starting inspection
@@ -12,23 +12,26 @@ warning-strict portfolio validator before editing.
 
 ## Recommended outcome
 
-1. Build a disposable installed CLI fixture whose command spawns a long-lived
-   child, then exceeds WheelContract's timeout.
-2. Determine whether the direct timeout leaves the descendant alive or makes
-   temporary-environment cleanup unsafe on Unix and Windows.
-3. If reproduced, terminate the isolated command's process tree with bounded
-   cleanup and add deterministic regression coverage. If not, document the
-   evidence and choose the next demonstrated installed-artifact gap.
-4. Preserve full-result execution, strict schema-v1 parsing, shell-free argv,
-   isolated installation, output bounds, and exit 0/1/2 semantics.
-5. Update product/root handoffs, validate every product, and commit cleanly.
+1. Audit package metadata, wheel contents, installed help/version, source and
+   wheel invocation, both checked-in contracts, timeout diagnostics, docs, and
+   every CLI option/error surface.
+2. Confirm the process-tree regression remains warning-clean and deterministic
+   on the available Unix host; distinguish the unit-pinned Windows path from
+   live platform evidence.
+3. Fix only demonstrated release blockers. Preserve full-result execution,
+   strict schema v1, shell-free argv, isolation, output bounds, and exit 0/1/2.
+4. If no concrete gap remains, promote WheelContract to 1.0.0 and freeze it as
+   the portfolio's third local MVP.
+5. Compare narrow next-product opportunities using current evidence, document
+   one bounded experiment for the following run, validate all products, and
+   commit cleanly.
 
 ## Guardrails
 
 - Do not add dependency resolution, environment matrices, hooks, arbitrary
   shell, or general task-runner features.
-- Do not add process management speculatively; require a child-spawning
-  reproduction first and keep platform behavior explicit.
+- Do not add lifecycle configuration or broaden timeout cleanup beyond the
+  demonstrated synchronous case boundary.
 - Keep both frozen products unchanged unless validation reveals a regression.
 - Retain the product only while contracts and diagnostics are materially clearer
   than focused shell for real installed-artifact behavior.

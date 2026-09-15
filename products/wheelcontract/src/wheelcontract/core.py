@@ -3,9 +3,11 @@ from __future__ import annotations
 import ast
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -14,6 +16,10 @@ try:
     import tomllib
 except ModuleNotFoundError:  # pragma: no cover - exercised through fallback tests
     tomllib = None
+
+
+_TERMINATION_GRACE_SECONDS = 0.5
+_WINDOWS_TASKKILL_TIMEOUT_SECONDS = 5
 
 
 class ContractError(ValueError):
@@ -250,19 +256,24 @@ def _run_case(
     timed_out = False
     exit_code: int | None = None
     with stdout_path.open("wb") as stdout_file, stderr_path.open("wb") as stderr_file:
+        process_options: dict[str, Any]
+        if os.name == "nt":
+            process_options = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+        else:
+            process_options = {"start_new_session": True}
+        process = subprocess.Popen(
+            argv,
+            cwd=work,
+            env=environment_variables,
+            stdout=stdout_file,
+            stderr=stderr_file,
+            **process_options,
+        )
         try:
-            completed = subprocess.run(
-                argv,
-                cwd=work,
-                env=environment_variables,
-                stdout=stdout_file,
-                stderr=stderr_file,
-                timeout=contract.timeout_seconds,
-                check=False,
-            )
-            exit_code = completed.returncode
+            exit_code = process.wait(timeout=contract.timeout_seconds)
         except subprocess.TimeoutExpired:
             timed_out = True
+            _terminate_process_tree(process)
     stdout, stdout_size = _read_bounded(stdout_path, contract.max_output_bytes)
     stderr, stderr_size = _read_bounded(stderr_path, contract.max_output_bytes)
     errors: list[str] = []
@@ -308,6 +319,46 @@ def _run_case(
         stdout=stdout,
         stderr=stderr,
     )
+
+
+def _terminate_process_tree(process: subprocess.Popen[Any]) -> None:
+    if os.name == "nt":
+        try:
+            subprocess.run(
+                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=_WINDOWS_TASKKILL_TIMEOUT_SECONDS,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            process.kill()
+        _reap_process(process)
+        return
+
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except OSError:
+        pass
+    # Keep the direct child unreaped during the grace period so its process-group
+    # identifier cannot be recycled before residual descendants receive SIGKILL.
+    time.sleep(_TERMINATION_GRACE_SECONDS)
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except OSError:
+        pass
+    _reap_process(process)
+
+
+def _reap_process(process: subprocess.Popen[Any]) -> None:
+    try:
+        process.wait(timeout=_TERMINATION_GRACE_SECONDS)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        try:
+            process.wait(timeout=_TERMINATION_GRACE_SECONDS)
+        except subprocess.TimeoutExpired:
+            pass
 
 
 def _installed_command(environment: Path, name: str) -> Path | None:

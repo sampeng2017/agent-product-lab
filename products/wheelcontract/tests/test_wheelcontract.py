@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import io
 import tempfile
+import time
 import unittest
 import zipfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import wheelcontract.core
 from wheelcontract.cli import main
@@ -22,8 +23,16 @@ class WheelContractTests(unittest.TestCase):
             archive.writestr("fixture_cli/__init__.py", "")
             archive.writestr(
                 "fixture_cli/__main__.py",
-                "import json, sys\n"
+                "import json, pathlib, subprocess, sys, time\n"
                 "if '--large' in sys.argv:\n    print('x' * 200)\n"
+                "elif '--spawn-child' in sys.argv:\n"
+                "    marker = sys.argv[sys.argv.index('--spawn-child') + 1]\n"
+                "    child = subprocess.Popen([sys.executable, '-c', "
+                "'import pathlib, signal, sys, time; '"
+                "'signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(2); '"
+                "'pathlib.Path(sys.argv[1]).write_text(\"survived\")', "
+                "marker])\n"
+                "    time.sleep(60)\n"
                 "elif '--error' in sys.argv:\n"
                 "    print('fixture warning', file=sys.stderr)\n"
                 "    raise SystemExit(4)\n"
@@ -141,6 +150,48 @@ argv = ["python", "-m", "fixture_cli", "--large"]
         self.assertFalse(result.passed)
         self.assertIn("stdout was 201 bytes; limit is 32", result.errors)
         self.assertEqual(len(result.stdout.encode()), 32)
+
+    def test_timeout_terminates_spawned_children(self) -> None:
+        marker = self.root / "child-survived"
+        manifest = self.write_contract(
+            f"""
+[[case]]
+name = "spawn-timeout"
+argv = ["python", "-m", "fixture_cli", "--spawn-child", {str(marker)!r}]
+"""
+        )
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace(
+                "timeout_seconds = 10", "timeout_seconds = 1"
+            ),
+            encoding="utf-8",
+        )
+
+        result = run_contract(load_contract(manifest))[0]
+        time.sleep(1.5)
+
+        self.assertFalse(result.passed)
+        self.assertIn("timed out after 1s", result.errors)
+        self.assertFalse(marker.exists(), "timed-out descendant survived")
+
+    def test_windows_timeout_uses_native_tree_termination(self) -> None:
+        process = Mock(pid=1234)
+        process.wait.return_value = 1
+
+        with (
+            patch.object(wheelcontract.core.os, "name", "nt"),
+            patch.object(wheelcontract.core.subprocess, "run") as run,
+        ):
+            wheelcontract.core._terminate_process_tree(process)
+
+        run.assert_called_once_with(
+            ["taskkill", "/PID", "1234", "/T", "/F"],
+            stdout=wheelcontract.core.subprocess.DEVNULL,
+            stderr=wheelcontract.core.subprocess.DEVNULL,
+            timeout=5,
+            check=False,
+        )
+        process.wait.assert_called_once_with(timeout=0.5)
 
     def test_rejects_unknown_fields_and_unsafe_command_paths(self) -> None:
         manifest = self.write_contract(

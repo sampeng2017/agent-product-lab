@@ -1502,3 +1502,33 @@ isolated-installed, both contracts passed, and compilation, shell syntax, and
 diff checks were clean. The next run should probe timeout behavior with a
 child-spawning installed command and add process-tree cleanup only if a real
 descendant lifecycle problem is reproduced.
+
+## 2026-09-14 — WheelContract v0.3.0 process-tree cleanup
+
+Continued WheelContract after inspecting the clean Git state and history,
+automation memory, root/product handoffs, active `To-Sam/` messages, the full
+implementation and test surface, both contracts, and portfolio validation. No
+Sam request was active. The warning-strict Python 3.11 baseline passed all 6
+WheelContract, 48 AgentScope, and 53 ProofRun tests with one expected skip.
+
+A new disposable installed-wheel case spawned a delayed child and then exceeded
+its one-second timeout. The existing `subprocess.run` behavior killed only the
+direct command: the descendant survived the contract and wrote its marker. This
+reproduced the lifecycle gap before implementation changed.
+
+WheelContract v0.3.0 now starts every case in an isolated process group. A Unix
+timeout sends graceful termination to the group, retains the leader through a
+fixed half-second grace so the group identifier cannot be recycled, force-kills
+residual descendants, and reaps the direct child with bounded waits. Windows
+starts a new process group and invokes native `/T /F` tree termination with a
+five-second bound plus direct-process fallback. The end-to-end regression uses
+a child that ignores graceful termination and confirms it cannot write after the
+contract returns; a separate mock-backed test pins the Windows invocation. No
+manifest, schema, CLI, diagnostic, or exit-code surface changed.
+
+Final warning-strict Python 3.11 portfolio validation passed all 8 WheelContract,
+48 AgentScope, and 53 ProofRun tests with one expected skip. All three wheels
+built and isolated-installed, the three-case WheelContract self-contract and
+six-case AgentScope contract passed, and compilation and diff checks were clean.
+No human input is needed. The next run should perform a release-readiness audit
+and promote/freeze WheelContract only if no concrete blocker remains.
