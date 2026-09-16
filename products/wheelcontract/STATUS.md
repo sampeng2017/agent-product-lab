@@ -1,49 +1,65 @@
 # WheelContract status
 
-## Current shape
+## Product shape
 
-WheelContract v0.3.0 is a dependency-free prototype for Python CLI maintainers.
-It builds or accepts one wheel, installs it without dependencies in a disposable
-virtual environment, and checks explicit installed command behavior.
+WheelContract v1.0.0 is a frozen, dependency-free local MVP for Python CLI
+maintainers. It builds or accepts one wheel, installs it without dependencies in
+a disposable virtual environment, and checks explicit installed command
+behavior from strict schema-v1 TOML.
 
-## Implemented
+## Completed on 2026-09-15
 
-- Strict schema-v1 TOML with one artifact and ordered cases.
-- Exact exit, bounded stdout/stderr substring, and top-level scalar JSON
-  assertions.
-- Isolated execution with checkout import variables removed, no shell, case
-  timeouts, complete result reporting, and distinct contract/setup exit 2.
+- Audited package metadata, wheel contents, source and installed invocation,
+  help/version, default and explicit manifests, both checked-in contracts,
+  failure/setup exits, output bounds, and timeout diagnostics.
+- Made `--wheel` reject directories, missing paths, and non-wheel files instead
+  of silently treating a project directory as a build source.
+- Made the Python 3.10 fallback reject duplicate keys and sections consistently
+  with Python 3.11+'s standard TOML parser.
+- Added focused regressions for both release blockers and promoted the product
+  from v0.3.0 to v1.0.0 without changing schema v1.
+
+## Stable boundary
+
+- One Python project or one existing wheel and one disposable environment per
+  contract.
+- Ordered, shell-free argument vectors with exact exit, bounded stdout/stderr
+  fragments, and top-level scalar JSON assertions.
+- Isolated execution with checkout import variables removed, complete result
+  reporting, and distinct behavior exit 1 versus contract/setup exit 2.
 - Bounded process-tree cleanup for timed-out cases: graceful then forced process
-  group termination on Unix and native `/T /F` tree termination on Windows.
-- Python 3.10 fallback parsing for the documented zero-dependency schema.
-- A compact installed self-contract covering version, help, and a stable stderr
-  diagnostic; portfolio validation runs it before the AgentScope contract.
-
-## Lifecycle finding
-
-The previous direct-child timeout left a spawned installed-wheel descendant
-alive long enough to write after the contract returned. The regression uses a
-child that ignores graceful termination; v0.3.0 isolates each case and escalates
-to a forced group kill before temporary cleanup. The behavior is exercised end
-to end on macOS/Unix, and the Windows native tree-termination invocation is
-pinned separately because no Windows host is available locally.
+  group termination on Unix and native `/T /F` termination on Windows.
 
 ## Known limits
 
-- Only installed entry points and the environment's `python` can be invoked.
-- No dependency installation, build isolation, nested JSON paths, output regex,
+- No dependency installation, build isolation, environment matrix, hooks,
+  arbitrary shell, configurable working directory, nested JSON paths, regexes,
   parallel cases, or retained environments.
 - Output is bounded for reading and diagnostics, but child output is first
   spooled to disposable files.
 - Successful commands that intentionally daemonize are outside the synchronous
   contract model; only timeout cleanup owns an entire process tree.
-- Windows tree cleanup is unit-covered but has not yet had a live Windows
-  child-spawning run; hosted portfolio CI is Ubuntu-only.
+- Unix child cleanup is live-tested on macOS and will run in hosted Ubuntu CI
+  when a remote is available. Windows cleanup is unit-pinned, not live-tested.
 
-## Next decision
+## Decisions
 
-Retain the product after fixing a demonstrated installed-process safety defect
-without expanding the manifest or task-runner scope. Next, perform a release
-readiness audit across package metadata, wheel contents, installed help/version,
-both real contracts, timeout diagnostics, and documentation. Promote and freeze
-the product only if that audit finds no concrete gap.
+- Freeze WheelContract at v1.0.0 and preserve schema v1 plus exit 0/1/2.
+- Keep the explicit installed-artifact focus; do not turn it into a general task
+  runner or tox/nox replacement.
+- Resume work only for a reproducible installed-artifact defect.
+
+## Validation
+
+- Warning-strict Python 3.11 validation passes all 10 focused tests.
+- The built wheel contains only package modules, license, entry point, and
+  standard distribution metadata; metadata reports version 1.0.0 and Python
+  3.10+.
+- Portfolio validation builds and isolated-installs all three products, passes
+  the WheelContract self-contract and six-case AgentScope contract, and retains
+  one expected optional ProofRun skip.
+
+## Recommended next step
+
+Leave WheelContract frozen. Run the bounded release-fact consistency experiment
+described at the repository root; reopen only for a concrete regression.

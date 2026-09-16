@@ -35,7 +35,12 @@ def main(argv: list[str] | None = None) -> int:
     try:
         contract = load_contract(Path(args.manifest))
         if args.wheel is not None:
-            contract = replace(contract, artifact_source=args.wheel.resolve())
+            wheel = args.wheel.resolve()
+            if not wheel.is_file() or wheel.suffix != ".whl":
+                raise ContractError(
+                    f"--wheel must name an existing .whl file: {args.wheel}"
+                )
+            contract = replace(contract, artifact_source=wheel)
         results = run_contract(contract)
     except ContractError as exc:
         print(f"wheelcontract: error: {exc}", file=sys.stderr)

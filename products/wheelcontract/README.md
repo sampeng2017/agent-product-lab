@@ -5,7 +5,7 @@ wheel. It builds a local project or accepts an existing `.whl`, installs that
 single artifact without dependencies in a disposable virtual environment, and
 runs explicit argument vectors from a small TOML contract.
 
-The v0.3 prototype focuses on the release gap demonstrated by this portfolio:
+The v1.0 local MVP focuses on the release gap demonstrated by this portfolio:
 source tests can pass while an installed command, JSON shape, or documented
 policy exit has regressed.
 
@@ -70,9 +70,11 @@ PYTHONPATH=src python3 -m wheelcontract wheelcontract.toml
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
-Python 3.11+ uses the standard TOML parser. The Python 3.10 zero-dependency
-fallback intentionally accepts only this documented schema and ordinary quoted
-strings, integers, booleans, and string arrays.
+`--wheel` requires one existing `.whl` file; it never interprets a project
+directory as an override. Python 3.11+ uses the standard TOML parser. The Python
+3.10 zero-dependency fallback intentionally accepts only this documented schema
+and ordinary quoted strings, integers, booleans, and string arrays. It rejects
+duplicate keys and sections consistently with the standard parser.
 
 ## Deliberate limits
 
@@ -86,7 +88,13 @@ strings, integers, booleans, and string arrays.
   the project's declared build backend.
 
 These boundaries keep WheelContract an artifact behavior check rather than a
-tox/nox replacement. The prototype should continue only if real dogfooding
-shows its contract and diagnostics remain clearer than bespoke CI scripting.
-This repository exercises both the six-case AgentScope contract at the portfolio
-root and the compact three-case self-contract in this directory.
+tox/nox replacement. This repository exercises both the six-case AgentScope
+contract at the portfolio root and the compact three-case self-contract in this
+directory.
+
+## Maintenance status
+
+WheelContract v1.0.0 is a frozen local MVP. Its schema-v1 contract, exit
+semantics, and synchronous process-lifecycle boundary remain stable. Resume
+feature work only for a reproduced installed-artifact defect; use the focused
+suite and portfolio validator as the release contract.

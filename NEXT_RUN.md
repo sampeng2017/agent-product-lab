@@ -1,37 +1,33 @@
-# Next run: WheelContract release readiness audit
+# Next run: ReleaseFact bounded prototype
 
-WheelContract v0.3.0 is the active prototype. ProofRun v1.8.1 and AgentScope
-v1.0.0 are frozen.
+WheelContract v1.0.0, AgentScope v1.0.0, and ProofRun v1.8.1 are frozen local
+MVPs.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, WheelContract's README and STATUS, implementation, tests, both
-contracts, and portfolio validation. Check Git status/history and rerun the
-warning-strict portfolio validator before editing.
+messages, and `products/NEXT_PRODUCT_OPPORTUNITIES.md`. Check Git status/history
+and rerun the warning-strict portfolio validator before editing.
 
-## Recommended outcome
+## Bounded experiment
 
-1. Audit package metadata, wheel contents, installed help/version, source and
-   wheel invocation, both checked-in contracts, timeout diagnostics, docs, and
-   every CLI option/error surface.
-2. Confirm the process-tree regression remains warning-clean and deterministic
-   on the available Unix host; distinguish the unit-pinned Windows path from
-   live platform evidence.
-3. Fix only demonstrated release blockers. Preserve full-result execution,
-   strict schema v1, shell-free argv, isolation, output bounds, and exit 0/1/2.
-4. If no concrete gap remains, promote WheelContract to 1.0.0 and freeze it as
-   the portfolio's third local MVP.
-5. Compare narrow next-product opportunities using current evidence, document
-   one bounded experiment for the following run, validate all products, and
-   commit cleanly.
+Prototype `products/releasefact/` as a read-only checker for one demonstrated
+problem: a canonical version in `pyproject.toml` disagrees with explicit current
+version claims in selected source, contract, or documentation files.
+
+1. Start with a fixture modeled on the stale WheelContract v0.1.0 portfolio
+   claim discovered during the 2026-09-15 release audit.
+2. Support one canonical TOML value and explicit, deterministic file claims;
+   report every mismatch in one run and distinguish invalid setup from drift.
+3. Compare the manifest and diagnostics with a focused `rg`/shell equivalent.
+4. Retain the product only if it materially improves clarity or complete
+   diagnosis. Otherwise document the negative result and select another narrow
+   opportunity.
 
 ## Guardrails
 
-- Do not add dependency resolution, environment matrices, hooks, arbitrary
-  shell, or general task-runner features.
-- Do not add lifecycle configuration or broaden timeout cleanup beyond the
-  demonstrated synchronous case boundary.
-- Keep both frozen products unchanged unless validation reveals a regression.
-- Retain the product only while contracts and diagnostics are materially clearer
-  than focused shell for real installed-artifact behavior.
+- Do not reopen the three frozen products unless validation reveals a defect.
+- Do not auto-edit files, infer historical version mentions, publish artifacts,
+  or become a general regex/config synchronization engine.
+- Prefer a disposable fixture before dogfooding on repository files.
+- Keep the prototype dependency-free and credential-free.

@@ -234,6 +234,55 @@ ready = true
         )
         self.assertEqual(contract.cases[0].stderr_contains, ("warning",))
 
+    def test_python_310_fallback_rejects_duplicate_keys_and_sections(self) -> None:
+        manifest = self.write_contract(
+            """
+[[case]]
+name = "json"
+name = "duplicate"
+argv = ["python", "-m", "fixture_cli"]
+"""
+        )
+
+        with (
+            patch.object(wheelcontract.core, "tomllib", None),
+            self.assertRaisesRegex(ContractError, "duplicate key 'name'"),
+        ):
+            load_contract(manifest)
+
+        manifest.write_text(
+            manifest.read_text(encoding="utf-8").replace(
+                'name = "duplicate"\n', "[case.json]\n[case.json]\n"
+            ),
+            encoding="utf-8",
+        )
+        with (
+            patch.object(wheelcontract.core, "tomllib", None),
+            self.assertRaisesRegex(ContractError, "duplicate section \\[case.json\\]"),
+        ):
+            load_contract(manifest)
+
+    def test_wheel_override_requires_an_existing_wheel_file(self) -> None:
+        manifest = self.write_contract(
+            """
+[[case]]
+name = "human"
+argv = ["python", "-m", "fixture_cli"]
+"""
+        )
+
+        for override in (self.root, self.root / "missing.whl", manifest):
+            with self.subTest(override=override):
+                output = io.StringIO()
+                error = io.StringIO()
+                with redirect_stdout(output), redirect_stderr(error):
+                    exit_code = main(["--wheel", str(override), str(manifest)])
+                self.assertEqual(exit_code, 2)
+                self.assertEqual(output.getvalue(), "")
+                self.assertIn(
+                    "--wheel must name an existing .whl file", error.getvalue()
+                )
+
     def test_distinguishes_missing_command_from_setup_failure(self) -> None:
         manifest = self.write_contract(
             """

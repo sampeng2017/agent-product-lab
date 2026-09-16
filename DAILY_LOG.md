@@ -1532,3 +1532,46 @@ built and isolated-installed, the three-case WheelContract self-contract and
 six-case AgentScope contract passed, and compilation and diff checks were clean.
 No human input is needed. The next run should perform a release-readiness audit
 and promote/freeze WheelContract only if no concrete blocker remains.
+
+## 2026-09-15 — WheelContract v1.0.0 release freeze
+
+Continued WheelContract after inspecting the clean Git state and history,
+automation memory, root/product handoffs, active `To-Sam/` messages, the full
+implementation and test surface, both contracts, packaging, and portfolio
+validation. No Sam request was active. The required warning-strict Python 3.11
+baseline passed all 8 WheelContract, 48 AgentScope, and 53 ProofRun tests with
+one expected optional skip.
+
+The release audit exercised metadata, wheel contents, source and installed
+invocation, help/version, default and explicit manifests, behavior versus setup
+exits, bounded output, failure diagnostics, and Unix child-spawning timeout
+cleanup. It found two concrete blockers. First, `--wheel` accepted a project
+directory and silently built it even though the option promises a prebuilt
+wheel. Second, the Python 3.10 fallback accepted duplicate TOML keys and
+sections that Python 3.11+'s standard parser rejects. WheelContract now requires
+one existing `.whl` override and rejects fallback duplicates consistently.
+Focused regression coverage grew from 8 to 10 tests; schema v1, assertion
+behavior, synchronous lifecycle ownership, and exit 0/1/2 remain unchanged.
+
+The audit wheel contains only the intended four package modules, license, entry
+point, and standard metadata. Name, version, Python requirement, license,
+summary, help, and version are correct. The stale WheelContract v0.1.0 claim in
+`products/README.md` was also corrected. With no blocker remaining,
+WheelContract was promoted from v0.3.0 to v1.0.0 and frozen as the portfolio's
+third local MVP.
+
+Current repository evidence was used to compare four next-product options. A
+bounded `ReleaseFact` consistency experiment was selected because today's stale
+portfolio version claim demonstrated the problem directly. The next run should
+prototype one canonical TOML version plus explicit read-only file claims in a
+disposable fixture and retain it only if the config and all-mismatch report are
+clearer than focused `rg`/shell. Documentation examples, cross-platform cleanup
+coordination, and output-disk limiting were rejected as overlapping, externally
+blocked, or speculative.
+
+Final warning-strict Python 3.11 portfolio validation passed all 10
+WheelContract, 48 AgentScope, and 53 ProofRun tests with one expected skip. All
+three wheels built and isolated-installed, the three-case WheelContract
+self-contract and six-case AgentScope contract passed, compilation was clean,
+and no human input is needed. A post-commit ProofRun pass also completed with a
+valid sealed receipt and applicable named `unit` evidence.

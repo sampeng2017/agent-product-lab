@@ -71,7 +71,58 @@ a one-off assertion framework. Continue WheelContract narrowly, using real
 contract diagnostics as the evidence for the next feature rather than expanding
 into general environment orchestration.
 
-## Sources inspected
+## Next-product comparison — 2026-09-15
+
+WheelContract's v1.0.0 audit supplied fresh repository-local evidence for the
+next choice. The comparison favors a bounded, credential-free experiment over
+reopening any frozen product.
+
+### Candidate 1: release-fact consistency checker — selected
+
+- **Demonstrated pain:** `products/README.md` still called WheelContract an
+  active v0.1.0 prototype after the implementation, package metadata, contract,
+  root README, and status had advanced to v0.3.0.
+- **Smallest useful wedge:** read one canonical version from project TOML and
+  verify explicit current-version claims in a short allowlist of source,
+  contract, and documentation files; report all drift without editing.
+- **Decision test:** retain it only if its declaration and complete diagnostics
+  are materially clearer than focused `rg` plus shell comparisons.
+- **Principal risk:** configurable text matching becomes a generic regex engine
+  or adds more maintenance than the drift it prevents.
+
+### Candidate 2: documentation command-example executor
+
+- **Evidence:** all three products expose multiple README commands, but their
+  focused suites and installed behavior contracts already cover the important
+  surfaces.
+- **Why not selected:** reliable example execution would need per-snippet setup,
+  fixtures, and skip semantics, quickly overlapping WheelContract and general
+  documentation-test tools.
+
+### Candidate 3: cross-platform process-cleanup probe
+
+- **Evidence:** WheelContract's Windows process-tree path is unit-pinned but not
+  live-tested, while macOS is live-tested and Ubuntu CI is configured.
+- **Why not selected:** the missing evidence requires a Windows runner or remote
+  CI rather than a distinct local product; the repository currently has neither.
+
+### Candidate 4: temporary-output disk limiter
+
+- **Evidence:** WheelContract bounds reads and diagnostics but spools child
+  output to temporary files before reading.
+- **Why not selected:** no real contract has demonstrated problematic disk use,
+  and a robust cross-platform streaming limiter would reopen a frozen product
+  for speculative complexity.
+
+### Selected experiment
+
+Prototype `ReleaseFact` against a disposable fixture modeled on today's stale
+portfolio claim. Keep the first slice read-only: one canonical TOML value,
+explicit file claims, deterministic all-mismatch output, and separate drift
+versus invalid-setup exits. Do not dogfood or retain it until comparison with the
+equivalent shell demonstrates a clarity or diagnostic advantage.
+
+## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)
   — wheels are install artifacts whose contents can be inspected directly.

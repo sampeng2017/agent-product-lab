@@ -422,31 +422,43 @@ def _parse_toml_fallback(text: str) -> dict[str, Any]:
             continue
         if line == "[artifact]" or line == "[run]":
             name = line[1:-1]
-            current = data.setdefault(name, {})
+            if name in data:
+                raise ValueError(f"duplicate section {line} on line {line_number}")
+            current = {}
+            data[name] = current
             continue
         if line == "[[case]]":
             current_case = {}
-            data.setdefault("case", []).append(current_case)
+            raw_cases = data.setdefault("case", [])
+            if not isinstance(raw_cases, list):
+                raise ValueError(f"duplicate key 'case' on line {line_number}")
+            raw_cases.append(current_case)
             current = current_case
             continue
         if line == "[case.json]":
             if current_case is None:
                 raise ValueError(f"[case.json] before [[case]] on line {line_number}")
-            current = current_case.setdefault("json", {})
+            if "json" in current_case:
+                raise ValueError(f"duplicate section [case.json] on line {line_number}")
+            current = {}
+            current_case["json"] = current
             continue
         if line.startswith("["):
             raise ValueError(f"unsupported section on line {line_number}: {line}")
         key, separator, raw_value = line.partition("=")
         if not separator or not key.strip():
             raise ValueError(f"invalid assignment on line {line_number}")
+        key = key.strip()
+        if key in current:
+            raise ValueError(f"duplicate key {key!r} on line {line_number}")
         value = raw_value.strip()
         if value == "true":
-            current[key.strip()] = True
+            current[key] = True
         elif value == "false":
-            current[key.strip()] = False
+            current[key] = False
         else:
             try:
-                current[key.strip()] = ast.literal_eval(value)
+                current[key] = ast.literal_eval(value)
             except (SyntaxError, ValueError) as exc:
                 raise ValueError(f"invalid value on line {line_number}") from exc
     return data

@@ -20,16 +20,19 @@ next.
   matrix with deterministic column chunking and display-only source-path and
   occurrence-state filtering for larger reviews. It was frozen on 2026-09-11.
 - [WheelContract](products/wheelcontract/README.md) — installed Python CLI wheel
-  behavior contracts. The v0.3.0 prototype builds or accepts one wheel,
+  behavior contracts. The v1.0.0 local MVP builds or accepts one wheel,
   isolated-installs it, and checks explicit exit, stdout, stderr, and top-level
   JSON behavior from strict TOML. Timed-out cases receive bounded process-tree
-  cleanup. Checked-in contracts cover AgentScope and WheelContract itself.
+  cleanup. Checked-in contracts cover AgentScope and WheelContract itself. It
+  was frozen on 2026-09-15.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). ProofRun and
-AgentScope are frozen. WheelContract is the active prototype; portfolio
-validation runs its installed self-contract and the AgentScope behavior contract.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All three local
+MVPs are frozen. The next bounded experiment is a release-fact consistency
+checker motivated by version drift found during WheelContract's release audit;
+portfolio validation still runs WheelContract's installed self-contract and the
+AgentScope behavior contract.
 
 ## Portfolio validation
 

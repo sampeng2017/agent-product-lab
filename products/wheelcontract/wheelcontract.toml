@@ -10,7 +10,7 @@ max_output_bytes = 65536
 [[case]]
 name = "version"
 argv = ["wheelcontract", "--version"]
-stdout_contains = ["wheelcontract 0.3.0"]
+stdout_contains = ["wheelcontract 1.0.0"]
 
 [[case]]
 name = "missing-contract-error"
