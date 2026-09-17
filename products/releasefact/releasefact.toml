@@ -1,0 +1,20 @@
+schema_version = 1
+
+[canonical]
+file = "pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "runtime version"
+file = "src/releasefact/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "readme release"
+file = "README.md"
+template = "ReleaseFact v{version} is a dependency-free, read-only prototype for Python"
+
+[[claim]]
+name = "status release"
+file = "STATUS.md"
+template = "ReleaseFact v{version} is an active bounded prototype."

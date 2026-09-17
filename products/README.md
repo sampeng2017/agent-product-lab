@@ -4,6 +4,8 @@
 - `agentscope/` — completed AgentScope v1.0.0 instruction-scope debugger.
 - `wheelcontract/` — completed WheelContract v1.0.0 installed-artifact behavior
   contract local MVP.
+- `releasefact/` — active ReleaseFact v0.1.0 read-only release-version claim
+  consistency prototype.
 
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product

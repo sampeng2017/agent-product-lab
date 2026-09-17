@@ -1,33 +1,29 @@
-# Next run: ReleaseFact bounded prototype
+# Next run: ReleaseFact release rehearsal
 
-WheelContract v1.0.0, AgentScope v1.0.0, and ProofRun v1.8.1 are frozen local
-MVPs.
+ProofRun v1.8.1, AgentScope v1.0.0, and WheelContract v1.0.0 are frozen local
+MVPs. ReleaseFact v0.1.0 is the active retained prototype.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, and `products/NEXT_PRODUCT_OPPORTUNITIES.md`. Check Git status/history
-and rerun the warning-strict portfolio validator before editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, and the complete ReleaseFact
+implementation/tests/docs. Check Git status/history and rerun the warning-strict
+portfolio validator before editing.
 
-## Bounded experiment
+## Bounded next experiment
 
-Prototype `products/releasefact/` as a read-only checker for one demonstrated
-problem: a canonical version in `pyproject.toml` disagrees with explicit current
-version claims in selected source, contract, or documentation files.
+Exercise a ReleaseFact version bump in a disposable copy of the repository:
 
-1. Start with a fixture modeled on the stale WheelContract v0.1.0 portfolio
-   claim discovered during the 2026-09-15 release audit.
-2. Support one canonical TOML value and explicit, deterministic file claims;
-   report every mismatch in one run and distinguish invalid setup from drift.
-3. Compare the manifest and diagnostics with a focused `rg`/shell equivalent.
-4. Retain the product only if it materially improves clarity or complete
-   diagnosis. Otherwise document the negative result and select another narrow
-   opportunity.
+1. Change only the canonical version and capture the seven-claim drift report.
+2. Follow that report to update the declared claims, then confirm a clean pass.
+3. Record whether any diagnostic is ambiguous, redundant, or missing.
+4. Add behavior only for a reproduced gap. If the contract already guides the
+   release cleanly, keep schema v1 unchanged and focus on release-readiness.
 
 ## Guardrails
 
+- Do not mutate this checkout merely to simulate drift; use a disposable copy.
 - Do not reopen the three frozen products unless validation reveals a defect.
-- Do not auto-edit files, infer historical version mentions, publish artifacts,
-  or become a general regex/config synchronization engine.
-- Prefer a disposable fixture before dogfooding on repository files.
-- Keep the prototype dependency-free and credential-free.
+- Do not add regexes, recursive discovery, automatic rewriting, historical
+  version inference, or a general configuration-synchronization surface.
+- Keep ReleaseFact read-only and preserve exit 0/1/2.

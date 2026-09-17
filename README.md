@@ -25,25 +25,27 @@ next.
   JSON behavior from strict TOML. Timed-out cases receive bounded process-tree
   cleanup. Checked-in contracts cover AgentScope and WheelContract itself. It
   was frozen on 2026-09-15.
+- [ReleaseFact](products/releasefact/README.md) — explicit current release-
+  version consistency. The active prototype is v0.1.0.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All three local
-MVPs are frozen. The next bounded experiment is a release-fact consistency
-checker motivated by version drift found during WheelContract's release audit;
-portfolio validation still runs WheelContract's installed self-contract and the
-AgentScope behavior contract.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The first three
+local MVPs remain frozen. ReleaseFact is the active bounded prototype after its
+fixture and initial repository dogfood demonstrated clearer complete diagnostics
+than focused search/shell.
 
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
-all three products on every supported stable Python line from 3.10 through
+all four products on every supported stable Python line from 3.10 through
 3.14. It runs every unit suite, promotes warnings to errors on the oldest
 supported version, compiles the sources, builds each wheel, and installs each
-artifact in a fresh environment. Installed WheelContract then verifies its own
-version, help, and error behavior before checking AgentScope's human, JSON, and
-policy-exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub
-permissions are read-only and checkout credentials are not retained.
+artifact in a fresh environment. Installed ReleaseFact checks the seven real
+claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
+verifies its own behavior before checking AgentScope's human, JSON, and policy-
+exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub permissions
+are read-only and checkout credentials are not retained.
 
 Run the same validation with the active local interpreter:
 

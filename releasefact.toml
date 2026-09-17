@@ -1,0 +1,40 @@
+schema_version = 1
+
+[canonical]
+file = "products/releasefact/pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "runtime version"
+file = "products/releasefact/src/releasefact/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "product readme"
+file = "products/releasefact/README.md"
+template = "ReleaseFact v{version} is a dependency-free, read-only prototype for Python"
+
+[[claim]]
+name = "product status"
+file = "products/releasefact/STATUS.md"
+template = "ReleaseFact v{version} is an active bounded prototype."
+
+[[claim]]
+name = "portfolio readme"
+file = "README.md"
+template = "  version consistency. The active prototype is v{version}."
+
+[[claim]]
+name = "portfolio status"
+file = "STATUS.md"
+template = "ReleaseFact v{version} is the portfolio's active product experiment."
+
+[[claim]]
+name = "next-run handoff"
+file = "NEXT_RUN.md"
+template = "MVPs. ReleaseFact v{version} is the active retained prototype."
+
+[[claim]]
+name = "product index"
+file = "products/README.md"
+template = "- `releasefact/` — active ReleaseFact v{version} read-only release-version claim"

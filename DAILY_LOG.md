@@ -1575,3 +1575,45 @@ three wheels built and isolated-installed, the three-case WheelContract
 self-contract and six-case AgentScope contract passed, compilation was clean,
 and no human input is needed. A post-commit ProofRun pass also completed with a
 valid sealed receipt and applicable named `unit` evidence.
+
+## 2026-09-16 — ReleaseFact v0.1.0 bounded prototype
+
+Started the selected fourth product after inspecting the clean repository,
+automation memory, root and product handoffs, active `To-Sam/` communications,
+the complete WheelContract implementation and tests, and the portfolio
+validator. No Sam request was active. The required warning-strict Python 3.11
+baseline passed all 10 WheelContract, 48 AgentScope, and 53 ProofRun tests with
+one expected optional skip; all three existing wheels, isolated installs, and
+installed behavior contracts passed.
+
+Built dependency-free ReleaseFact around one canonical dotted TOML string and
+explicit named file claims. Each claim is an exact complete-line template with
+one `{version}` slot and must select exactly one line. The checker reports every
+actual value, expected value, file, and line deterministically; exit 0 means all
+claims match, 1 means drift, and 2 means the contract or selector is invalid.
+Paths stay within the contract directory, unknown fields are rejected, Python
+3.11+ uses `tomllib`, and Python 3.10 has a narrow basic-string fallback.
+
+The first fixture models the stale WheelContract portfolio claim with package
+v0.2.0, installed contract v0.3.0, and documentation v0.1.0 against canonical
+v1.0.0. One run reports all three drifts. Five focused methods cover passing
+order, complete diagnostics, ambiguous selectors, strict/path validation, and
+the fallback. A local three-claim self-contract and root seven-claim real-
+repository contract dogfood package, product docs, and portfolio docs.
+
+The prototype is retained. Although its declaration is slightly longer than
+three searches, equivalent reliable shell must independently extract values,
+continue after mismatches, validate selector cardinality, preserve order,
+separate setup failure, and aggregate output. Centralizing that behavior is a
+material clarity and reuse gain. The portfolio validator now tests, builds, and
+isolated-installs all four products and runs ReleaseFact from its installed
+wheel; the three frozen products were not changed.
+
+Final warning-strict Python 3.11 portfolio validation passed all 5 ReleaseFact,
+10 WheelContract, 48 AgentScope, and 53 ProofRun tests with one expected skip.
+All four wheels built and isolated-installed, the installed seven-claim
+ReleaseFact dogfood and both WheelContract behavior contracts passed, and
+focused Python 3.14 tests, source contracts, help, compilation, shell syntax,
+and diff checks were clean. No human input is needed. The next run should
+rehearse a v0.2 bump in a disposable checkout and change behavior only if the
+diagnostics reveal a concrete gap.

@@ -55,6 +55,9 @@ validate_product() {
     "$environment_dir/bin/$console_command" "$smoke_argument"
 }
 
+validate_product releasefact releasefact --version
+"$validation_temp/environments/releasefact/bin/releasefact" \
+    "$portfolio_root/releasefact.toml"
 validate_product wheelcontract wheelcontract --version
 "$validation_temp/environments/wheelcontract/bin/wheelcontract" \
     --wheel "$validation_temp/wheels/wheelcontract"/*.whl \

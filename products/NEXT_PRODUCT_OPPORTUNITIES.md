@@ -122,6 +122,26 @@ explicit file claims, deterministic all-mismatch output, and separate drift
 versus invalid-setup exits. Do not dogfood or retain it until comparison with the
 equivalent shell demonstrates a clarity or diagnostic advantage.
 
+## Prototype result — 2026-09-16
+
+ReleaseFact v0.1.0 meets the retention threshold. Its schema-v1 contract names
+one canonical TOML string and exact one-line templates with a single version
+slot. A fixture modeled on the stale WheelContract portfolio claim reports three
+different actual versions, expected value, file, and line in one deterministic
+run. Missing or ambiguous selectors are setup exit 2 rather than misleading
+drift exit 1.
+
+The declaration is slightly longer than three focused searches. The equivalent
+reliable shell, however, must also extract values, continue after failures,
+validate selector cardinality, preserve order, distinguish invalid setup, and
+aggregate the result. Centralizing that tested behavior is a material clarity
+and reuse gain. A seven-claim root contract now dogfoods package, product docs,
+and portfolio docs from the installed wheel.
+
+Retain the product narrowly. The next run should rehearse a version bump in a
+disposable checkout and change schema v1 only if that exercise demonstrates a
+specific diagnosis gap.
+
 ## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)

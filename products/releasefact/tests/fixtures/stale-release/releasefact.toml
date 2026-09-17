@@ -1,0 +1,20 @@
+schema_version = 1
+
+[canonical]
+file = "pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "package"
+file = "src/fixture/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "installed contract"
+file = "contract.toml"
+template = "expected_version = \"fixture {version}\""
+
+[[claim]]
+name = "portfolio documentation"
+file = "README.md"
+template = "Fixture CLI v{version} is the current release."
