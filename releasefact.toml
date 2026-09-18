@@ -12,29 +12,29 @@ template = "__version__ = \"{version}\""
 [[claim]]
 name = "product readme"
 file = "products/releasefact/README.md"
-template = "ReleaseFact v{version} is a dependency-free, read-only prototype for Python"
+template = "ReleaseFact v{version} is a dependency-free, read-only local MVP for Python"
 
 [[claim]]
 name = "product status"
 file = "products/releasefact/STATUS.md"
-template = "ReleaseFact v{version} is an active bounded prototype."
+template = "ReleaseFact v{version} is a frozen local MVP."
 
 [[claim]]
 name = "portfolio readme"
 file = "README.md"
-template = "  version consistency. The active prototype is v{version}."
+template = "  version consistency. The v{version} local MVP was frozen on 2026-09-17."
 
 [[claim]]
 name = "portfolio status"
 file = "STATUS.md"
-template = "ReleaseFact v{version} is the portfolio's active product experiment."
+template = "ReleaseFact v{version} is the portfolio's fourth frozen local MVP."
 
 [[claim]]
 name = "next-run handoff"
 file = "NEXT_RUN.md"
-template = "MVPs. ReleaseFact v{version} is the active retained prototype."
+template = "ReleaseFact v{version} is now frozen as the fourth local MVP."
 
 [[claim]]
 name = "product index"
 file = "products/README.md"
-template = "- `releasefact/` — active ReleaseFact v{version} read-only release-version claim"
+template = "- `releasefact/` — completed ReleaseFact v{version} read-only release-version"

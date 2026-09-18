@@ -25,6 +25,7 @@ validate_product() {
     console_command=$2
     smoke_argument=$3
     product_root="$portfolio_root/products/$product_name"
+    build_source="$validation_temp/sources/$product_name"
     wheel_dir="$validation_temp/wheels/$product_name"
     environment_dir="$validation_temp/environments/$product_name"
     pycache_dir="$validation_temp/pycache/$product_name"
@@ -41,12 +42,13 @@ validate_product() {
             "$portfolio_python" -m compileall -q src tests
     )
 
-    mkdir -p "$wheel_dir"
+    mkdir -p "$validation_temp/sources" "$wheel_dir"
+    cp -R "$product_root" "$build_source"
     "$portfolio_python" -m pip wheel \
         --no-deps \
         --no-build-isolation \
         --wheel-dir "$wheel_dir" \
-        "$product_root"
+        "$build_source"
     "$portfolio_python" -m venv "$environment_dir"
     "$environment_dir/bin/python" -m pip install \
         --no-index \

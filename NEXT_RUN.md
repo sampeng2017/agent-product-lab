@@ -1,29 +1,38 @@
-# Next run: ReleaseFact release rehearsal
+# Next run: ignored command-residue experiment
 
-ProofRun v1.8.1, AgentScope v1.0.0, and WheelContract v1.0.0 are frozen local
-MVPs. ReleaseFact v0.1.0 is the active retained prototype.
+ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
+ProofRun v1.8.1, AgentScope v1.0.0, and WheelContract v1.0.0 remain frozen.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, and the complete ReleaseFact
-implementation/tests/docs. Check Git status/history and rerun the warning-strict
-portfolio validator before editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, and the portfolio validator.
+Check Git status/history and rerun warning-strict portfolio validation before
+editing.
 
 ## Bounded next experiment
 
-Exercise a ReleaseFact version bump in a disposable copy of the repository:
+The ReleaseFact audit exposed a concrete blind spot: direct wheel builds updated
+ignored `*.egg-info/` directories while ordinary Git status stayed clean. The
+validator now builds from temporary source copies, but the detection problem may
+be reusable for other commands.
 
-1. Change only the canonical version and capture the seven-claim drift report.
-2. Follow that report to update the declared claims, then confirm a clean pass.
-3. Record whether any diagnostic is ambiguous, redundant, or missing.
-4. Add behavior only for a reproduced gap. If the contract already guides the
-   release cleanly, keep schema v1 unchanged and focus on release-readiness.
+1. Create a disposable fixture with tracked content plus an ignored generated
+   file, and run a command that creates or updates ignored residue.
+2. Prototype the smallest bounded before/after report that names created,
+   modified, and removed paths without modifying the fixture itself.
+3. Compare its declaration, runtime cost, exclusions, and diagnostics with a
+   focused `find` plus hashing shell implementation.
+4. Retain a fifth product only if it materially clarifies this check and can
+   bound traversal, file size, and expected output. Otherwise document why a
+   shell guard is sufficient and choose another repository-evidenced problem.
 
 ## Guardrails
 
-- Do not mutate this checkout merely to simulate drift; use a disposable copy.
-- Do not reopen the three frozen products unless validation reveals a defect.
-- Do not add regexes, recursive discovery, automatic rewriting, historical
-  version inference, or a general configuration-synchronization surface.
-- Keep ReleaseFact read-only and preserve exit 0/1/2.
+- Do not reopen ProofRun merely to absorb the experiment; its Git-state proof
+  model is frozen and intentionally has different semantics.
+- Do not build a sandbox, filesystem watcher, or general task runner.
+- Do not recursively hash dependency/vendor trees without explicit bounds or
+  exclusions.
+- Keep all four completed product behaviors frozen unless validation reveals a
+  concrete defect.

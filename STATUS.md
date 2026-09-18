@@ -2,43 +2,50 @@
 
 ## Current direction
 
-ReleaseFact v0.1.0 is the portfolio's active product experiment.
+ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
-It is retained after the bounded fixture and real-repository dogfood showed that
-an explicit claim allowlist plus complete actual/expected diagnostics is clearer
-and more reusable than bespoke `rg`/shell control flow. ProofRun v1.8.1,
-AgentScope v1.0.0, and WheelContract v1.0.0 remain frozen local MVPs.
+Its disposable release rehearsal and release-readiness audit found no product
+gap: the seven-claim report guided a coordinated bump and caught one initially
+missed documentation update. ProofRun v1.8.1, AgentScope v1.0.0, WheelContract
+v1.0.0, and ReleaseFact v1.0.0 are now frozen.
+
+The next bounded experiment targets a different demonstrated gap: command
+validation can create or refresh ignored files while ordinary Git status remains
+clean. No fifth product exists yet; `NEXT_RUN.md` defines the decision test.
 
 ## Product shape
 
-- `products/releasefact/` contains a dependency-free read-only checker, five
-  focused tests, a stale three-claim fixture, and a local self-contract.
-- Root `releasefact.toml` checks seven real package, product-document, and
-  portfolio-document claims against ReleaseFact's canonical project version.
-- `scripts/validate-portfolio.sh` now tests, builds, and isolated-installs all
-  four products, then runs the installed ReleaseFact and WheelContract checks.
-- The first three products remain frozen and behaviorally unchanged.
+- `products/releasefact/` contains the dependency-free read-only v1.0.0 checker,
+  five focused tests, a stale three-claim fixture, and a local self-contract.
+- Root `releasefact.toml` checks seven package, product-document, and portfolio-
+  document claims against ReleaseFact's canonical project version.
+- `scripts/validate-portfolio.sh` tests, builds, and isolated-installs all four
+  products, then runs installed ReleaseFact and WheelContract contracts.
+- Wheel builds now consume temporary source copies, keeping PEP 517 `build/` and
+  `*.egg-info/` output out of the source checkout.
 
-## Completed today (2026-09-16)
+## Completed today (2026-09-17)
 
-- Ran the warning-strict Python 3.11 baseline: 10 WheelContract, 48 AgentScope,
-  and 53 ProofRun tests passed with one expected optional skip; all wheels and
-  installed contracts passed.
-- Built ReleaseFact v0.1.0 around one canonical dotted TOML string and named
-  exact one-line `{version}` claim templates.
-- Added deterministic all-claim reporting with actual values and line numbers,
-  strict selector cardinality, path containment, schema validation, and exits
-  0/1/2 for success, drift, and invalid setup.
-- Added five focused tests and a fixture modeled on the WheelContract v0.1.0
-  stale portfolio claim. The fixture reports all three independent drifts.
-- Compared the contract with focused search/shell, retained the product, and
-  dogfooded seven real release claims through the installed wheel.
+- Ran the warning-strict Python 3.11 baseline: 5 ReleaseFact, 10 WheelContract,
+  48 AgentScope, and 53 ProofRun tests passed with one expected optional skip;
+  all four wheels and installed contracts passed.
+- Rehearsed a 0.1.0 to 0.2.0 canonical bump in a disposable checkout. ReleaseFact
+  reported all seven drifts precisely, then caught the one claim omitted from
+  the first update attempt before producing a clean pass.
+- Audited ReleaseFact wheel contents and metadata, source and installed CLI,
+  help/version, contracts, exits 0/1/2, documentation, tests, and the Python 3.10
+  fallback. No blocker or behavior gap remained.
+- Promoted ReleaseFact to v1.0.0 and froze its schema-v1 read-only surface.
+- Fixed the portfolio validator to build from temporary source copies after the
+  audit showed direct builds refreshing ignored checkout artifacts despite the
+  validator's clean-checkout claim.
 
 ## Changes since the prior run
 
-The repository now has a fourth product prototype and validates it across the
-same source/build/install pipeline as the frozen products. No behavior, schema,
-or version changed in ProofRun, AgentScope, or WheelContract.
+ReleaseFact advanced from an active v0.1.0 prototype to a frozen v1.0.0 local
+MVP without behavior or schema changes. Portfolio validation no longer writes
+new build metadata into product source directories. The other three frozen
+products remain behaviorally unchanged.
 
 ## Known issues
 
@@ -46,36 +53,41 @@ or version changed in ProofRun, AgentScope, or WheelContract.
   one canonical TOML string; it does not discover, infer, or rewrite claims.
 - Python 3.10 uses a narrow dependency-free reader for the selected canonical
   basic string while 3.11+ uses `tomllib`.
+- Ignored build artifacts from historical validator runs still exist locally;
+  they were left untouched because they may predate this run. Future validation
+  no longer creates or refreshes them.
 - WheelContract retains its documented output-spooling, daemon, and untested
   live Windows cleanup limits.
 - Hosted portfolio CI is Ubuntu-only, and the repository has no Git remote.
 
 ## Decisions
 
-- Retain ReleaseFact because the fixture and installed dogfood met the explicit
-  clarity and complete-diagnosis threshold.
-- Keep schema v1 narrow: no regexes, version semantics, recursive search,
-  historical-mention inference, or write mode.
-- Keep the first three completed products frozen unless validation exposes a
-  concrete regression.
+- Freeze ReleaseFact v1.0.0: the prescribed release rehearsal demonstrated
+  complete, useful diagnostics and no need to expand schema v1.
+- Preserve ReleaseFact's read-only exits 0/1/2 and narrow matching model.
+- Build wheels from temporary source copies so validation fulfills its stated
+  checkout-cleanliness contract.
+- Explore ignored command residue as a separate bounded opportunity rather than
+  reopening ProofRun without evidence that a reusable product is warranted.
 
 ## Validation
 
-- Pre-change warning-strict Python 3.11 portfolio validation passed all frozen
-  product tests, builds, installs, and contracts.
-- Focused ReleaseFact tests, its passing self-contract, its deliberate
-  three-drift fixture, compilation, shell syntax, and diff checks pass.
-- Full post-change warning-strict Python 3.11 portfolio validation passes 5
-  ReleaseFact, 10 WheelContract, 48 AgentScope, and 53 ProofRun tests with one
-  expected optional skip. All four wheels build and isolated-install, the seven-
-  claim ReleaseFact dogfood passes, and both WheelContract contracts pass.
+- Pre-change warning-strict Python 3.11 portfolio validation passed.
+- The disposable seven-claim release rehearsal produced exits 1 then 0 as
+  expected; installed drift and invalid-setup probes produced exits 1 and 2.
+- Release audit verified the intended four modules, license, entry point,
+  metadata, help/version, source/installed contracts, and error surfaces.
+- Post-change warning-strict Python 3.11 validation passed all 116 tests with
+  one expected optional skip, all builds/installs/contracts, shell syntax, both
+  ReleaseFact contracts, and diff checks. Full product-tree hashes were
+  identical before and after the validator.
 
 ## Recommended next steps
 
-1. Exercise a deliberate ReleaseFact bump in a disposable checkout and assess
-   whether the seven-claim diagnostics guide the update without noise.
-2. Add behavior only if that release rehearsal demonstrates a concrete gap;
-   otherwise keep the product narrow and improve documentation or freeze it.
-3. Continue to leave the three earlier products frozen.
+1. Run the bounded ignored-residue experiment in `NEXT_RUN.md` against a small
+   fixture, including a command that updates an already ignored file.
+2. Compare a reusable before/after report with focused `find`/hash shell and
+   abandon the product if it adds no clarity.
+3. Keep all four completed products frozen unless validation exposes a defect.
 
 No human input is required.

@@ -12,9 +12,9 @@ template = "__version__ = \"{version}\""
 [[claim]]
 name = "readme release"
 file = "README.md"
-template = "ReleaseFact v{version} is a dependency-free, read-only prototype for Python"
+template = "ReleaseFact v{version} is a dependency-free, read-only local MVP for Python"
 
 [[claim]]
 name = "status release"
 file = "STATUS.md"
-template = "ReleaseFact v{version} is an active bounded prototype."
+template = "ReleaseFact v{version} is a frozen local MVP."

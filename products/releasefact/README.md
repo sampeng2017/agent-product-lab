@@ -1,6 +1,6 @@
 # ReleaseFact
 
-ReleaseFact v0.1.0 is a dependency-free, read-only prototype for Python
+ReleaseFact v1.0.0 is a dependency-free, read-only local MVP for Python
 maintainers who repeat a current release version across package code, installed
 behavior contracts, and documentation. It checks those explicit claims against
 one canonical string in a TOML file and reports every drift in one run.
@@ -79,5 +79,11 @@ and reusable. That met the bounded experiment's retention threshold.
 - Python 3.10's dependency-free fallback resolves a basic quoted canonical
   string; Python 3.11+ uses the standard TOML parser.
 
-This is an active v0.1 prototype rather than a frozen MVP. New behavior should
-come only from dogfooding a concrete release-drift case.
+## Release boundary
+
+The v1.0.0 command, schema v1 contract, deterministic diagnostics, and exit
+codes 0/1/2 are frozen. A disposable seven-claim version-bump rehearsal guided
+every update and caught one initially missed documentation claim; the unchanged
+contract then passed. The wheel contents, metadata, installed command, source
+and installed contracts, Python 3.10 fallback, and error surfaces were audited
+before this release. Reopen behavior only for a reproduced defect.

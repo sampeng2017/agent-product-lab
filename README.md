@@ -26,14 +26,14 @@ next.
   cleanup. Checked-in contracts cover AgentScope and WheelContract itself. It
   was frozen on 2026-09-15.
 - [ReleaseFact](products/releasefact/README.md) — explicit current release-
-  version consistency. The active prototype is v0.1.0.
+  version consistency. The v1.0.0 local MVP was frozen on 2026-09-17.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The first three
-local MVPs remain frozen. ReleaseFact is the active bounded prototype after its
-fixture and initial repository dogfood demonstrated clearer complete diagnostics
-than focused search/shell.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All four local
+MVPs are frozen. The next bounded experiment targets command residue that Git
+status hides, based on a concrete portfolio-validator failure found during the
+ReleaseFact release audit.
 
 ## Portfolio validation
 

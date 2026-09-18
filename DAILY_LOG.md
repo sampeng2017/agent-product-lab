@@ -1617,3 +1617,42 @@ focused Python 3.14 tests, source contracts, help, compilation, shell syntax,
 and diff checks were clean. No human input is needed. The next run should
 rehearse a v0.2 bump in a disposable checkout and change behavior only if the
 diagnostics reveal a concrete gap.
+
+## 2026-09-17 — ReleaseFact v1.0.0 release freeze and clean builds
+
+Continued ReleaseFact after inspecting the clean repository, automation memory,
+root and product handoffs, active `To-Sam/` communications, product
+implementation/tests/docs, contracts, and portfolio validator. No Sam request
+was active. The warning-strict Python 3.11 baseline passed all 5 ReleaseFact, 10
+WheelContract, 48 AgentScope, and 53 ProofRun tests with one expected optional
+skip; all four wheels, installs, and installed contracts passed.
+
+The prescribed disposable release rehearsal changed only ReleaseFact's
+canonical version from 0.1.0 to 0.2.0. The root contract reported all seven
+stale claims with exact files, lines, actual values, and the expected value.
+Following the report updated six claims on the first attempt; ReleaseFact then
+caught the one missed root README claim and passed after that final correction.
+No diagnostic was ambiguous, redundant, or missing, so schema v1 and checker
+behavior remain unchanged.
+
+The release-readiness audit inspected the built wheel members and metadata,
+license, entry point, source and isolated-installed commands, help/version,
+passing root contract, aggregate drift exit 1, invalid-setup exit 2, docs, five
+tests, and Python 3.10 fallback coverage. No product blocker remained.
+ReleaseFact was promoted from v0.1.0 to v1.0.0 and frozen as the fourth local
+MVP with its read-only schema-v1 contract and exits 0/1/2 intact.
+
+The audit did expose a portfolio-validator defect: its direct wheel builds
+refreshed ignored `build/` and `*.egg-info/` paths even though the script claimed
+all output was temporary and ordinary Git status stayed clean. Validation now
+copies each product into its managed temporary tree before building. A complete
+hash inventory of every product file was identical before and after the updated
+validator ran, proving the checkout received no new or modified residue.
+
+Final warning-strict Python 3.11 portfolio validation passed all 116 tests with
+one expected optional skip, built and isolated-installed all four wheels, and
+passed the installed ReleaseFact root contract plus both WheelContract behavior
+contracts. Both ReleaseFact source contracts, compilation, shell syntax, and
+diff checks passed. The next run should perform the bounded ignored-residue
+detector experiment in `NEXT_RUN.md` and retain it only if it improves materially
+on focused `find` plus hashing shell. No human input is needed.

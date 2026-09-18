@@ -142,6 +142,61 @@ Retain the product narrowly. The next run should rehearse a version bump in a
 disposable checkout and change schema v1 only if that exercise demonstrates a
 specific diagnosis gap.
 
+## ReleaseFact release result — 2026-09-17
+
+The disposable seven-claim rehearsal changed only the canonical version first.
+ReleaseFact named all seven stale files and lines with their actual and expected
+values. After the first claim update pass, it caught one root README claim that
+had been missed; following that final diagnostic produced a clean run. No output
+was ambiguous or redundant, and no claim was missing.
+
+A release audit then verified the wheel contents and metadata, installed and
+source command surfaces, help/version, passing contract, aggregate drift exit 1,
+invalid-setup exit 2, docs, tests, and the Python 3.10 fallback. ReleaseFact was
+promoted unchanged from v0.1.0 to v1.0.0 and frozen as the fourth local MVP.
+
+## Next-product comparison — 2026-09-17
+
+The release audit also exposed new repository-local evidence: the portfolio
+validator claimed to leave the checkout unchanged, but direct PEP 517 builds
+refreshed ignored `*.egg-info/` directories. Ordinary Git status remained clean.
+The validator now builds from temporary source copies, but the detection gap is
+worth one bounded experiment.
+
+### Candidate 1: ignored command-residue detector — selected experiment
+
+- **Demonstrated pain:** build metadata changed in every product checkout while
+  the validator and Git status both appeared clean.
+- **Smallest useful wedge:** compare a bounded filesystem snapshot before and
+  after one command and report created, modified, and removed paths, including
+  ignored files, without retaining file contents or changing the target tree.
+- **Decision test:** retain it only if exclusions, bounds, and the resulting
+  report are materially clearer than focused `find` plus hashing shell.
+- **Principal risk:** it becomes a general runner or performs expensive,
+  surprising traversal over dependencies and caches.
+
+### Candidate 2: wheel metadata contract
+
+- **Evidence:** today's release audit manually inspected name, version, license,
+  Python requirement, entry point, and wheel members.
+- **Why not selected:** the portfolio already validates installed behavior, and
+  established packaging checks cover common metadata/content failures. The
+  ignored-residue defect is both fresher and not covered by current gates.
+
+### Candidate 3: documentation command executor
+
+- **Evidence:** all four products document local commands that are partly
+  repeated in validation.
+- **Why not selected:** fixture/setup semantics would overlap WheelContract and
+  broader documentation-test tooling without a newly demonstrated failure.
+
+### Candidate 4: local Python-version matrix runner
+
+- **Evidence:** hosted CI declares Python 3.10 through 3.14 while local runs
+  usually exercise one or two installed interpreters.
+- **Why not selected:** interpreter availability is environmental, the existing
+  CI matrix already owns the contract, and no matrix-only defect was observed.
+
 ## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)
