@@ -2,92 +2,86 @@
 
 ## Current direction
 
+ResidueCheck v0.1.0 is the active fifth-product prototype. ProofRun v1.8.1,
+AgentScope v1.0.0, WheelContract v1.0.0, and ReleaseFact v1.0.0 remain frozen.
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
-Its disposable release rehearsal and release-readiness audit found no product
-gap: the seven-claim report guided a coordinated bump and caught one initially
-missed documentation update. ProofRun v1.8.1, AgentScope v1.0.0, WheelContract
-v1.0.0, and ReleaseFact v1.0.0 are now frozen.
-
-The next bounded experiment targets a different demonstrated gap: command
-validation can create or refresh ignored files while ordinary Git status remains
-clean. No fifth product exists yet; `NEXT_RUN.md` defines the decision test.
+The prototype addresses a demonstrated portfolio-validator blind spot: commands
+can create or refresh Git-ignored files while ordinary Git status remains clean.
+Its first bounded fixture and installed artifact prove created, modified, and
+removed reporting without relying on Git visibility.
 
 ## Product shape
 
-- `products/releasefact/` contains the dependency-free read-only v1.0.0 checker,
-  five focused tests, a stale three-claim fixture, and a local self-contract.
-- Root `releasefact.toml` checks seven package, product-document, and portfolio-
-  document claims against ReleaseFact's canonical project version.
-- `scripts/validate-portfolio.sh` tests, builds, and isolated-installs all four
-  products, then runs installed ReleaseFact and WheelContract contracts.
-- Wheel builds now consume temporary source copies, keeping PEP 517 `build/` and
-  `*.egg-info/` output out of the source checkout.
+- `products/residuecheck/` contains a dependency-free Python 3.10+ CLI and seven
+  focused tests.
+- One invocation snapshots a root, runs one command, snapshots again, and emits
+  deterministic path-level changes plus the command result.
+- Literal path-prefix exclusions, entry/per-file/total-byte limits, symlink
+  non-traversal, and change-display limits keep scope explicit.
+- Portfolio validation builds and isolated-installs all five products and runs
+  the installed ResidueCheck against an ignored-file fixture.
 
-## Completed today (2026-09-17)
+## Completed today (2026-09-18)
 
-- Ran the warning-strict Python 3.11 baseline: 5 ReleaseFact, 10 WheelContract,
-  48 AgentScope, and 53 ProofRun tests passed with one expected optional skip;
-  all four wheels and installed contracts passed.
-- Rehearsed a 0.1.0 to 0.2.0 canonical bump in a disposable checkout. ReleaseFact
-  reported all seven drifts precisely, then caught the one claim omitted from
-  the first update attempt before producing a clean pass.
-- Audited ReleaseFact wheel contents and metadata, source and installed CLI,
-  help/version, contracts, exits 0/1/2, documentation, tests, and the Python 3.10
-  fallback. No blocker or behavior gap remained.
-- Promoted ReleaseFact to v1.0.0 and froze its schema-v1 read-only surface.
-- Fixed the portfolio validator to build from temporary source copies after the
-  audit showed direct builds refreshing ignored checkout artifacts despite the
-  validator's clean-checkout claim.
+- Passed the clean warning-strict 116-test four-product baseline, all wheel
+  builds and isolated installs, and existing behavior contracts.
+- Reproduced ignored created, modified, and removed residue in a disposable
+  fixture and compared the desired report with portable `find`/hash shell.
+- Built ResidueCheck v0.1.0 with streamed fingerprints, deterministic comparison,
+  three scan bounds, literal exclusions, bounded output, and exits 0/1/2.
+- Added seven tests covering the three change kinds, clean exclusions, scan
+  preflight, limits, output compaction, command failures, unsafe exclusions,
+  and directory-symlink handling.
+- Integrated the fifth wheel and an installed ignored-residue check into the
+  portfolio validator.
 
 ## Changes since the prior run
 
-ReleaseFact advanced from an active v0.1.0 prototype to a frozen v1.0.0 local
-MVP without behavior or schema changes. Portfolio validation no longer writes
-new build metadata into product source directories. The other three frozen
-products remain behaviorally unchanged.
+The repository now contains an active fifth product rather than only a proposed
+experiment. No frozen product behavior changed. Portfolio validation gained one
+new built/installed artifact and a real three-change installed-CLI assertion.
 
 ## Known issues
 
-- ReleaseFact intentionally supports only explicit complete-line templates and
-  one canonical TOML string; it does not discover, infer, or rewrite claims.
-- Python 3.10 uses a narrow dependency-free reader for the selected canonical
-  basic string while 3.11+ uses `tomllib`.
-- Ignored build artifacts from historical validator runs still exist locally;
-  they were left untouched because they may predate this run. Future validation
-  no longer creates or refreshes them.
-- WheelContract retains its documented output-spooling, daemon, and untested
-  live Windows cleanup limits.
-- Hosted portfolio CI is Ubuntu-only, and the repository has no Git remote.
+- ResidueCheck compares boundary state; transient restored changes are invisible.
+- It observes and reports but does not isolate or roll back command changes.
+- Special filesystem entries and scan races fail explicitly.
+- Command output is inherited and unbounded; only the tool's own path report is
+  capped. A post-command scan-bound failure cannot enumerate excess residue.
+- Exact whole-tree hashing runs twice and is intentionally bounded rather than
+  optimized with metadata shortcuts.
+- The four frozen products retain their documented limits. Hosted portfolio CI
+  remains Ubuntu-only, and the repository has no Git remote.
 
 ## Decisions
 
-- Freeze ReleaseFact v1.0.0: the prescribed release rehearsal demonstrated
-  complete, useful diagnostics and no need to expand schema v1.
-- Preserve ReleaseFact's read-only exits 0/1/2 and narrow matching model.
-- Build wheels from temporary source copies so validation fulfills its stated
-  checkout-cleanliness contract.
-- Explore ignored command residue as a separate bounded opportunity rather than
-  reopening ProofRun without evidence that a reusable product is warranted.
+- Retain ResidueCheck v0.1.0 because one invocation replaces two manifests,
+  pruning, size accounting, hashing, comparison, truncation, and failure logic
+  that portable shell would need to assemble repeatedly.
+- Keep exclusions as literal contained prefixes instead of implicit ignores or
+  glob semantics; the point is explicit inspection of Git-ignored files.
+- Keep the product a one-command observer, not a task runner, watcher, sandbox,
+  rollback tool, or ProofRun extension.
+- Keep all four completed products frozen unless validation finds a defect.
 
 ## Validation
 
-- Pre-change warning-strict Python 3.11 portfolio validation passed.
-- The disposable seven-claim release rehearsal produced exits 1 then 0 as
-  expected; installed drift and invalid-setup probes produced exits 1 and 2.
-- Release audit verified the intended four modules, license, entry point,
-  metadata, help/version, source/installed contracts, and error surfaces.
-- Post-change warning-strict Python 3.11 validation passed all 116 tests with
-  one expected optional skip, all builds/installs/contracts, shell syntax, both
-  ReleaseFact contracts, and diff checks. Full product-tree hashes were
-  identical before and after the validator.
+- Pre-change warning-strict Python 3.11 portfolio validation passed all 116
+  existing tests with one expected optional skip and all artifact contracts.
+- ResidueCheck's seven focused Python 3.11 tests pass warning-strict.
+- Final warning-strict Python 3.11 validation passed all 123 tests with one
+  expected optional skip, five wheel builds/installs, the installed ResidueCheck
+  fixture, ReleaseFact dogfood, and both WheelContract behavior contracts.
+- Compilation, ReleaseFact consistency, shell syntax, and diff checks pass.
 
 ## Recommended next steps
 
-1. Run the bounded ignored-residue experiment in `NEXT_RUN.md` against a small
-   fixture, including a command that updates an already ignored file.
-2. Compare a reusable before/after report with focused `find`/hash shell and
-   abandon the product if it adds no clarity.
-3. Keep all four completed products frozen unless validation exposes a defect.
+1. Run installed ResidueCheck around a real wheel build in a disposable source
+   copy; record traversal size, elapsed overhead, and both fresh and repeated
+   build diagnostics.
+2. Audit Python 3.10, wheel contents/metadata, installed help/version, failure
+   exits, and documentation if the real-build dogfood stays clear.
+3. Promote/freeze the surface only if that audit exposes no concrete blocker.
 
 No human input is required.

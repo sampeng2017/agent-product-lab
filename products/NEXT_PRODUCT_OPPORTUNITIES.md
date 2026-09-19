@@ -197,6 +197,25 @@ worth one bounded experiment.
 - **Why not selected:** interpreter availability is environmental, the existing
   CI matrix already owns the contract, and no matrix-only defect was observed.
 
+## Ignored-residue prototype result — 2026-09-18
+
+ResidueCheck v0.1.0 meets the initial retention threshold. A disposable fixture
+with `*.cache` ignored reproduces created, modified, and removed command output;
+the tool names all three even though an equivalent Git status is empty.
+
+The compact invocation is materially clearer than the focused portable shell
+alternative. Reliable shell needs two sorted path manifests, explicit pruning,
+per-file size checks and hashing, total limits, a three-way join/diff, bounded
+rendering, cleanup, and careful failure propagation around the wrapped command.
+ResidueCheck centralizes those mechanics while keeping exclusions literal and
+visible. Its cost is also explicit: it traverses twice and hashes every included
+regular byte twice, bounded by entry, per-file, and total-byte limits.
+
+Retain the prototype narrowly. The next decision should wrap an actual wheel
+build in a disposable product copy, measure the scan, and inspect whether normal
+build exclusions become cumbersome. Do not add configuration, rollback,
+watching, or sandbox behavior unless that exercise proves a concrete need.
+
 ## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)

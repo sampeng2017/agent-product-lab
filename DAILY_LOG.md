@@ -1656,3 +1656,42 @@ contracts. Both ReleaseFact source contracts, compilation, shell syntax, and
 diff checks passed. The next run should perform the bounded ignored-residue
 detector experiment in `NEXT_RUN.md` and retain it only if it improves materially
 on focused `find` plus hashing shell. No human input is needed.
+
+## 2026-09-18 — ResidueCheck v0.1.0 bounded prototype
+
+Started the selected fifth-product experiment after inspecting the clean Git
+state and history, automation memory, root/product handoffs, active `To-Sam/`
+communications, implementation/test surfaces, opportunity record, and portfolio
+validator. No Sam request was active. The warning-strict Python 3.11 baseline
+passed all 116 existing tests with one expected optional skip, built and
+isolated-installed all four frozen products, and passed their contracts.
+
+Built ResidueCheck v0.1.0, a dependency-free single-command residue observer.
+It fingerprints one bounded tree before and after a command, including files
+that Git ignores, and deterministically reports created, modified, and removed
+regular files and symlinks. Literal contained path-prefix exclusions, entry,
+per-file, and total-byte bounds, directory-symlink non-traversal, streaming
+SHA-256, and an exact display overflow keep traversal and reports explicit.
+Clean successful commands exit 0, command failure or residue exits 1, and setup
+or inspection failure exits 2.
+
+Seven focused tests cover all three residue kinds, ignored files, clean excluded
+trees, pre-command limit enforcement, entry/byte bounds, bounded rendering,
+failed commands, unsafe exclusions, and symlink handling. Portfolio validation
+now builds and isolated-installs a fifth wheel, then exercises the installed
+CLI against three ignored changes before continuing the four frozen products.
+
+The prototype is retained. A portable focused shell equivalent needs two sorted
+manifests plus pruning, size accounting, per-file hashing, three-way comparison,
+truncation, cleanup, and wrapped-command failure handling. ResidueCheck makes
+those mechanics one bounded invocation while exposing the unavoidable cost:
+two traversals and two hashes of every included regular byte. No frozen product
+behavior changed. The next run should dogfood the installed artifact around a
+real wheel build in a disposable source copy, measure its scope and overhead,
+and promote/freeze only if fresh and repeated-build diagnostics remain clear.
+
+Final warning-strict Python 3.11 portfolio validation passed all 123 tests with
+one expected optional skip, built and isolated-installed all five wheels, and
+passed the installed ResidueCheck fixture, ReleaseFact dogfood, WheelContract
+self-contract, and AgentScope behavior contract. Focused compilation,
+ReleaseFact consistency, shell syntax, and diff checks also passed.

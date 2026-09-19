@@ -6,10 +6,12 @@
   contract local MVP.
 - `releasefact/` — completed ReleaseFact v1.0.0 read-only release-version
   consistency local MVP.
+- `residuecheck/` — active ResidueCheck v0.1.0 bounded command-residue
+  prototype.
 
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product
 contains its own README, implementation, tests, and validation instructions.
 Portfolio-wide decisions remain at the repository root. Run
 `../scripts/validate-portfolio.sh` from this directory to test, build, install,
-and exercise all products with the active Python interpreter.
+and exercise all five products with the active Python interpreter.

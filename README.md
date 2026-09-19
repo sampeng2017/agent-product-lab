@@ -27,21 +27,24 @@ next.
   was frozen on 2026-09-15.
 - [ReleaseFact](products/releasefact/README.md) — explicit current release-
   version consistency. The v1.0.0 local MVP was frozen on 2026-09-17.
+- [ResidueCheck](products/residuecheck/README.md) — bounded before/after
+  filesystem residue checks around one command. The v0.1.0 prototype reports
+  created, modified, and removed files even when Git ignores them.
 
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All four local
-MVPs are frozen. The next bounded experiment targets command residue that Git
-status hides, based on a concrete portfolio-validator failure found during the
-ReleaseFact release audit.
+MVPs are frozen. ResidueCheck is the active fifth-product prototype; its next
+decision is based on a real disposable wheel-build dogfood.
 
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
-all four products on every supported stable Python line from 3.10 through
+all five products on every supported stable Python line from 3.10 through
 3.14. It runs every unit suite, promotes warnings to errors on the oldest
 supported version, compiles the sources, builds each wheel, and installs each
-artifact in a fresh environment. Installed ReleaseFact checks the seven real
+artifact in a fresh environment. Installed ResidueCheck first proves its three
+change kinds against ignored files. Installed ReleaseFact checks the seven real
 claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
 verifies its own behavior before checking AgentScope's human, JSON, and policy-
 exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub permissions

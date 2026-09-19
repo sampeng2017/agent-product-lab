@@ -57,6 +57,42 @@ validate_product() {
     "$environment_dir/bin/$console_command" "$smoke_argument"
 }
 
+validate_product residuecheck residuecheck --version
+residue_fixture="$validation_temp/residue-fixture"
+mkdir -p "$residue_fixture"
+printf '*.cache\n' > "$residue_fixture/.gitignore"
+printf 'before\n' > "$residue_fixture/modified.cache"
+printf 'before\n' > "$residue_fixture/removed.cache"
+residue_output="$validation_temp/residue-output.txt"
+if "$validation_temp/environments/residuecheck/bin/residuecheck" \
+    --root "$residue_fixture" \
+    -- "$portfolio_python" -c \
+    "from pathlib import Path; Path('created.cache').write_text('new'); Path('modified.cache').write_text('after'); Path('removed.cache').unlink()" \
+    > "$residue_output"; then
+    echo "ResidueCheck fixture unexpectedly passed." >&2
+    exit 1
+else
+    residue_exit=$?
+fi
+if [ "$residue_exit" -ne 1 ]; then
+    echo "ResidueCheck fixture returned $residue_exit instead of 1." >&2
+    exit 1
+fi
+"$portfolio_python" - "$residue_output" <<'PY'
+from pathlib import Path
+import sys
+
+output = Path(sys.argv[1]).read_text(encoding="utf-8")
+expected = (
+    "CREATED created.cache",
+    "MODIFIED modified.cache",
+    "REMOVED removed.cache",
+    "3 changes (1 created, 1 modified, 1 removed)",
+)
+missing = [fragment for fragment in expected if fragment not in output]
+if missing:
+    raise SystemExit(f"ResidueCheck installed fixture missing: {missing!r}")
+PY
 validate_product releasefact releasefact --version
 "$validation_temp/environments/releasefact/bin/releasefact" \
     "$portfolio_root/releasefact.toml"
