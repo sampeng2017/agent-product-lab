@@ -46,6 +46,7 @@ class ResidueCheckTests(unittest.TestCase):
         self.assertIn("MODIFIED modified.cache", stdout)
         self.assertIn("REMOVED removed.cache", stdout)
         self.assertIn("3 changes (1 created, 1 modified, 1 removed)", stdout)
+        self.assertIn("Inspected: 3 entries and 20 bytes before; 3 entries and 16 bytes after", stdout)
 
     def test_clean_command_passes_and_excluded_prefix_is_not_hashed(self) -> None:
         (self.root / "kept.txt").write_text("stable", encoding="utf-8")
@@ -59,7 +60,8 @@ class ResidueCheckTests(unittest.TestCase):
         )
         self.assertEqual(exit_code, 0)
         self.assertIn("Command: passed", stdout)
-        self.assertIn("Result: clean", stdout)
+        self.assertIn("Result: clean\n", stdout)
+        self.assertIn("Inspected: 1 entry and 6 bytes before; 1 entry and 6 bytes after", stdout)
 
     def test_preflight_bounds_prevent_command_execution(self) -> None:
         (self.root / "too-large.bin").write_bytes(b"12345")
@@ -100,6 +102,14 @@ class ResidueCheckTests(unittest.TestCase):
         self.assertEqual(exit_code, 1)
         self.assertIn("Command: failed (exit 7)", stdout)
         self.assertIn("Result: clean", stdout)
+
+    def test_single_change_uses_singular_summary(self) -> None:
+        exit_code, stdout, _ = self.run_cli(
+            "--root", str(self.root), "--", sys.executable, "-c",
+            "from pathlib import Path; Path('created').touch()",
+        )
+        self.assertEqual(exit_code, 1)
+        self.assertIn("Result: 1 change (1 created, 0 modified, 0 removed)", stdout)
 
     def test_rejects_unsafe_exclusions_and_does_not_follow_directory_symlinks(self) -> None:
         exit_code, _, stderr = self.run_cli(

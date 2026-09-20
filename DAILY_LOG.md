@@ -1695,3 +1695,47 @@ one expected optional skip, built and isolated-installed all five wheels, and
 passed the installed ResidueCheck fixture, ReleaseFact dogfood, WheelContract
 self-contract, and AgentScope behavior contract. Focused compilation,
 ReleaseFact consistency, shell syntax, and diff checks also passed.
+
+## 2026-09-19 — ResidueCheck v1.0.0 release freeze
+
+Continued ResidueCheck after inspecting the clean Git state/history, automation
+memory, all root and product handoffs, active `To-Sam/` communications, product
+implementation/tests/docs, opportunity record, and portfolio validator. No Sam
+request was active. The warning-strict Python 3.11 baseline passed all 123 tests
+with one expected optional skip, all five wheel builds/installs, and every
+installed contract.
+
+The prescribed installed-artifact dogfood wrapped a real ReleaseFact PEP 517
+wheel build from a clean Git archive. The fresh run named all ten created files
+under `build/`, `dist/`, and `src/releasefact.egg-info/`. After one source edit,
+the repeated build named only the copied module and rebuilt wheel as modified.
+No exclusions were needed. The fresh direct build took about 0.59 seconds and
+the wrapped build about 0.68 seconds; a no-op two-snapshot scan took about 0.10
+seconds over 38 entries and 49,167 bytes on this host.
+
+The exercise exposed one concrete diagnostic gap: changed reports omitted the
+entry/byte scope needed to judge their scan cost. ResidueCheck now reports both
+before and after entry and hashed-byte totals on every completed check. It also
+renders singular change and entry summaries correctly; focused coverage grew
+from seven to eight tests. No configuration, glob, rollback, watcher, sandbox,
+or general task-runner behavior was added.
+
+The release audit verified exact wheel members and metadata, installed help and
+version, clean/change/setup exits 0/1/2, Python 3.10 grammar compatibility, and
+focused warning-strict Python 3.11 plus Python 3.14 behavior. ResidueCheck was
+promoted from v0.1.0 to v1.0.0 and frozen as the fifth local MVP.
+
+Repository-local evidence then compared four next opportunities. The selected
+bounded experiment is an exact wheel-structure contract for scalar metadata,
+console entry points, and package members, retained only if it is materially
+clearer than a focused standard-library assertion script. Interpreter discovery,
+artifact cleanup, and persistent benchmark reports were rejected as implicit,
+destructive, or host-specific.
+
+Final warning-strict Python 3.11 portfolio validation passed all 124 tests with
+one expected optional skip, built and isolated-installed all five wheels, and
+passed the installed ResidueCheck fixture, ReleaseFact dogfood, WheelContract
+self-contract, and AgentScope behavior contract. Focused Python 3.14 tests,
+Python 3.10 grammar parsing, wheel audit, compilation, ReleaseFact consistency,
+shell syntax, documentation checks, and diff checks passed. No human input is
+needed. The next run should execute the bounded experiment in `NEXT_RUN.md`.

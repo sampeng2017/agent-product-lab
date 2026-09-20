@@ -28,14 +28,15 @@ next.
 - [ReleaseFact](products/releasefact/README.md) — explicit current release-
   version consistency. The v1.0.0 local MVP was frozen on 2026-09-17.
 - [ResidueCheck](products/residuecheck/README.md) — bounded before/after
-  filesystem residue checks around one command. The v0.1.0 prototype reports
-  created, modified, and removed files even when Git ignores them.
+  filesystem residue checks around one command. The v1.0.0 local MVP reports
+  created, modified, and removed files even when Git ignores them, with explicit
+  before/after scan scope. It was frozen on 2026-09-19.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All four local
-MVPs are frozen. ResidueCheck is the active fifth-product prototype; its next
-decision is based on a real disposable wheel-build dogfood.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All five local
+MVPs are frozen. The next bounded experiment tests an exact wheel-structure
+contract against the manual artifact audits repeated across the portfolio.
 
 ## Portfolio validation
 

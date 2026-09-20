@@ -6,8 +6,8 @@
   contract local MVP.
 - `releasefact/` — completed ReleaseFact v1.0.0 read-only release-version
   consistency local MVP.
-- `residuecheck/` — active ResidueCheck v0.1.0 bounded command-residue
-  prototype.
+- `residuecheck/` — completed ResidueCheck v1.0.0 bounded command-residue local
+  MVP.
 
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product

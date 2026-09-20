@@ -1,4 +1,4 @@
-# ResidueCheck 0.1.0
+# ResidueCheck 1.0.0
 
 ResidueCheck is a dependency-free CLI that reports filesystem residue left by
 one command, including files ignored by Git. It snapshots a bounded tree before
@@ -10,7 +10,8 @@ residuecheck --root . --exclude .venv --exclude node_modules -- python -m build
 
 A clean, successful command exits 0. A failed command or any detected change
 exits 1. Invalid input, an unavailable command, or a scan that exceeds a bound
-exits 2. Command output remains live; ResidueCheck bounds only its own report.
+exits 2. Every completed check reports entry and hashed-byte scope for both
+snapshots. Command output remains live; ResidueCheck bounds only its own report.
 
 ## Safety and scope
 
@@ -35,5 +36,6 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m residuecheck --help
 ```
 
-Version 0.1.0 is a bounded prototype. It is deliberately not a sandbox,
-watcher, Git-status replacement, general task runner, or rollback mechanism.
+Version 1.0.0 is the frozen local MVP. Its command, output, bounds, exclusions,
+and exit 0/1/2 behavior are stable. It is deliberately not a sandbox, watcher,
+Git-status replacement, general task runner, or rollback mechanism.

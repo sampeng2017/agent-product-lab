@@ -1,7 +1,8 @@
-# Next run: ResidueCheck real-build dogfood
+# Next run: exact wheel-structure experiment
 
+ResidueCheck v1.0.0 is now frozen as the fifth local MVP. ProofRun v1.8.1,
+AgentScope v1.0.0, WheelContract v1.0.0, and ReleaseFact v1.0.0 remain frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
-ProofRun v1.8.1, AgentScope v1.0.0, and WheelContract v1.0.0 remain frozen.
 
 ## Required starting inspection
 
@@ -12,30 +13,36 @@ editing.
 
 ## Completed experiment
 
-The ReleaseFact audit exposed a concrete blind spot: direct wheel builds updated
-ignored `*.egg-info/` directories while ordinary Git status stayed clean.
-ResidueCheck v0.1.0 now demonstrates a reusable bounded detector and reports all
-three ignored-file change kinds in a disposable fixture. The prototype is
-retained because it centralizes safe traversal, hashing, comparison, output
-bounds, and failure handling that focused portable shell must rebuild.
+Installed ResidueCheck wrapped a real wheel build from a clean tracked source
+copy. It reported ten fresh build artifacts and, after one source edit, only the
+two modified outputs. The measured wrapper delta was about 0.09 seconds; a no-op
+two-snapshot scan took about 0.10 seconds over 38 entries and 49,167 bytes.
+
+The exercise exposed one diagnostic gap: changed runs did not show their scan
+scope. Version 1.0.0 now reports before/after entries and bytes on every completed
+check. Its package, installed surfaces, exits, compatibility, and limits passed
+release audit, so the product is frozen.
 
 ## Bounded next experiment
 
-1. Copy one portfolio product into a disposable directory and run its real PEP
-   517 wheel build under the installed ResidueCheck prototype.
-2. Measure the included entry/byte scope and elapsed overhead, and confirm the
-   report names expected `build/` and `*.egg-info/` residue.
-3. Repeat from the already-dirty disposable tree to exercise modified residue,
-   then decide whether output remains useful without glob exclusions.
-4. Add behavior only for a demonstrated diagnostic or safety gap. Otherwise
-   promote/freeze the narrow surface if packaging and Python 3.10 audits pass.
+1. Build the frozen ResidueCheck wheel in a disposable source copy and write the
+   smallest explicit contract for distribution name/version, Python requirement,
+   license, console entry point, and exact package members.
+2. Prototype a dependency-free read-only checker using `zipfile` and standard
+   metadata parsing. Keep paths and output deterministic and separate mismatch
+   exit 1 from invalid artifact/contract exit 2.
+3. Compare the manifest, implementation, and all-mismatch diagnostics with a
+   focused standard-library assertion script.
+4. Retain a sixth product only if the explicit reusable contract is materially
+   clearer than that script and does not overlap installed behavior checks.
 
 ## Guardrails
 
-- Do not reopen ProofRun merely to absorb the product; its Git-state proof
-  model is frozen and intentionally has different semantics.
-- Do not build a sandbox, filesystem watcher, or general task runner.
-- Do not recursively hash dependency/vendor trees without explicit bounds or
-  exclusions.
-- Keep all four completed product behaviors frozen unless validation reveals a
+- Do not build or install wheels inside the checker; WheelContract owns installed
+  behavior and the portfolio validator owns artifact creation.
+- Do not become a general packaging linter, archive repair tool, PyPI client, or
+  replacement for established packaging hygiene tools.
+- Start with one exact wheel and one strict contract; reject globs or inference
+  unless the comparison demonstrates a concrete need.
+- Keep all five completed product behaviors frozen unless validation reveals a
   concrete defect.

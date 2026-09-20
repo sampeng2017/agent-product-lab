@@ -66,15 +66,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         suffix = f"; {hidden} more not shown" if hidden else ""
         print(
             "Result: "
-            f"{len(result.changes)} changes "
+            f"{_count(len(result.changes), 'change', 'changes')} "
             f"({counts['created']} created, {counts['modified']} modified, "
             f"{counts['removed']} removed){suffix}"
         )
     else:
-        print(
-            "Result: clean; "
-            f"{result.after.entries} entries and {result.after.bytes_hashed} bytes inspected"
-        )
+        print("Result: clean")
+    print(
+        "Inspected: "
+        f"{_count(result.before.entries, 'entry', 'entries')} and "
+        f"{_count(result.before.bytes_hashed, 'byte', 'bytes')} before; "
+        f"{_count(result.after.entries, 'entry', 'entries')} and "
+        f"{_count(result.after.bytes_hashed, 'byte', 'bytes')} after"
+    )
     return int(result.command_exit != 0 or bool(result.changes))
 
 
@@ -86,3 +90,7 @@ def _nonnegative(value: str) -> int:
     if parsed < 0:
         raise argparse.ArgumentTypeError("must be nonnegative")
     return parsed
+
+
+def _count(value: int, singular: str, plural: str) -> str:
+    return f"{value} {singular if value == 1 else plural}"

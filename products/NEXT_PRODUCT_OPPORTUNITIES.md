@@ -216,6 +216,68 @@ build in a disposable product copy, measure the scan, and inspect whether normal
 build exclusions become cumbersome. Do not add configuration, rollback,
 watching, or sandbox behavior unless that exercise proves a concrete need.
 
+## ResidueCheck release result — 2026-09-19
+
+The installed v0.1.0 artifact wrapped a real ReleaseFact PEP 517 wheel build from
+a clean Git archive. It reported all ten created `build/`, `dist/`, and
+`*.egg-info/` files. After one source edit, a repeated build reported only the
+copied module and rebuilt wheel as modified. No glob exclusions were needed.
+
+The direct fresh build took about 0.59 seconds and the wrapped build about 0.68
+seconds on this host. A no-op two-snapshot scan took about 0.10 seconds over 38
+entries and 49,167 bytes. The dogfood did expose one diagnostic gap: changed
+runs did not disclose that scope. Version 1.0.0 now reports before/after entry
+and byte totals on every completed check and correctly renders singular counts.
+
+Wheel contents/metadata, installed help/version, exits 0/1/2, Python 3.10 grammar
+compatibility, and Python 3.11/3.14 behavior passed audit. ResidueCheck is frozen
+as the fifth local MVP without adding configuration, globs, rollback, or watcher
+behavior.
+
+## Next-product comparison — 2026-09-19
+
+ResidueCheck's release audit repeated a manual pattern already used for the
+other artifacts: inspect exact wheel members, metadata, and entry points before
+freezing. That provides the strongest repository-local candidate for one more
+bounded experiment.
+
+### Candidate 1: exact wheel-structure contract — selected experiment
+
+- **Demonstrated pain:** every release audit uses a bespoke `zipfile`/metadata
+  snippet to confirm name, version, Python requirement, license, entry point,
+  and intended package members.
+- **Smallest useful wedge:** check one existing wheel against one strict TOML
+  contract with exact scalar metadata, console entry points, and package member
+  lists; report every mismatch without building or installing anything.
+- **Decision test:** retain it only if the declaration and complete diagnostics
+  are materially clearer than a focused standard-library assertion script.
+- **Principal risk:** it grows into a general packaging linter already served by
+  established ecosystem tools or overlaps WheelContract's installed behavior.
+
+### Candidate 2: portfolio interpreter selector
+
+- **Evidence:** the default `python3` lacked the required build backend while
+  local `python3.11` satisfied it, so today's first validation preflight failed.
+- **Why not selected:** `PYTHON_BIN` already makes selection explicit, and silent
+  interpreter discovery would weaken reproducibility for a local convenience.
+
+### Candidate 3: ignored build-artifact cleanup
+
+- **Evidence:** historical `build/` and `*.egg-info/` trees remain in product
+  directories even though current validation uses temporary source copies.
+- **Why not selected:** cleanup is destructive, ownership predates current runs,
+  and residue detection—not deletion—is the reusable behavior demonstrated.
+
+### Candidate 4: persistent ResidueCheck benchmark reports
+
+- **Evidence:** the release dogfood measured traversal size and elapsed overhead.
+- **Why not selected:** the stable CLI now exposes scan scope, while timing is
+  host- and command-specific and does not justify a report schema.
+
+The next run should prototype the exact wheel-structure contract against the
+frozen ResidueCheck wheel. Abandon it if a short transparent script remains the
+clearer maintenance choice.
+
 ## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)
