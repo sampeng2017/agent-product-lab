@@ -278,6 +278,28 @@ The next run should prototype the exact wheel-structure contract against the
 frozen ResidueCheck wheel. Abandon it if a short transparent script remains the
 clearer maintenance choice.
 
+## Exact wheel-structure prototype result — 2026-09-20
+
+WheelFact v0.1.0 meets the initial retention threshold. Its strict contract for
+the real ResidueCheck wheel names four scalar metadata facts, one console entry
+point, and the exact four-file payload. The checker reads the existing archive
+without building or installing it and reports all missing, unexpected, and
+unequal facts deterministically with mismatch exit 1 versus invalid-input exit
+2.
+
+A focused standard-library assertion script is shorter for a single fixed
+artifact, but each release audit would need to repeat safe archive selection,
+bounded metadata reads, email and entry-point parsing, exact set differences,
+all-mismatch rendering, and exit semantics. The 16-line TOML declaration keeps
+artifact expectations separate from those tested mechanics, so it is clearer
+for the portfolio's repeated audits without overlapping WheelContract's
+installed behavior.
+
+Retain the prototype narrowly. The next run should copy its contract for a
+second frozen wheel, deliberately stale every fact category, and promote or
+abandon the schema based on the real diagnostic rehearsal. Do not add builds,
+installs, globs, inferred expectations, repair, or general packaging policy.
+
 ## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)

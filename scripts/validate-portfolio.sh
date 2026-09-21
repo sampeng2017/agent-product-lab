@@ -93,6 +93,10 @@ missing = [fragment for fragment in expected if fragment not in output]
 if missing:
     raise SystemExit(f"ResidueCheck installed fixture missing: {missing!r}")
 PY
+validate_product wheelfact wheelfact --version
+"$validation_temp/environments/wheelfact/bin/wheelfact" \
+    "$portfolio_root/products/wheelfact/wheelfact.toml" \
+    "$validation_temp/wheels/residuecheck"/*.whl
 validate_product releasefact releasefact --version
 "$validation_temp/environments/releasefact/bin/releasefact" \
     "$portfolio_root/releasefact.toml"

@@ -8,10 +8,12 @@
   consistency local MVP.
 - `residuecheck/` — completed ResidueCheck v1.0.0 bounded command-residue local
   MVP.
+- `wheelfact/` — retained WheelFact v0.1.0 exact wheel-structure contract
+  prototype.
 
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product
 contains its own README, implementation, tests, and validation instructions.
 Portfolio-wide decisions remain at the repository root. Run
 `../scripts/validate-portfolio.sh` from this directory to test, build, install,
-and exercise all five products with the active Python interpreter.
+and exercise all six products with the active Python interpreter.

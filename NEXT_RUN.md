@@ -1,48 +1,46 @@
-# Next run: exact wheel-structure experiment
+# Next run: WheelFact second-artifact rehearsal
 
-ResidueCheck v1.0.0 is now frozen as the fifth local MVP. ProofRun v1.8.1,
-AgentScope v1.0.0, WheelContract v1.0.0, and ReleaseFact v1.0.0 remain frozen.
+WheelFact v0.1.0 is a retained bounded prototype. ResidueCheck v1.0.0,
+ReleaseFact v1.0.0, WheelContract v1.0.0, AgentScope v1.0.0, and ProofRun v1.8.1
+remain frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, and the portfolio validator.
-Check Git status/history and rerun warning-strict portfolio validation before
-editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, WheelFact's implementation,
+tests, documentation, and the portfolio validator. Check Git status/history and
+rerun warning-strict portfolio validation before editing.
 
 ## Completed experiment
 
-Installed ResidueCheck wrapped a real wheel build from a clean tracked source
-copy. It reported ten fresh build artifacts and, after one source edit, only the
-two modified outputs. The measured wrapper delta was about 0.09 seconds; a no-op
-two-snapshot scan took about 0.10 seconds over 38 entries and 49,167 bytes.
+WheelFact checks one existing wheel against exact distribution name, version,
+Python requirement, license, console scripts, and non-`.dist-info` payload
+members. The real ResidueCheck wheel produces nine passing facts without being
+installed. Five focused tests cover a clean artifact, all mismatch categories,
+invalid/ambiguous archives, strict contracts, and the Python 3.10 TOML fallback.
 
-The exercise exposed one diagnostic gap: changed runs did not show their scan
-scope. Version 1.0.0 now reports before/after entries and bytes on every completed
-check. Its package, installed surfaces, exits, compatibility, and limits passed
-release audit, so the product is frozen.
+The prototype is retained because its short declaration separates artifact
+expectations from bounded archive inspection, metadata and entry-point parsing,
+set comparison, all-mismatch reporting, and exit semantics. It does not overlap
+WheelContract, which owns installed behavior.
 
-## Bounded next experiment
+## Bounded next rehearsal
 
-1. Build the frozen ResidueCheck wheel in a disposable source copy and write the
-   smallest explicit contract for distribution name/version, Python requirement,
-   license, console entry point, and exact package members.
-2. Prototype a dependency-free read-only checker using `zipfile` and standard
-   metadata parsing. Keep paths and output deterministic and separate mismatch
-   exit 1 from invalid artifact/contract exit 2.
-3. Compare the manifest, implementation, and all-mismatch diagnostics with a
-   focused standard-library assertion script.
-4. Retain a sixth product only if the explicit reusable contract is materially
-   clearer than that script and does not overlap installed behavior checks.
+1. Build a second frozen portfolio artifact in a disposable source copy and
+   write its exact WheelFact contract without changing schema v1.
+2. In a disposable contract, deliberately make the distribution/version,
+   Python/license, console-script, missing-member, and unexpected-member facts
+   stale. Confirm one run makes every correction obvious.
+3. Compare the real diagnostic with a focused standard-library assertion script.
+4. Promote and freeze only if the second-artifact exercise needs no new schema;
+   otherwise make only the smallest demonstrated correction or abandon it.
 
 ## Guardrails
 
-- Do not build or install wheels inside the checker; WheelContract owns installed
-  behavior and the portfolio validator owns artifact creation.
-- Do not become a general packaging linter, archive repair tool, PyPI client, or
-  replacement for established packaging hygiene tools.
-- Start with one exact wheel and one strict contract; reject globs or inference
-  unless the comparison demonstrates a concrete need.
-- Keep all five completed product behaviors frozen unless validation reveals a
+- Never build or install inside WheelFact.
+- Do not infer expectations from filenames or source trees.
+- Do not add globs, repair, PyPI access, general metadata policy, or installed-
+  command checks.
+- Keep the five completed product behaviors frozen unless validation reveals a
   concrete defect.

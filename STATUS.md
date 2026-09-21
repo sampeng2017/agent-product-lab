@@ -2,91 +2,77 @@
 
 ## Current direction
 
-ResidueCheck v1.0.0 is frozen as the fifth local MVP. ProofRun v1.8.1,
-AgentScope v1.0.0, WheelContract v1.0.0, and ReleaseFact v1.0.0 remain frozen.
+WheelFact v0.1.0 is retained as the sixth product prototype. The first five
+local MVPs remain frozen. The prototype replaces repeated manual wheel release
+audits with one exact, read-only artifact contract; the next run must test its
+diagnostics against a second real portfolio wheel before promotion.
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
-
-The completed product closes a demonstrated portfolio-validator blind spot:
-commands can create or refresh Git-ignored files while ordinary Git status stays
-clean. Real wheel-build dogfood confirmed useful diagnostics and bounded cost.
-The next selected experiment is an exact wheel-structure contract derived from
-the manual artifact audits repeated for every frozen product.
 
 ## Product shape
 
-- `products/residuecheck/` contains a dependency-free Python 3.10+ CLI and eight
+- `products/wheelfact/` contains a dependency-free Python 3.10+ CLI and five
   focused tests.
-- One invocation snapshots a root, runs one command, snapshots again, and emits
-  deterministic path-level changes, the command result, and both scan scopes.
-- Literal path-prefix exclusions, entry/per-file/total-byte limits, symlink
-  non-traversal, and change-display limits keep scope explicit.
-- Portfolio validation builds and isolated-installs all five products and runs
-  the installed ResidueCheck against an ignored-file fixture.
+- One strict TOML contract names distribution, version, Python requirement,
+  license, console scripts, and exact non-`.dist-info` payload members.
+- It reads an existing wheel only, caps archive entries and decompressed control
+  files, and reports all missing, unexpected, and unequal facts.
+- Clean, mismatching, and invalid checks use exits 0, 1, and 2 respectively.
+- Portfolio validation builds and isolated-installs all six products, then uses
+  installed WheelFact to check the real ResidueCheck wheel.
 
-## Completed today (2026-09-19)
+## Completed today (2026-09-20)
 
-- Passed the clean warning-strict 123-test, five-wheel portfolio baseline with
+- Passed the clean warning-strict 124-test, five-wheel portfolio baseline with
   one expected optional skip and every installed contract.
-- Wrapped a real ReleaseFact wheel build from a clean Git archive. The fresh run
-  named ten created build artifacts; a repeat after one source edit named the
-  two actually modified outputs.
-- Measured 0.59 seconds direct versus 0.68 seconds wrapped for the fresh build;
-  a no-op two-snapshot scan took about 0.10 seconds over 38 entries/49,167 bytes.
-- Added before/after entry and hashed-byte scope to every completed report and
-  corrected singular result labels, with focused regression coverage.
-- Audited wheel members/metadata, installed help/version, exits 0/1/2, Python
-  3.10 grammar compatibility, and Python 3.11/3.14 behavior.
-- Promoted ResidueCheck to v1.0.0 and froze its narrow contract.
+- Built the frozen ResidueCheck wheel in a disposable copy and recorded its four
+  scalar metadata facts, console entry point, and four package modules.
+- Implemented WheelFact v0.1.0 with strict schema-v1 parsing, exact comparisons,
+  bounded archive reads, deterministic diagnostics, and Python 3.10 fallback.
+- Added five tests covering a full pass, every mismatch category, unsafe and
+  ambiguous wheels, strict contract errors, and multiline fallback parsing.
+- Integrated the new product and its ResidueCheck contract into portfolio
+  validation without changing any frozen product behavior.
 
 ## Changes since the prior run
 
-ResidueCheck advanced from v0.1.0 prototype to frozen v1.0.0 after realistic
-fresh/repeated build evidence and a release audit. Reports now expose inspection
-scope on changed as well as clean runs. No other product behavior changed.
+The five-product frozen portfolio gained one retained prototype and one installed
+artifact gate. ResidueCheck remains unchanged; its built wheel is now checked
+before ReleaseFact and WheelContract validations continue.
 
 ## Known issues
 
-- ResidueCheck compares boundary state; transient restored changes are invisible.
-- It observes and reports but does not isolate or roll back command changes.
-- Special filesystem entries and scan races fail explicitly.
-- Command output is inherited and unbounded; only the tool's own path report is
-  capped. A post-command scan-bound failure cannot enumerate excess residue.
-- Exact whole-tree hashing runs twice and is intentionally bounded rather than
-  optimized with metadata shortcuts.
-- The five frozen products retain their documented limits. Hosted portfolio CI
-  remains Ubuntu-only, and the repository has no Git remote.
+- WheelFact checks exact declarations, not packaging quality or metadata policy.
+- Package payloads are named but never decompressed or content-hashed.
+- Standard `.dist-info` generated members are deliberately excluded from exact
+  enumeration; scalar metadata and console scripts are checked separately.
+- Schema v1 requires at least one payload member and four scalar metadata values.
+- The prototype has one real artifact rehearsal; promotion depends on a second.
+- Hosted portfolio CI remains Ubuntu-only, and the repository has no Git remote.
 
 ## Decisions
 
-- Freeze ResidueCheck v1.0.0: real builds showed useful fresh and repeat reports,
-  no need for glob/configuration expansion, and acceptable bounded overhead.
-- Keep exclusions as literal contained prefixes instead of implicit ignores or
-  glob semantics; the point is explicit inspection of Git-ignored files.
-- Keep the product a one-command observer, not a task runner, watcher, sandbox,
-  rollback tool, or ProofRun extension.
-- Explore exact wheel structure separately rather than reopening WheelContract
-  or ReleaseFact; abandon it if a short `zipfile` assertion is clearer.
-- Keep all five completed products frozen unless validation finds a defect.
+- Retain WheelFact v0.1.0: the 16-line real contract is clearer than repeating
+  bounded archive parsing and all-mismatch comparison in every release audit.
+- Keep WheelFact separate from WheelContract: one checks uninstalled structure,
+  while the other owns isolated installed behavior.
+- Keep expectations exact and explicit; do not infer, glob, build, install,
+  repair, download, or impose general packaging policy.
+- Keep all five frozen MVP behaviors unchanged.
 
 ## Validation
 
-- Pre-change warning-strict Python 3.11 portfolio validation passed all 123 tests
-  with one expected optional skip, five wheel builds/installs, and all contracts.
-- ResidueCheck's eight focused tests pass warning-strict on Python 3.11 and on
-  Python 3.14; all sources parse under Python 3.10 grammar.
-- The release wheel has exactly the four intended modules, license, entry point,
-  and standard metadata; installed clean/change/setup probes returned 0/1/2.
-- Final warning-strict Python 3.11 portfolio validation passed all 124 tests
-  with one expected optional skip, all five wheel builds/installs, and every
-  installed contract. Compilation, ReleaseFact consistency, shell syntax,
-  documentation checks, and diff checks pass.
+- The pre-change default `python3` correctly failed the documented build-backend
+  preflight; explicit `PYTHON_BIN=python3.11` warning-strict validation passed.
+- WheelFact's five focused tests and compilation pass on Python 3.11.
+- A freshly built real ResidueCheck wheel passes all nine declared WheelFact
+  facts; the focused mismatch fixture reports eight mismatches in one run.
+- Final portfolio and compatibility validation is recorded in `DAILY_LOG.md`.
 
 ## Recommended next steps
 
-1. Prototype the bounded exact wheel-structure contract in `NEXT_RUN.md` against
-   the ResidueCheck artifact.
-2. Compare its declaration and diagnostics with a focused standard-library
-   `zipfile`/metadata script and retain it only if the contract is clearer.
-3. Do not reopen any frozen product without a demonstrated defect.
+1. Run the second-artifact diagnostic rehearsal in `NEXT_RUN.md`.
+2. Freeze WheelFact only if a copied schema-v1 contract is sufficient and every
+   deliberate correction is obvious from one report.
+3. Do not reopen a frozen product without a demonstrated defect.
 
 No human input is required.

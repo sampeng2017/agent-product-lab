@@ -1,0 +1,16 @@
+schema_version = 1
+
+[wheel]
+distribution = "residuecheck-cli"
+version = "1.0.0"
+requires_python = ">=3.10"
+license = "MIT"
+package_members = [
+  "residuecheck/__init__.py",
+  "residuecheck/__main__.py",
+  "residuecheck/cli.py",
+  "residuecheck/core.py",
+]
+
+[wheel.console_scripts]
+residuecheck = "residuecheck.cli:main"

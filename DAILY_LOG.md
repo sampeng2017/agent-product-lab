@@ -1739,3 +1739,46 @@ self-contract, and AgentScope behavior contract. Focused Python 3.14 tests,
 Python 3.10 grammar parsing, wheel audit, compilation, ReleaseFact consistency,
 shell syntax, documentation checks, and diff checks passed. No human input is
 needed. The next run should execute the bounded experiment in `NEXT_RUN.md`.
+
+## 2026-09-20 — WheelFact v0.1.0 bounded prototype
+
+Started the selected sixth-product experiment after inspecting the clean Git
+state and history, automation memory, root and product handoffs, active
+`To-Sam/` communications, opportunity record, ResidueCheck implementation and
+tests, and the portfolio validator. No Sam request was active. The default
+`python3` correctly failed the documented build-backend preflight; explicit
+warning-strict Python 3.11 baseline validation passed all 124 existing tests
+with one expected optional skip, five wheel builds/installs, and every installed
+contract.
+
+Built the frozen ResidueCheck wheel from a disposable source copy and derived a
+16-line exact contract for distribution name, version, Python requirement,
+license, console entry point, and four package modules. WheelFact v0.1.0 reads
+that existing archive without building or installing it, validates one strict
+schema-v1 TOML declaration, and reports all unequal, missing, and unexpected
+facts deterministically. Matches exit 0, contract mismatches exit 1, and invalid
+contracts or artifacts exit 2.
+
+Inspection is explicitly bounded to 10,000 archive entries and 1 MiB for each
+decompressed metadata control file; package payloads are named but never
+decompressed. Unsafe and duplicate archive paths, ambiguous `.dist-info`
+directories, repeated mandatory metadata, malformed entry points, unknown
+contract fields, duplicate members, and unsafe contract paths fail explicitly.
+The Python 3.10 fallback supports the prototype's multiline member declaration.
+
+Five focused tests cover the exact passing artifact, eight simultaneous scalar,
+entry-point, and member mismatches, invalid and ambiguous wheels, strict
+contract validation, and fallback parsing. The prototype is retained: a one-off
+assertion script is shorter for one wheel, but every release audit would repeat
+bounded archive validation, metadata and entry-point parsing, set comparison,
+complete diagnostics, and exit semantics. The declaration keeps expectations
+clear without overlapping WheelContract's installed behavior.
+
+Portfolio validation now builds and isolated-installs all six products and uses
+installed WheelFact to check the real ResidueCheck wheel's nine facts. Final
+warning-strict Python 3.11 validation passed all 129 tests with one expected
+optional skip, six wheel builds/installs, and every installed contract. Focused
+Python 3.14 tests, Python 3.10 grammar parsing, compilation, ReleaseFact
+consistency, shell syntax, and diff checks passed. No human input is needed. The
+next run should perform the second-artifact diagnostic rehearsal in
+`NEXT_RUN.md` and promote only if schema v1 remains sufficient.
