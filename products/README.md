@@ -8,8 +8,8 @@
   consistency local MVP.
 - `residuecheck/` — completed ResidueCheck v1.0.0 bounded command-residue local
   MVP.
-- `wheelfact/` — retained WheelFact v0.1.0 exact wheel-structure contract
-  prototype.
+- `wheelfact/` — completed WheelFact v1.0.0 exact wheel-structure contract
+  local MVP.
 
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product

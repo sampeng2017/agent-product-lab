@@ -1,46 +1,44 @@
-# Next run: WheelFact second-artifact rehearsal
+# Next run: select the seventh bounded experiment
 
-WheelFact v0.1.0 is a retained bounded prototype. ResidueCheck v1.0.0,
-ReleaseFact v1.0.0, WheelContract v1.0.0, AgentScope v1.0.0, and ProofRun v1.8.1
-remain frozen.
+WheelFact v1.0.0, ResidueCheck v1.0.0, ReleaseFact v1.0.0, WheelContract v1.0.0,
+AgentScope v1.0.0, and ProofRun v1.8.1 are frozen local MVPs.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, WheelFact's implementation,
-tests, documentation, and the portfolio validator. Check Git status/history and
-rerun warning-strict portfolio validation before editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, and the portfolio validator.
+Check Git status/history and rerun warning-strict portfolio validation before
+editing.
 
-## Completed experiment
+## Completed release
 
-WheelFact checks one existing wheel against exact distribution name, version,
-Python requirement, license, console scripts, and non-`.dist-info` payload
-members. The real ResidueCheck wheel produces nine passing facts without being
-installed. Five focused tests cover a clean artifact, all mismatch categories,
-invalid/ambiguous archives, strict contracts, and the Python 3.10 TOML fallback.
+WheelFact checks existing wheels against exact distribution metadata, console
+scripts, and non-`.dist-info` payload members. ResidueCheck and AgentScope each
+produce nine passing facts without installation. The deliberately stale
+AgentScope rehearsal reported four scalar, two console-script, and two member
+mismatches in one run without changing schema v1.
 
-The prototype is retained because its short declaration separates artifact
-expectations from bounded archive inspection, metadata and entry-point parsing,
-set comparison, all-mismatch reporting, and exit semantics. It does not overlap
-WheelContract, which owns installed behavior.
+The 16-line contract was clearer than a 44-line focused comparison script that
+still omitted safe archive selection, bounds, strict parsing, and setup-error
+semantics. WheelFact was promoted unchanged to v1.0.0 and frozen.
 
-## Bounded next rehearsal
+## Bounded next selection
 
-1. Build a second frozen portfolio artifact in a disposable source copy and
-   write its exact WheelFact contract without changing schema v1.
-2. In a disposable contract, deliberately make the distribution/version,
-   Python/license, console-script, missing-member, and unexpected-member facts
-   stale. Confirm one run makes every correction obvious.
-3. Compare the real diagnostic with a focused standard-library assertion script.
-4. Promote and freeze only if the second-artifact exercise needs no new schema;
-   otherwise make only the smallest demonstrated correction or abandon it.
+1. Identify at least three current software-product opportunities grounded in
+   repository friction or a clearly adjacent workflow.
+2. Verify current ecosystem context with authoritative sources and record why
+   existing tools do or do not already own each problem.
+3. Select one smallest useful wedge with an explicit retention/abandonment test.
+4. Build and validate a runnable prototype in a stable product directory during
+   the same run; do not stop at research or planning.
 
 ## Guardrails
 
-- Never build or install inside WheelFact.
-- Do not infer expectations from filenames or source trees.
-- Do not add globs, repair, PyPI access, general metadata policy, or installed-
-  command checks.
-- Keep the five completed product behaviors frozen unless validation reveals a
-  concrete defect.
+- Do not reopen a frozen product unless validation demonstrates a correctness
+  or safety defect.
+- Avoid overlapping ProofRun verification receipts, AgentScope instruction
+  discovery, WheelContract installed behavior, ReleaseFact version claims,
+  ResidueCheck filesystem residue, or WheelFact exact wheel structure.
+- Keep the experiment local-first, dependency-light, bounded, and independently
+  useful; abandon it if a focused transparent script is clearer.

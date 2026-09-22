@@ -2,11 +2,11 @@
 
 ## Product shape
 
-WheelFact v0.1.0 is a retained bounded prototype. It reads one existing wheel
-and checks exact scalar metadata, console scripts, and non-`.dist-info` payload
-members against one strict TOML contract.
+WheelFact v1.0.0 is a frozen local MVP. It reads one existing wheel and checks
+exact scalar metadata, console scripts, and non-`.dist-info` payload members
+against one strict TOML contract.
 
-## Initial evidence
+## Release evidence
 
 - The ResidueCheck v1.0.0 contract expresses four metadata facts, one console
   entry point, and four package modules without building or installing.
@@ -17,6 +17,13 @@ members against one strict TOML contract.
 - A focused assertion script is shorter for one artifact, but must duplicate
   archive validation, metadata parsing, entry-point parsing, set comparison,
   all-mismatch reporting, and exit semantics for each release audit.
+- A second exact contract passes against AgentScope's larger independent wheel.
+  A deliberately stale 16-line copy reported four scalar mismatches, missing
+  and unexpected console scripts, and missing and unexpected payload members in
+  one run; three still-correct members remained visible.
+- The focused comparison script required 44 lines while omitting WheelFact's
+  archive safety, ambiguity checks, read bounds, strict contract parsing, and
+  stable setup-error behavior.
 
 ## Boundaries
 
@@ -27,8 +34,8 @@ members against one strict TOML contract.
 - Archives are limited to 10,000 entries; only metadata and entry-point control
   files are decompressed, each under 1 MiB.
 
-## Next decision
+## Decision
 
-Exercise the contract against a second portfolio wheel with deliberately stale
-metadata, entry-point, missing-member, and unexpected-member expectations. Keep
-the schema only if those diagnostics remain clearer than the equivalent script.
+Freeze v1.0.0. The second-artifact rehearsal needed no schema change and made
+every correction explicit. Keep exact schema v1 and exits 0/1/2 stable; reopen
+only for a concrete correctness or safety defect.

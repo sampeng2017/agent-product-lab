@@ -300,6 +300,23 @@ second frozen wheel, deliberately stale every fact category, and promote or
 abandon the schema based on the real diagnostic rehearsal. Do not add builds,
 installs, globs, inferred expectations, repair, or general packaging policy.
 
+## WheelFact release result — 2026-09-21
+
+The second artifact used AgentScope's larger frozen wheel. Its exact 16-line
+schema-v1 contract passed four scalar facts, one console script, and four
+payload members. A deliberately stale copy changed all scalar values, replaced
+the console script, omitted one real member, and named one absent member. One
+run reported all eight corrections while retaining the three passing member
+facts; no diagnostic or schema gap appeared.
+
+The focused standard-library comparison required 44 lines and still omitted
+WheelFact's unsafe/duplicate archive rejection, `.dist-info` ambiguity checks,
+read bounds, strict contract parsing, and stable setup-error behavior. The
+declaration remains the clearer repeated release-audit interface. WheelFact was
+promoted unchanged to v1.0.0 and frozen as the sixth local MVP. The next run
+should compare fresh opportunities rather than extend exact wheel checks into
+general packaging policy.
+
 ## Sources inspected for the 2026-09-11 comparison
 
 - [Python Packaging User Guide: package formats](https://packaging.python.org/en/latest/discussions/package-formats/)

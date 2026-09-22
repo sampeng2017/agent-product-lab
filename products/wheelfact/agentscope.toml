@@ -1,0 +1,16 @@
+schema_version = 1
+
+[wheel]
+distribution = "agentscope-cli"
+version = "1.0.0"
+requires_python = ">=3.10"
+license = "MIT"
+package_members = [
+  "agentscope/__init__.py",
+  "agentscope/__main__.py",
+  "agentscope/cli.py",
+  "agentscope/core.py",
+]
+
+[wheel.console_scripts]
+agentscope = "agentscope.cli:main"

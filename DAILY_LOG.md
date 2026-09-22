@@ -1782,3 +1782,38 @@ Python 3.14 tests, Python 3.10 grammar parsing, compilation, ReleaseFact
 consistency, shell syntax, and diff checks passed. No human input is needed. The
 next run should perform the second-artifact diagnostic rehearsal in
 `NEXT_RUN.md` and promote only if schema v1 remains sufficient.
+
+## 2026-09-21 — WheelFact v1.0.0 release freeze
+
+Continued WheelFact after inspecting the clean Git state and history,
+automation memory, root and product handoffs, active `To-Sam/` communications,
+implementation, tests, contracts, and portfolio validator. No Sam request was
+active. The warning-strict Python 3.11 baseline passed all 129 tests with one
+expected optional skip, built and isolated-installed all six products, and
+passed every installed contract.
+
+Built the independent frozen AgentScope wheel from a disposable source copy and
+added its exact schema-v1 contract: four scalar metadata facts, one console
+script, and four payload members. A deliberately stale 16-line copy changed all
+four scalar values, replaced the script, omitted `agentscope/core.py`, and named
+an absent member. One WheelFact run reported all eight mismatches while still
+showing the three correct member facts; every correction was explicit and no
+schema change was needed.
+
+The focused standard-library comparison required 44 lines and still omitted
+WheelFact's unsafe and duplicate archive rejection, `.dist-info` ambiguity
+checks, control-file limits, strict contract parsing, and stable setup errors.
+The exact declaration remains the clearer repeated release-audit interface.
+Promoted WheelFact unchanged from v0.1.0 to v1.0.0 and froze schema v1 plus
+exits 0/1/2 as the sixth local MVP. Portfolio validation now checks both real
+ResidueCheck and AgentScope artifacts with the installed WheelFact command.
+
+Final warning-strict Python 3.11 portfolio validation passed all 129 tests with
+one expected optional skip, built and installed all six wheels, and passed both
+real WheelFact contracts plus every other installed contract. Focused Python
+3.14 tests, Python 3.10 grammar parsing, exact 1.0.0 wheel members and metadata,
+TOML parsing, ReleaseFact consistency, shell syntax, and diff checks passed.
+All six completed products remain behaviorally frozen. No human input is
+needed; the next run should compare at least three fresh, current opportunities
+and build one bounded seventh-product prototype rather than extend WheelFact
+into general packaging policy.
