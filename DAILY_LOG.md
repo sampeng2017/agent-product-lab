@@ -1817,3 +1817,47 @@ All six completed products remain behaviorally frozen. No human input is
 needed; the next run should compare at least three fresh, current opportunities
 and build one bounded seventh-product prototype rather than extend WheelFact
 into general packaging policy.
+
+## 2026-09-22 — GrammarCheck v0.1.0 bounded prototype
+
+Started the seventh-product selection after inspecting the clean Git state and
+history, automation memory, root and product handoffs, active `To-Sam/`
+communications, the WheelFact implementation and tests, the opportunity record,
+workflow, packaging metadata, and portfolio validator. No Sam request was
+active. The warning-strict Python 3.11 baseline passed all 129 existing tests
+with one expected optional skip, six wheel builds and isolated installs, and
+every installed contract.
+
+Compared three fresh repository-grounded opportunities against current
+authoritative sources. Target-grammar preflight addressed a repeated manual
+Python 3.10 audit and CPython provides the narrow best-effort
+`ast.parse(feature_version=...)` primitive. Declared-support/CI-matrix
+consistency would require full version-specifier and YAML semantics while the
+real hosted matrix already supplies runtime evidence. Reproducible wheel
+comparison lacked a demonstrated failure and the ecosystem already standardizes
+`SOURCE_DATE_EPOCH`. Ruff owns broader target-version-aware lint and formatting,
+so the selected experiment remains dependency-free and grammar-only.
+
+Built GrammarCheck v0.1.0. It selects explicit relative `.py` files and
+directories under one root, deduplicates overlaps, rejects symlinks and escapes,
+and caps file count, per-file bytes, and aggregate bytes. Each source is parsed
+against an explicit older grammar and the AST is then compiled so compiler-only
+scope errors are not mistaken for success. Deterministic output reports every
+incompatible file and inspection scope; exits 0, 1, and 2 separate compatibility,
+incompatibility, and invalid setup.
+
+Four focused methods cover sorted and overlapping passes, Python 3.10-only
+syntax under a 3.9 target, compiler-only scope failure, unsafe/missing/empty and
+symlink sources, file/byte bounds, target validation, and CLI errors. Installed
+portfolio validation now checks source and tests for all seven products against
+Python 3.10 grammar. The local host has no Python 3.10 executable, underscoring
+the local preflight use case while hosted CI remains authoritative.
+
+Final warning-strict Python 3.11 portfolio validation passed all 133 tests with
+one expected optional skip, built and isolated-installed seven wheels, passed
+every previous installed contract, and checked 40 Python files totaling 367,624
+bytes against target grammar 3.10. Focused tests, self-check, compilation, diff
+checks, and the direct aggregate check passed. No frozen behavior changed and
+no human input is needed. The next run should inject representative Python
+3.11–3.13 syntax in a disposable copy, compare diagnostics with direct AST and
+current Ruff output, and freeze or abandon based on clarity.

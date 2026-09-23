@@ -35,17 +35,21 @@ next.
   wheel metadata, console entry points, and payload members. The v1.0.0 local
   MVP was frozen on 2026-09-21 after independent ResidueCheck and AgentScope
   artifact rehearsals.
+- [GrammarCheck](products/grammarcheck/README.md) — bounded, dependency-free
+  checks of explicit Python source paths against an older CPython grammar. The
+  v0.1.0 prototype was selected and built on 2026-09-22.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). All six local
-MVPs are frozen. The next run should compare fresh repository-grounded product
-opportunities before selecting one bounded experiment.
+Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
+completed MVPs remain frozen. The next run should rehearse the active
+GrammarCheck prototype against deliberately newer syntax before retaining or
+abandoning it.
 
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
-all six products on every supported stable Python line from 3.10 through
+all seven products on every supported stable Python line from 3.10 through
 3.14. It runs every unit suite, promotes warnings to errors on the oldest
 supported version, compiles the sources, builds each wheel, and installs each
 artifact in a fresh environment. Installed ResidueCheck first proves its three
@@ -54,8 +58,10 @@ AgentScope metadata, entry points, and exact payloads. ReleaseFact checks the
 seven real
 claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
 verifies its own behavior before checking AgentScope's human, JSON, and policy-
-exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub permissions
-are read-only and checkout credentials are not retained.
+exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). Installed
+GrammarCheck then checks every product's source and tests against Python 3.10
+grammar. GitHub permissions are read-only and checkout credentials are not
+retained.
 
 Run the same validation with the active local interpreter:
 

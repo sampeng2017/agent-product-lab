@@ -327,3 +327,69 @@ general packaging policy.
   established wheel file-tree and packaging-error checks.
 - [tox packaging concepts](https://tox.wiki/en/4.40.0/explanation.html) —
   established isolated build/install and environment command orchestration.
+
+## Next-product comparison — 2026-09-22
+
+WheelFact's freeze left the portfolio without an active experiment. Fresh
+repository inspection found that all six packages declare Python 3.10+, hosted
+CI tests that minimum, but local release notes repeatedly cite one-off “Python
+3.10 grammar parsing” alongside routine Python 3.11 validation.
+
+### Candidate 1: bounded target-grammar preflight — selected experiment
+
+- **Demonstrated pain:** there was no checked-in command that could detect a
+  newly introduced post-3.10 syntax form without running Python 3.10 itself.
+- **Smallest useful wedge:** recursively select explicit contained `.py` paths,
+  parse them with an explicit CPython `feature_version`, compile the resulting
+  AST for scope checks, and report every incompatible file under file/byte
+  bounds.
+- **Existing ownership:** Ruff already uses `requires-python` or an explicit
+  target version for broad lint and format behavior. This repository does not
+  otherwise need Ruff; the experiment must remain a narrow dependency-free
+  grammar preflight and clearly defer to Ruff where it is already present.
+- **Decision test:** retain only if one aggregate portfolio check and its
+  bounded diagnostics are clearer than a focused AST script.
+- **Principal risk:** CPython documents feature-version parsing as best effort;
+  a pass cannot be presented as runtime compatibility evidence.
+
+### Candidate 2: declared-support/CI-matrix consistency checker
+
+- **Evidence:** every package repeats `requires-python = ">=3.10"`, while the
+  GitHub workflow separately enumerates 3.10 through 3.14.
+- **Why not selected:** `requires-python` is standardized project metadata, but
+  interpreting arbitrary specifiers and GitHub matrix expressions would need a
+  packaging library plus YAML semantics. The current concrete risk is syntax
+  drift, and the hosted matrix remains the authoritative runtime evidence.
+
+### Candidate 3: reproducible wheel comparison
+
+- **Evidence:** portfolio validation builds all six wheels on every run, but it
+  does not compare independent builds.
+- **Why not selected:** no nondeterministic artifact was observed, and the
+  reproducible-builds ecosystem already standardizes `SOURCE_DATE_EPOCH` for
+  build tools. A twin-build comparator would be speculative and overlap the
+  existing artifact inspection products without a demonstrated failure.
+
+### Prototype result
+
+GrammarCheck v0.1.0 meets the initial retention threshold. One installed command
+checks source and tests for all seven products against Python 3.10 grammar,
+deduplicates overlapping paths, rejects symlink/escaping inputs, caps count and
+bytes, and separates incompatibility exit 1 from invalid inspection exit 2.
+Focused tests prove both grammar rejection and the compiler-only “return outside
+function” failure. The next run should inject multiple post-3.10 forms in a
+disposable copy and compare its complete report with direct AST and Ruff output
+before deciding whether to freeze or abandon the product.
+
+## Sources inspected for the 2026-09-22 comparison
+
+- [CPython `ast` documentation](https://docs.python.org/3/library/ast.html) —
+  `feature_version` attempts an older grammar parse; parsing alone does not
+  perform every compilation/scoping check.
+- [Ruff target-version settings](https://docs.astral.sh/ruff/settings/#target-version)
+  — Ruff can infer the minimum target from `requires-python` and applies it to
+  version-aware lint and format behavior.
+- [PyPA `pyproject.toml` specification](https://packaging.python.org/en/latest/specifications/pyproject-toml/#requires-python)
+  — `requires-python` is the standard project compatibility declaration.
+- [Reproducible Builds `SOURCE_DATE_EPOCH`](https://reproducible-builds.org/docs/source-date-epoch/)
+  — the existing cross-ecosystem convention for deterministic build dates.

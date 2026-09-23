@@ -2,76 +2,77 @@
 
 ## Current direction
 
-WheelFact v1.0.0 is frozen as the sixth local MVP. Its second-artifact rehearsal
-needed no schema change and made every deliberate correction explicit. The
-portfolio now has no active prototype; the next run should select a new bounded
-experiment from current repository-grounded evidence.
+GrammarCheck v0.1.0 is the active seventh-product prototype. The six prior local
+MVPs remain frozen. The next run should stress the target-grammar diagnostics in
+a disposable portfolio copy before deciding whether the wedge deserves a 1.0
+freeze.
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
 ## Product shape
 
-- `products/wheelfact/` contains a dependency-free Python 3.10+ CLI, five
-  focused tests, and exact contracts for two independent portfolio wheels.
-- Each strict TOML contract names distribution, version, Python requirement,
-  license, console scripts, and exact non-`.dist-info` payload members.
-- It reads an existing wheel only, caps archive entries and decompressed control
-  files, and reports all missing, unexpected, and unequal facts.
-- Clean, mismatching, and invalid checks use exits 0, 1, and 2 respectively.
-- Portfolio validation builds and isolated-installs all six products, then uses
-  installed WheelFact to check the real ResidueCheck and AgentScope wheels.
+- `products/grammarcheck/` contains a dependency-free Python 3.10+ CLI and four
+  focused tests.
+- One invocation checks explicit relative files or directories against an
+  explicit Python 3.x grammar, then compiles each AST for scope validation.
+- Source paths are contained under `--root`; symlinks and escapes are rejected.
+- Defaults cap inspection at 10,000 files, 1 MiB per file, and 50 MiB total.
+- Compatible, incompatible, and invalid inspections exit 0, 1, and 2.
 
-## Completed today (2026-09-21)
+## Completed today (2026-09-22)
 
 - Passed the clean warning-strict 129-test, six-wheel portfolio baseline with
   one expected optional skip and every installed contract.
-- Built AgentScope in a disposable source copy and added its exact four-scalar,
-  one-entry-point, four-member WheelFact contract.
-- Deliberately stale expectations produced all eight intended diagnostics in
-  one run while preserving the three passing member facts.
-- Compared the 16-line declaration with a 44-line focused assertion script that
-  still omitted WheelFact's safety, bounds, strict parsing, and setup errors.
-- Promoted WheelFact unchanged to v1.0.0 and integrated the second real artifact
-  gate into portfolio validation.
+- Compared target-grammar checking, support-matrix consistency, and reproducible
+  wheel comparison using repository evidence and current authoritative sources.
+- Built GrammarCheck v0.1.0 with deterministic aggregate output, bounds, safe
+  path selection, and complete syntax/compiler diagnostics.
+- Added four tests covering passes, overlapping paths, post-target syntax,
+  compiler-only scope failure, unsafe and empty sets, symlinks, bounds, and CLI
+  setup errors.
+- Integrated the installed artifact into portfolio validation across source and
+  tests for every product.
 
 ## Changes since the prior run
 
-The retained prototype became the sixth frozen local MVP. Schema v1 and exits
-0/1/2 are unchanged; only version claims, documentation, a second real contract,
-and its installed validation gate were added.
+The portfolio moved from six frozen products and no active experiment to six
+frozen products plus one runnable GrammarCheck prototype. No frozen product
+behavior changed.
 
 ## Known issues
 
-- WheelFact checks exact declarations, not packaging quality or metadata policy.
-- Package payloads are named but never decompressed or content-hashed.
-- Standard `.dist-info` generated members are deliberately excluded from exact
-  enumeration; scalar metadata and console scripts are checked separately.
-- Schema v1 requires at least one payload member and four scalar metadata values.
+- CPython documents `feature_version` parsing as best effort, not exact target-
+  interpreter emulation.
+- A pass says nothing about runtime APIs, dependencies, types, platform behavior,
+  or standard-library availability.
+- The target must be explicit and no newer than the running interpreter.
 - Hosted portfolio CI remains Ubuntu-only, and the repository has no Git remote.
 
 ## Decisions
 
-- Freeze WheelFact v1.0.0: two independent real artifacts use schema v1, and the
-  complete stale report needed no new behavior.
-- Keep WheelFact separate from WheelContract: one checks uninstalled structure,
-  while the other owns isolated installed behavior.
-- Keep expectations exact and explicit; do not infer, glob, build, install,
-  repair, download, or impose general packaging policy.
-- Keep all six frozen MVP behaviors unchanged.
+- Select target-grammar preflight because minimum-version syntax drift was the
+  only candidate grounded in a repeated local manual check.
+- Keep GrammarCheck narrower than Ruff and real interpreter matrices: no lint,
+  formatting, imports, dependency resolution, metadata inference, or execution.
+- Retain v0.1.0 provisionally because one bounded installed command now checks
+  the entire portfolio and distinguishes grammar from compiler-scope failures.
 
 ## Validation
 
-- The pre-change default `python3` correctly failed the documented build-backend
-  preflight; explicit `PYTHON_BIN=python3.11` warning-strict validation passed.
-- WheelFact's five focused tests and compilation pass on Python 3.11.
-- Freshly built ResidueCheck and AgentScope wheels each pass nine declared facts;
-  the real stale AgentScope rehearsal reports eight mismatches in one run.
-- Final portfolio and compatibility validation is recorded in `DAILY_LOG.md`.
+- Pre-change warning-strict Python 3.11 portfolio validation passed all 129
+  existing tests, builds, isolated installs, and installed contracts.
+- GrammarCheck's focused warning-strict tests, self-check, compilation, and diff
+  checks pass.
+- Final warning-strict validation passed all 133 tests with one expected skip,
+  built and isolated-installed seven wheels, and checked 40 Python files
+  (367,624 bytes) against target grammar 3.10.
+- Final portfolio evidence is recorded in `DAILY_LOG.md`.
 
 ## Recommended next steps
 
-1. Compare at least three current opportunities using repository evidence and
-   authoritative current sources before selecting the next bounded experiment.
-2. Prefer a problem not already owned by the six frozen products.
-3. Do not reopen a frozen product without a demonstrated defect.
+1. In a disposable copy, add representative Python 3.11, 3.12, and 3.13 syntax
+   to separate files and inspect complete Python 3.10 diagnostics.
+2. Compare the same fixture with a focused AST script and current Ruff.
+3. Freeze only if GrammarCheck remains materially clearer; otherwise document
+   abandonment and remove it from active portfolio validation.
 
 No human input is required.

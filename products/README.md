@@ -10,6 +10,8 @@
   MVP.
 - `wheelfact/` — completed WheelFact v1.0.0 exact wheel-structure contract
   local MVP.
+- `grammarcheck/` — active GrammarCheck v0.1.0 bounded target-grammar
+  compatibility prototype.
 
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product
