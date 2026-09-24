@@ -1,30 +1,30 @@
-# Next run: rehearse GrammarCheck diagnostics
+# Next run: select a fresh bounded opportunity
 
-GrammarCheck v0.1.0 is the active seventh-product prototype. WheelFact,
-ResidueCheck, ReleaseFact, WheelContract, AgentScope, and ProofRun remain frozen.
+GrammarCheck v0.1.0 is archived after failing its retention gate. WheelFact,
+ResidueCheck, WheelContract, AgentScope, and ProofRun remain frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, GrammarCheck's implementation
-and tests, and the portfolio validator. Check Git state/history and rerun the
-warning-strict portfolio validation before editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, and the portfolio validator.
+Check Git state/history and rerun warning-strict portfolio validation before
+editing.
 
-## Bounded diagnostic rehearsal
+## Bounded selection task
 
-1. Copy representative portfolio sources into a disposable tree.
-2. Add separate examples of syntax first available in Python 3.11, 3.12, and
-   3.13 while retaining at least one compiler-only scope failure.
-3. Run installed GrammarCheck with target 3.10 and judge whether every file,
-   location, reason, and aggregate is useful.
-4. Compare the fixture with a focused direct-AST script and current Ruff.
-5. Freeze a narrow v1.0 only if the command is materially clearer; otherwise
-   record the failed hypothesis and remove the prototype from active validation.
+1. Find repeated manual checks, concrete defects, or missing evidence in the
+   six frozen-product release audits and current validator.
+2. Compare at least three narrow, credential-free opportunities with current
+   established tools and authoritative documentation.
+3. Select at most one experiment with a small runnable wedge and an explicit
+   abandonment condition.
+4. Prefer a disposable validation of the pain before adding maintained code.
 
 ## Guardrails
 
-- Do not infer the target from packaging metadata in this experiment.
-- Do not claim runtime, API, type, dependency, or exact-interpreter compatibility.
-- Do not add lint, formatting, execution, import resolution, or YAML parsing.
-- Do not modify the six frozen products unless validation finds a concrete bug.
+- Do not reopen a frozen product without a demonstrated defect.
+- Do not revive GrammarCheck by adding inference, lint, formatting, typing,
+  runtime emulation, dependency checks, or multi-interpreter orchestration.
+- Do not retain a prototype whose value is equivalent to a short transparent
+  standard-library script.

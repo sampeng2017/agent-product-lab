@@ -278,6 +278,26 @@ The next run should prototype the exact wheel-structure contract against the
 frozen ResidueCheck wheel. Abandon it if a short transparent script remains the
 clearer maintenance choice.
 
+## GrammarCheck experiment result — 2026-09-23
+
+GrammarCheck v0.1.0 did not clear its retention threshold. A disposable fixture
+combined one compatible file with Python 3.11 exception-group syntax, a Python
+3.12 type statement, a Python 3.13 default type parameter, and a compiler-only
+top-level `return`. Targeting Python 3.10, GrammarCheck reported all four
+incompatible files, their locations and reasons, one pass, and bounded totals.
+
+A focused 13-line `ast.parse(feature_version=(3, 10))` plus `compile` loop
+reported the same four incompatible files and reasons. Current Ruff 0.16.8 also
+reported all four, added source excerpts, and emitted both the type-statement
+and default-type-parameter incompatibilities for the Python 3.13 file. Its
+documented `target-version` setting already covers this broader maintained use
+case.
+
+The stable path selection and bounds were useful but did not outweigh a seventh
+package's maintenance and build cost. Keep the prototype as archived evidence,
+remove it from active portfolio validation, and select a different opportunity
+next run rather than expanding its scope.
+
 ## Exact wheel-structure prototype result — 2026-09-20
 
 WheelFact v0.1.0 meets the initial retention threshold. Its strict contract for

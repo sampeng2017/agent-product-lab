@@ -1861,3 +1861,39 @@ checks, and the direct aggregate check passed. No frozen behavior changed and
 no human input is needed. The next run should inject representative Python
 3.11–3.13 syntax in a disposable copy, compare diagnostics with direct AST and
 current Ruff output, and freeze or abandon based on clarity.
+
+## 2026-09-23 — GrammarCheck experiment archived
+
+Continued the required GrammarCheck decision rehearsal after inspecting clean
+Git state/history, automation memory, root and product handoffs, active
+`To-Sam/` communications, implementation/tests, opportunity records, and the
+portfolio validator. No Sam request was active. The pre-change warning-strict
+Python 3.11 baseline passed all 133 tests with one expected optional skip,
+seven wheel builds and isolated installs, and every installed contract.
+
+A disposable five-file fixture included one compatible file, Python 3.11
+exception-group syntax, a Python 3.12 type statement, a Python 3.13 type alias
+with a default type parameter, and a compiler-only top-level `return`. Against
+target 3.10, GrammarCheck returned exit 1 and reported one compatible plus all
+four incompatible files with locations, reasons, file count, and byte count.
+
+The comparison did not clear the retention gate. A focused 13-line direct
+`ast.parse(feature_version=(3, 10))` and `compile` loop returned exit 1 with the
+same four file diagnostics. Ruff 0.16.8 returned exit 1 with richer source
+excerpts and five diagnostics, separately identifying the 3.12 type-statement
+and 3.13 default-type-parameter incompatibilities in the same file. Ruff's
+official settings document `target-version` for minimum-version behavior.
+
+GrammarCheck remains in `products/grammarcheck/` as runnable experiment
+evidence, but it is not promoted or actively maintained. Its wheel build,
+isolated install, and portfolio scan were removed from the active validator,
+returning the maintained portfolio to the six frozen local MVPs. No frozen
+product behavior changed. The next run should compare at least three fresh,
+repository-grounded opportunities and establish an explicit abandonment gate
+before building one bounded prototype. No human input is needed.
+
+Final warning-strict Python 3.11 active portfolio validation passed all 129
+maintained tests with one expected optional skip, built and isolated-installed
+six wheels, and passed every installed contract. The archived GrammarCheck's
+four focused tests also pass independently. ReleaseFact consistency, shell
+syntax, compilation, and diff checks passed.

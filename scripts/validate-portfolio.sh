@@ -112,16 +112,5 @@ validate_product agentscope agentscope --version
     --wheel "$validation_temp/wheels/agentscope"/*.whl \
     "$portfolio_root/wheelcontract.toml"
 validate_product proofrun proofrun --help
-validate_product grammarcheck grammarcheck --version
-"$validation_temp/environments/grammarcheck/bin/grammarcheck" \
-    --root "$portfolio_root" \
-    --target 3.10 \
-    products/proofrun/src products/proofrun/tests \
-    products/agentscope/src products/agentscope/tests \
-    products/wheelcontract/src products/wheelcontract/tests \
-    products/releasefact/src products/releasefact/tests \
-    products/residuecheck/src products/residuecheck/tests \
-    products/wheelfact/src products/wheelfact/tests \
-    products/grammarcheck/src products/grammarcheck/tests
 
 echo "Portfolio validation passed; temporary build output was removed."

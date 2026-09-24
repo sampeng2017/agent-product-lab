@@ -35,33 +35,31 @@ next.
   wheel metadata, console entry points, and payload members. The v1.0.0 local
   MVP was frozen on 2026-09-21 after independent ResidueCheck and AgentScope
   artifact rehearsals.
-- [GrammarCheck](products/grammarcheck/README.md) — bounded, dependency-free
-  checks of explicit Python source paths against an older CPython grammar. The
-  v0.1.0 prototype was selected and built on 2026-09-22.
+- [GrammarCheck](products/grammarcheck/README.md) — archived v0.1.0 experiment
+  in bounded older-grammar checks. The 2026-09-23 rehearsal found that a small
+  direct AST loop gave equivalent diagnostics and Ruff gave richer ones, so it
+  was not promoted or retained in active validation.
 
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
-completed MVPs remain frozen. The next run should rehearse the active
-GrammarCheck prototype against deliberately newer syntax before retaining or
-abandoning it.
+completed MVPs remain frozen. The next run should compare fresh opportunities
+from repository evidence before selecting another bounded experiment.
 
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
-all seven products on every supported stable Python line from 3.10 through
-3.14. It runs every unit suite, promotes warnings to errors on the oldest
-supported version, compiles the sources, builds each wheel, and installs each
-artifact in a fresh environment. Installed ResidueCheck first proves its three
+all six frozen products on every supported stable Python line from 3.10 through
+3.14. It runs every maintained unit suite, promotes warnings to errors on the
+oldest supported version, compiles the sources, builds each wheel, and installs
+each artifact in a fresh environment. Installed ResidueCheck first proves its three
 change kinds against ignored files. Installed WheelFact checks ResidueCheck and
 AgentScope metadata, entry points, and exact payloads. ReleaseFact checks the
 seven real
 claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
 verifies its own behavior before checking AgentScope's human, JSON, and policy-
-exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). Installed
-GrammarCheck then checks every product's source and tests against Python 3.10
-grammar. GitHub permissions are read-only and checkout credentials are not
-retained.
+exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub
+permissions are read-only and checkout credentials are not retained.
 
 Run the same validation with the active local interpreter:
 
@@ -69,14 +67,14 @@ Run the same validation with the active local interpreter:
 ./scripts/validate-portfolio.sh
 ```
 
-All build and environment output is created under a temporary directory and
-removed at exit, leaving the checkout unchanged. Set `PYTHON_BIN` to choose a
-specific interpreter and `PYTHONWARNINGS=error` for the warning-strict test
-variant. The selected interpreter must have the packages' declared build backend
-(`setuptools>=68`); CI installs it explicitly, while a missing local backend
-produces a short preflight error. The maintained workflow is Ubuntu-only;
-product code retains its documented cross-platform behavior, including
-ProofRun's platform-specific receipt lock.
+All build and environment output for the six frozen products is created under a
+temporary directory and removed at exit, leaving the checkout unchanged. Set
+`PYTHON_BIN` to choose a specific interpreter and `PYTHONWARNINGS=error` for the
+warning-strict test variant. The selected interpreter must have the packages'
+declared build backend (`setuptools>=68`); CI installs it explicitly, while a
+missing local backend produces a short preflight error. The maintained workflow
+is Ubuntu-only; product code retains its documented cross-platform behavior,
+including ProofRun's platform-specific receipt lock.
 
 ## Repository handoffs
 
