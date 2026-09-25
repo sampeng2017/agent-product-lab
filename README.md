@@ -43,17 +43,20 @@ next.
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
-completed MVPs remain frozen. The next run should compare fresh opportunities
-from repository evidence before selecting another bounded experiment.
+completed MVPs remain frozen. The next run should rehearse the standard
+source-distribution release path and retain a gate only if it exposes evidence
+that the current direct-wheel checks miss.
 
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
 all six frozen products on every supported stable Python line from 3.10 through
 3.14. It runs every maintained unit suite, promotes warnings to errors on the
-oldest supported version, compiles the sources, builds each wheel, and installs
-each artifact in a fresh environment. Installed ResidueCheck first proves its three
-change kinds against ignored files. Installed WheelFact checks ResidueCheck and
+oldest supported version, compiles the sources, independently builds each wheel
+twice, requires byte-identical artifacts, and installs the first artifact in a
+fresh environment. Wheel timestamps use the latest Git commit through the
+standard `SOURCE_DATE_EPOCH` convention. Installed ResidueCheck first proves its
+three change kinds against ignored files. Installed WheelFact checks ResidueCheck and
 AgentScope metadata, entry points, and exact payloads. ReleaseFact checks the
 seven real
 claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
@@ -72,7 +75,8 @@ temporary directory and removed at exit, leaving the checkout unchanged. Set
 `PYTHON_BIN` to choose a specific interpreter and `PYTHONWARNINGS=error` for the
 warning-strict test variant. The selected interpreter must have the packages'
 declared build backend (`setuptools>=68`); CI installs it explicitly, while a
-missing local backend produces a short preflight error. The maintained workflow
+missing local backend produces a short preflight error. Validation also requires
+a Git commit so it can derive a stable build timestamp. The maintained workflow
 is Ubuntu-only; product code retains its documented cross-platform behavior,
 including ProofRun's platform-specific receipt lock.
 

@@ -1897,3 +1897,41 @@ maintained tests with one expected optional skip, built and isolated-installed
 six wheels, and passed every installed contract. The archived GrammarCheck's
 four focused tests also pass independently. ReleaseFact consistency, shell
 syntax, compilation, and diff checks passed.
+
+## 2026-09-24 — byte-reproducible wheel validation
+
+Continued the product lab after inspecting the clean Git state and history,
+automation memory, root handoffs, active `To-Sam/` communications, product
+documentation, packaging metadata, implementation/tests, workflow, and the
+portfolio validator. No Sam request was active. The default `python3` correctly
+failed the documented `setuptools>=68` preflight; the clean warning-strict
+Python 3.11 baseline passed all 129 maintained tests with one expected optional
+skip, six wheel builds and isolated installs, and every maintained contract.
+
+Compared three credential-free release-evidence opportunities against current
+authoritative sources. A disposable local-link scan found all 24 Markdown
+targets present, while mature lychee already owns broader link validation. The
+portfolio does not exercise sdists even though PyPA recommends shipping both
+sdists and wheels, but the standard `build` frontend is not locally installed
+and no sdist-specific defect has yet been demonstrated. Reproducible wheels had
+previously been speculative, so it was tested directly before implementation.
+
+Two clean ReleaseFact wheel builds three seconds apart had identical members,
+payload CRCs, and sizes but different SHA-256 hashes because generated ZIP entry
+timestamps used wall-clock time. Repeating the same experiment with the
+standard `SOURCE_DATE_EPOCH` set to the latest Git commit timestamp produced
+byte-identical artifacts. This cleared the bounded retention gate without
+justifying a seventh CLI: the standard environment variable plus `cmp` is the
+transparent complete check for this pure-Python portfolio.
+
+Updated the portfolio validator to require a valid Git commit timestamp, export
+it as `SOURCE_DATE_EPOCH`, build every frozen product from two independent
+temporary source copies, require exactly one wheel from each build, and reject
+any byte drift before the first artifact is installed and exercised. Updated
+README, STATUS, NEXT_RUN, and the opportunity record. No frozen product API,
+schema, package version, or behavior changed. The final warning-strict Python
+3.11 acceptance run passed 129 tests with one expected optional skip, twelve
+builds, six reproducibility comparisons, six isolated installs, and all
+existing contracts. The next run should rehearse the standard
+sdist-to-wheel path in a disposable copy and retain a gate only if it exposes
+evidence absent from direct wheels, WheelFact, and WheelContract.

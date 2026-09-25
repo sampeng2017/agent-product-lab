@@ -10,6 +10,18 @@ trap 'rm -rf "$validation_temp"' EXIT HUP INT TERM
 export PIP_CACHE_DIR="$validation_temp/pip-cache"
 export PIP_DISABLE_PIP_VERSION_CHECK=1
 
+if ! SOURCE_DATE_EPOCH=$(git -C "$portfolio_root" log -1 --format=%ct 2>/dev/null); then
+    echo "Portfolio validation requires a Git commit timestamp." >&2
+    exit 2
+fi
+case "$SOURCE_DATE_EPOCH" in
+    ''|*[!0-9]*)
+        echo "Portfolio validation found an invalid Git commit timestamp." >&2
+        exit 2
+        ;;
+esac
+export SOURCE_DATE_EPOCH
+
 if ! "$portfolio_python" -c '
 import setuptools.build_meta
 from importlib.metadata import version
@@ -26,7 +38,9 @@ validate_product() {
     smoke_argument=$3
     product_root="$portfolio_root/products/$product_name"
     build_source="$validation_temp/sources/$product_name"
+    rebuild_source="$validation_temp/rebuild-sources/$product_name"
     wheel_dir="$validation_temp/wheels/$product_name"
+    rebuild_wheel_dir="$validation_temp/rebuild-wheels/$product_name"
     environment_dir="$validation_temp/environments/$product_name"
     pycache_dir="$validation_temp/pycache/$product_name"
 
@@ -42,13 +56,37 @@ validate_product() {
             "$portfolio_python" -m compileall -q src tests
     )
 
-    mkdir -p "$validation_temp/sources" "$wheel_dir"
+    mkdir -p "$validation_temp/sources" "$validation_temp/rebuild-sources" \
+        "$wheel_dir" "$rebuild_wheel_dir"
     cp -R "$product_root" "$build_source"
+    cp -R "$product_root" "$rebuild_source"
     "$portfolio_python" -m pip wheel \
         --no-deps \
         --no-build-isolation \
         --wheel-dir "$wheel_dir" \
         "$build_source"
+    "$portfolio_python" -m pip wheel \
+        --no-deps \
+        --no-build-isolation \
+        --wheel-dir "$rebuild_wheel_dir" \
+        "$rebuild_source"
+    set -- "$wheel_dir"/*.whl
+    if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+        echo "$product_name first build did not produce exactly one wheel." >&2
+        exit 1
+    fi
+    first_wheel=$1
+    set -- "$rebuild_wheel_dir"/*.whl
+    if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+        echo "$product_name second build did not produce exactly one wheel." >&2
+        exit 1
+    fi
+    second_wheel=$1
+    if ! cmp -s "$first_wheel" "$second_wheel"; then
+        echo "$product_name wheel is not byte-reproducible with SOURCE_DATE_EPOCH." >&2
+        exit 1
+    fi
+    echo "$product_name wheel is byte-reproducible at SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"
     "$portfolio_python" -m venv "$environment_dir"
     "$environment_dir/bin/python" -m pip install \
         --no-index \

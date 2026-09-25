@@ -413,3 +413,63 @@ before deciding whether to freeze or abandon the product.
   — `requires-python` is the standard project compatibility declaration.
 - [Reproducible Builds `SOURCE_DATE_EPOCH`](https://reproducible-builds.org/docs/source-date-epoch/)
   — the existing cross-ecosystem convention for deterministic build dates.
+
+## Portfolio release-evidence comparison — 2026-09-24
+
+The archived GrammarCheck left no active product hypothesis. Inspection focused
+on missing release evidence that could be demonstrated before adding code.
+
+### Candidate 1: reproducible wheel gate — selected
+
+- **Demonstrated pain:** two clean ReleaseFact builds three seconds apart had
+  identical members, payload CRCs, and sizes but different wheel SHA-256 values;
+  only generated archive timestamps changed.
+- **Smallest useful wedge:** set the standardized `SOURCE_DATE_EPOCH` to the
+  latest Git commit time, build every product from two independent temporary
+  source copies, and require byte equality before installation.
+- **Existing ownership:** the Reproducible Builds project defines the variable
+  and explicitly documents deriving it from `git log`. A separate comparator
+  CLI would add no value over two builds and `cmp` for this portfolio.
+- **Decision test:** retain only if the standard variable makes the real wheel
+  byte-identical after a delayed rebuild. The hashes matched, so the portfolio
+  gate was retained without creating a seventh product.
+
+### Candidate 2: local documentation-link gate
+
+- **Evidence:** release audits repeatedly mention documentation links, but a
+  disposable scan found all 24 local Markdown targets present.
+- **Why not selected:** there is no current defect, a small local-only parser
+  would mishandle Markdown edge cases, and lychee already checks local and
+  remote links across common documentation formats.
+
+### Candidate 3: source-distribution release path
+
+- **Evidence:** all six products build, inspect, install, and exercise direct
+  wheels, but none builds an sdist or builds a wheel from one. PyPA recommends
+  publishing both formats because installers may fall back to an sdist.
+- **Why not selected today:** the standard `build` frontend is not installed in
+  the local validation environment, and no missing-file or install defect has
+  yet been reproduced. This is the strongest bounded next rehearsal, not a
+  reason to silently add dependencies or invent an sdist checker.
+
+### Result
+
+The reproducibility hypothesis changed from speculative to demonstrated. The
+portfolio validator now creates twelve wheels per interpreter run and compares
+each product's independent pair byte for byte before continuing with existing
+structure and behavior contracts. A missing or malformed Git commit timestamp
+is a setup error rather than an implicit wall-clock fallback. Product APIs and
+schemas remain frozen.
+
+## Sources inspected for the 2026-09-24 comparison
+
+- [Reproducible Builds `SOURCE_DATE_EPOCH`](https://reproducible-builds.org/docs/source-date-epoch/)
+  — standard timestamp input, including the recommended latest-Git-commit
+  derivation and ZIP timestamp handling.
+- [PyPA packaging flow](https://packaging.python.org/en/latest/flow/) — standard
+  release flow normally produces both an sdist and one or more wheels.
+- [PyPA package formats](https://packaging.python.org/en/latest/discussions/package-formats/)
+  — installers can fall back to building a wheel from an sdist, and publishers
+  should normally provide both.
+- [lychee](https://github.com/lycheeverse/lychee) — established link checker for
+  Markdown and other documentation formats.
