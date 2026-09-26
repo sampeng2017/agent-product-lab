@@ -30,7 +30,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install declared build backend
-        run: python -m pip install "setuptools>=68"
+        run: python -m pip install "setuptools>=77"
 
       - name: Test, build, and smoke-test portfolio products
         env:

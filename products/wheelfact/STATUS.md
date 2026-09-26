@@ -2,11 +2,15 @@
 
 ## Product shape
 
-WheelFact v1.0.0 is a frozen local MVP. It reads one existing wheel and checks
+WheelFact v1.0.1 is a frozen local MVP. It reads one existing wheel and checks
 exact scalar metadata, console scripts, and non-`.dist-info` payload members
 against one strict TOML contract.
 
 ## Release evidence
+
+- The v1.0.1 maintenance release accepts the standard core-metadata
+  `License-Expression` header produced by PEP 639 packaging metadata while
+  retaining legacy `License` compatibility.
 
 - The ResidueCheck v1.0.0 contract expresses four metadata facts, one console
   entry point, and four package modules without building or installing.
@@ -36,6 +40,6 @@ against one strict TOML contract.
 
 ## Decision
 
-Freeze v1.0.0. The second-artifact rehearsal needed no schema change and made
+Freeze v1.0.1. The second-artifact rehearsal needed no schema change and made
 every correction explicit. Keep exact schema v1 and exits 0/1/2 stable; reopen
 only for a concrete correctness or safety defect.

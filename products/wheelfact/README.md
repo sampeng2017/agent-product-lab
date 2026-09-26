@@ -1,9 +1,12 @@
-# WheelFact 1.0.0
+# WheelFact 1.0.1
 
 WheelFact is a dependency-free, read-only CLI that checks one existing Python
 wheel against an exact TOML contract. It compares distribution metadata,
 console entry points, and every non-`.dist-info` payload member without building
 or installing the artifact.
+
+The `license` fact accepts modern core-metadata `License-Expression` and falls
+back to the legacy `License` header for existing wheels.
 
 ```bash
 wheelfact wheelfact.toml dist/example-1.0.0-py3-none-any.whl
@@ -46,7 +49,7 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m wheelfact --help
 ```
 
-Version 1.0.0 is the frozen local MVP. Real contracts for ResidueCheck and
+Version 1.0.1 is the frozen local MVP. Real contracts for ResidueCheck and
 AgentScope exercise the same schema across two independent wheels. Its exact
 contract, diagnostics, bounds, and exit 0/1/2 behavior are stable. Reopen only
 for a demonstrated correctness or safety defect, not inferred names, globs,

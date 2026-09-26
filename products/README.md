@@ -8,7 +8,7 @@
   consistency local MVP.
 - `residuecheck/` — completed ResidueCheck v1.0.0 bounded command-residue local
   MVP.
-- `wheelfact/` — completed WheelFact v1.0.0 exact wheel-structure contract
+- `wheelfact/` — completed WheelFact v1.0.1 exact wheel-structure contract
   local MVP.
 - `grammarcheck/` — archived GrammarCheck v0.1.0 target-grammar experiment;
   retained as decision evidence but excluded from active portfolio validation.

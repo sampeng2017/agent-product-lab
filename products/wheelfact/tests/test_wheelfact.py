@@ -55,17 +55,20 @@ class WheelFactTests(unittest.TestCase):
         version: str = "1.2.3",
         requires_python: str = ">=3.10",
         license_name: str = "MIT",
+        modern_license: bool = False,
         scripts: tuple[tuple[str, str], ...] = (("example", "example.cli:main"),),
         members: tuple[str, ...] = ("example/__init__.py", "example/cli.py"),
     ) -> Path:
         wheel = self.root / "example-1.2.3-py3-none-any.whl"
         dist_info = "example_cli-1.2.3.dist-info"
+        metadata_version = "2.4" if modern_license else "2.2"
+        license_header = "License-Expression" if modern_license else "License"
         metadata = (
-            "Metadata-Version: 2.2\n"
+            f"Metadata-Version: {metadata_version}\n"
             f"Name: {distribution}\n"
             f"Version: {version}\n"
             f"Requires-Python: {requires_python}\n"
-            f"License: {license_name}\n\n"
+            f"{license_header}: {license_name}\n\n"
         )
         entry_points = "[console_scripts]\n" + "\n".join(
             f"{name} = {target}" for name, target in scripts
@@ -88,16 +91,23 @@ class WheelFactTests(unittest.TestCase):
 
     def test_exact_contract_passes_with_deterministic_facts(self) -> None:
         contract = self.write_contract()
-        wheel = self.write_wheel()
+        wheel = self.write_wheel(modern_license=True)
 
         exit_code, stdout, stderr = self.run_cli(contract, wheel)
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(stderr, "")
         self.assertIn("PASS distribution: 'example-cli'", stdout)
+        self.assertIn("PASS license: 'MIT'", stdout)
         self.assertIn("PASS console script example: 'example.cli:main'", stdout)
         self.assertIn("PASS member example/cli.py: 'example/cli.py'", stdout)
         self.assertIn("Result: 7 matched, 0 mismatched, 7 total", stdout)
+
+    def test_legacy_license_metadata_remains_supported(self) -> None:
+        contract = self.write_contract()
+        results = check_wheel(self.write_wheel(), load_contract(contract))
+
+        self.assertTrue(all(result.matched for result in results))
 
     def test_reports_all_scalar_script_and_member_mismatches(self) -> None:
         contract = self.write_contract(

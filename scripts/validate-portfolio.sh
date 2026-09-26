@@ -25,9 +25,9 @@ export SOURCE_DATE_EPOCH
 if ! "$portfolio_python" -c '
 import setuptools.build_meta
 from importlib.metadata import version
-raise SystemExit(int(version("setuptools").split(".", 1)[0]) < 68)
+raise SystemExit(int(version("setuptools").split(".", 1)[0]) < 77)
 ' >/dev/null 2>&1; then
-    echo "Portfolio validation requires setuptools>=68 for $portfolio_python." >&2
+    echo "Portfolio validation requires setuptools>=77 for $portfolio_python." >&2
     echo "Install the declared pyproject build requirement or choose PYTHON_BIN." >&2
     exit 2
 fi
@@ -60,12 +60,12 @@ validate_product() {
         "$wheel_dir" "$rebuild_wheel_dir"
     cp -R "$product_root" "$build_source"
     cp -R "$product_root" "$rebuild_source"
-    "$portfolio_python" -m pip wheel \
+    PYTHONWARNINGS="$validation_python_warnings" "$portfolio_python" -m pip wheel \
         --no-deps \
         --no-build-isolation \
         --wheel-dir "$wheel_dir" \
         "$build_source"
-    "$portfolio_python" -m pip wheel \
+    PYTHONWARNINGS="$validation_python_warnings" "$portfolio_python" -m pip wheel \
         --no-deps \
         --no-build-isolation \
         --wheel-dir "$rebuild_wheel_dir" \

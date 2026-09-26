@@ -32,9 +32,8 @@ next.
   created, modified, and removed files even when Git ignores them, with explicit
   before/after scan scope. It was frozen on 2026-09-19.
 - [WheelFact](products/wheelfact/README.md) — exact contracts for existing Python
-  wheel metadata, console entry points, and payload members. The v1.0.0 local
-  MVP was frozen on 2026-09-21 after independent ResidueCheck and AgentScope
-  artifact rehearsals.
+  wheel metadata, console entry points, and payload members. The local MVP was
+  frozen on 2026-09-21; v1.0.1 adds modern license-metadata compatibility.
 - [GrammarCheck](products/grammarcheck/README.md) — archived v0.1.0 experiment
   in bounded older-grammar checks. The 2026-09-23 rehearsal found that a small
   direct AST loop gave equivalent diagnostics and Ruff gave richer ones, so it
@@ -74,7 +73,7 @@ All build and environment output for the six frozen products is created under a
 temporary directory and removed at exit, leaving the checkout unchanged. Set
 `PYTHON_BIN` to choose a specific interpreter and `PYTHONWARNINGS=error` for the
 warning-strict test variant. The selected interpreter must have the packages'
-declared build backend (`setuptools>=68`); CI installs it explicitly, while a
+declared build backend (`setuptools>=77`); CI installs it explicitly, while a
 missing local backend produces a short preflight error. Validation also requires
 a Git commit so it can derive a stable build timestamp. The maintained workflow
 is Ubuntu-only; product code retains its documented cross-platform behavior,

@@ -135,7 +135,7 @@ def check_wheel(path: Path, contract: Contract) -> tuple[CheckResult, ...]:
                 "distribution": _single_header(metadata, "Name", required=True),
                 "version": _single_header(metadata, "Version", required=True),
                 "requires-python": _single_header(metadata, "Requires-Python"),
-                "license": _single_header(metadata, "License"),
+                "license": _metadata_license(metadata),
             }
             entry_name = f"{dist_root}/entry_points.txt"
             actual_scripts = (
@@ -201,6 +201,12 @@ def _single_header(message: Any, name: str, *, required: bool = False) -> str | 
     if required and not value:
         raise ContractError(f"wheel METADATA is missing {name}")
     return value or None
+
+
+def _metadata_license(message: Any) -> str | None:
+    expression = _single_header(message, "License-Expression")
+    legacy = _single_header(message, "License")
+    return expression or legacy
 
 
 def _read_console_scripts(content: bytes, display_name: str) -> dict[str, str]:

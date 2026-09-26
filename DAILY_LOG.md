@@ -1935,3 +1935,49 @@ builds, six reproducibility comparisons, six isolated installs, and all
 existing contracts. The next run should rehearse the standard
 sdist-to-wheel path in a disposable copy and retain a gate only if it exposes
 evidence absent from direct wheels, WheelFact, and WheelContract.
+
+## 2026-09-25 — current license metadata and sdist decision
+
+Continued the six-product portfolio after inspecting the clean Git state and
+history, automation memory, root and product handoffs, active `To-Sam/`
+communications, opportunity records, packaging definitions, implementation,
+tests, workflow, and portfolio validator. No Sam request was active. The clean
+warning-strict Python 3.11 baseline passed all 129 maintained tests with one
+expected optional skip, twelve reproducible wheel builds, six isolated
+installs, and every maintained contract.
+
+Completed the prescribed release-path experiment in a disposable environment
+with the standard `build` frontend and Twine. ReleaseFact's sdist-derived wheel
+was byte-identical to its direct wheel, installed successfully, and both the
+wheel and sdist passed `twine check --strict`. That path added no evidence beyond
+the maintained direct-wheel, WheelFact, and WheelContract gates, so no permanent
+sdist build dependency or duplicate CI path was retained.
+
+The experiment also built sdists from two separate source copies. They differed
+even under the Git-derived `SOURCE_DATE_EPOCH`; decompressed tar hashes differed,
+and member inspection showed source-copy and generated-file mtimes. Because the
+portfolio does not publish sdists, a custom normalization layer would be
+speculative and was rejected.
+
+The standard frontend did expose a concrete release defect: current setuptools
+reported every package's `project.license = {text = "MIT"}` form as an overdue
+deprecation, and warning-strict wheel metadata generation reproduced it as a
+hard failure. Migrated all six maintained products plus archived GrammarCheck
+to SPDX `license = "MIT"` and explicit `license-files = ["LICENSE"]`, raised
+their declared/validated build backend floor to setuptools 77, and passed build
+warning policy into both reproducible-wheel invocations.
+
+The migration changed core metadata from legacy `License` to
+`License-Expression`, exposing a real WheelFact compatibility defect. WheelFact
+v1.0.1 now prefers the modern header and falls back to the legacy header, with
+focused coverage for both and no schema change. Updated portfolio/product docs,
+status, handoff, and opportunity evidence. The next run should mutate wheel
+`RECORD` digest, size, and membership evidence and extend WheelFact only if the
+existing install, structure, and behavior layers demonstrably miss meaningful
+corruption.
+
+Final warning-strict Python 3.11 acceptance passed all 130 maintained tests with
+one expected optional skip, twelve byte-reproducible wheel builds, six isolated
+installs, and every maintained contract. Archived GrammarCheck's four tests,
+all seven TOML package metadata declarations, compilation, local Markdown
+targets, ReleaseFact consistency, shell syntax, and diff checks also passed.

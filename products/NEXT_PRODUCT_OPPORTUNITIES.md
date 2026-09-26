@@ -298,6 +298,29 @@ package's maintenance and build cost. Keep the prototype as archived evidence,
 remove it from active portfolio validation, and select a different opportunity
 next run rather than expanding its scope.
 
+## Source-distribution rehearsal result — 2026-09-25
+
+A disposable ReleaseFact build used the standard `build` frontend to create an
+sdist and direct wheel, then pip built and installed a wheel from that sdist.
+The two wheels were byte-identical, both published artifacts passed
+`twine check --strict`, and installed behavior passed. This did not demonstrate
+evidence beyond the existing direct-wheel, WheelFact, and WheelContract gates,
+so a permanent sdist dependency and validation path were rejected.
+
+Two sdists built from separate source copies were not byte-identical even with
+the Git-derived `SOURCE_DATE_EPOCH`: both source and generated tar member mtimes
+reflected their copy/build times. Because the portfolio publishes no sdists,
+normalizing those archives would be speculative rather than a current product
+improvement.
+
+The frontend did expose an overdue setuptools warning for every package's
+legacy license table. All packages now use SPDX `license` plus `license-files`
+metadata and require setuptools 77+. WheelFact v1.0.1 recognizes the resulting
+`License-Expression` header while retaining legacy `License` compatibility.
+The next bounded opportunity is wheel `RECORD` integrity: deliberately corrupt
+hash, size, and membership evidence and determine whether current install,
+structure, and behavior checks have a real blind spot before extending a tool.
+
 ## Exact wheel-structure prototype result — 2026-09-20
 
 WheelFact v0.1.0 meets the initial retention threshold. Its strict contract for
