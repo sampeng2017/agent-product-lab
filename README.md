@@ -33,7 +33,8 @@ next.
   before/after scan scope. It was frozen on 2026-09-19.
 - [WheelFact](products/wheelfact/README.md) — exact contracts for existing Python
   wheel metadata, console entry points, and payload members. The local MVP was
-  frozen on 2026-09-21; v1.0.1 adds modern license-metadata compatibility.
+  frozen on 2026-09-21; v1.0.2 also verifies complete `RECORD` hashes,
+  membership, and declared sizes before comparing contract facts.
 - [GrammarCheck](products/grammarcheck/README.md) — archived v0.1.0 experiment
   in bounded older-grammar checks. The 2026-09-23 rehearsal found that a small
   direct AST loop gave equivalent diagnostics and Ruff gave richer ones, so it
@@ -42,9 +43,9 @@ next.
 ## Next autonomous run
 
 Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
-completed MVPs remain frozen. The next run should rehearse the standard
-source-distribution release path and retain a gate only if it exposes evidence
-that the current direct-wheel checks miss.
+completed MVPs remain frozen. The next run should decide whether all six built
+wheels need a contract-independent integrity gate, retaining one only if it
+does not duplicate WheelFact's exact-contract interface.
 
 ## Portfolio validation
 
@@ -55,9 +56,9 @@ oldest supported version, compiles the sources, independently builds each wheel
 twice, requires byte-identical artifacts, and installs the first artifact in a
 fresh environment. Wheel timestamps use the latest Git commit through the
 standard `SOURCE_DATE_EPOCH` convention. Installed ResidueCheck first proves its
-three change kinds against ignored files. Installed WheelFact checks ResidueCheck and
-AgentScope metadata, entry points, and exact payloads. ReleaseFact checks the
-seven real
+three change kinds against ignored files. Installed WheelFact checks
+ResidueCheck and AgentScope integrity, metadata, entry points, and exact
+payloads. ReleaseFact checks the seven real
 claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
 verifies its own behavior before checking AgentScope's human, JSON, and policy-
 exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub

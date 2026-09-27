@@ -1981,3 +1981,42 @@ one expected optional skip, twelve byte-reproducible wheel builds, six isolated
 installs, and every maintained contract. Archived GrammarCheck's four tests,
 all seven TOML package metadata declarations, compilation, local Markdown
 targets, ReleaseFact consistency, shell syntax, and diff checks also passed.
+
+## 2026-09-26 — WheelFact v1.0.2 RECORD integrity
+
+Continued the six-product portfolio after inspecting the clean Git state and
+history, automation memory, root and product handoffs, active `To-Sam/`
+communications, WheelFact implementation/tests, opportunity evidence, and the
+portfolio validator. No Sam request was active. The clean warning-strict Python
+3.11 baseline passed all 130 maintained tests with one expected optional skip,
+twelve reproducible wheel builds, six isolated installs, and every maintained
+contract.
+
+Executed the prescribed `RECORD` experiment against a real AgentScope wheel.
+Separate variants supplied a wrong payload digest, wrong declared size, missing
+payload row, and unrecorded archive member. Pip 25.0.1, WheelContract 1.0.0, and
+Twine 7.0.0 accepted all four. `wheel unpack` 0.45.1 rejected the bad digest and
+both membership failures but accepted the false size. WheelFact v1.0.1 rejected
+only the added payload through its exact package-member contract. A focused
+33-line standard-library verifier caught every variant but omitted safe paths,
+duplicates, hash policy, resource bounds, combined diagnostics, and stable
+artifact-error semantics.
+
+This demonstrated correctness gap justified reopening WheelFact narrowly.
+Version 1.0.2 verifies strict three-field CSV rows, safe unique paths, complete
+archive membership with deprecated signature exceptions, secure supported
+hashes, digests, and any declared sizes before evaluating unchanged schema-v1
+facts. Payloads are hashed in 64 KiB chunks under a 1 GiB aggregate declared
+uncompressed limit. Invalid evidence remains artifact/setup exit 2; contract
+mismatches remain exit 1, and no provenance or authenticity claim is implied.
+
+Focused coverage now includes eight test methods and exercises the four real
+corruptions plus missing `RECORD`, missing and weak hashes, invalid sizes,
+duplicate rows, absent-file rows, and an invalid self row. Warning-strict Python
+3.11 and 3.14 focused suites, Python 3.10 grammar parsing, compilation, archived
+GrammarCheck tests, ReleaseFact consistency, shell syntax, and diff checks pass.
+Final warning-strict portfolio validation passed all 132 maintained tests with
+one expected skip, twelve byte-reproducible wheel builds, six isolated installs,
+and every installed contract. No human input is required. The next run should
+decide whether all six built wheels need a contract-independent integrity gate
+without widening WheelFact into a general packaging linter.

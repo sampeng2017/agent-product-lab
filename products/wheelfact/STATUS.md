@@ -2,15 +2,25 @@
 
 ## Product shape
 
-WheelFact v1.0.1 is a frozen local MVP. It reads one existing wheel and checks
-exact scalar metadata, console scripts, and non-`.dist-info` payload members
-against one strict TOML contract.
+WheelFact v1.0.2 is a frozen local MVP. It reads one existing wheel, verifies
+its complete `RECORD`, and checks exact scalar metadata, console scripts, and
+non-`.dist-info` payload members against one strict TOML contract.
 
 ## Release evidence
 
 - The v1.0.1 maintenance release accepts the standard core-metadata
   `License-Expression` header produced by PEP 639 packaging metadata while
   retaining legacy `License` compatibility.
+- The v1.0.2 maintenance release rejects missing or extra `RECORD` membership,
+  weak, malformed, or unequal hashes, and unequal declared sizes before
+  evaluating contract facts. Verification is streamed and capped at 1 GiB.
+- Disposable AgentScope wheels proved the gap: pip 25.0.1, WheelContract 1.0.0,
+  and Twine 7.0.0 accepted bad digest, bad size, missing-row, and unrecorded-file
+  variants. `wheel unpack` 0.45.1 caught all but the false size, while pre-fix
+  WheelFact caught only the unrecorded payload through exact membership.
+- A focused 33-line standard-library verifier caught all four mutations but
+  omitted WheelFact's safe paths, duplicates, strong-algorithm validation,
+  decompression bounds, complete diagnostics, and stable artifact-error exit.
 
 - The ResidueCheck v1.0.0 contract expresses four metadata facts, one console
   entry point, and four package modules without building or installing.
@@ -35,11 +45,13 @@ against one strict TOML contract.
   globs, or installed-behavior checks.
 - Exact values are intentionally contract-owned; standard `.dist-info` members
   are not enumerated, while all payload members are.
-- Archives are limited to 10,000 entries; only metadata and entry-point control
-  files are decompressed, each under 1 MiB.
+- Archives are limited to 10,000 entries; metadata control files are capped at
+  1 MiB, and payloads are streamed for `RECORD` verification with a 1 GiB
+  aggregate uncompressed limit.
 
 ## Decision
 
-Freeze v1.0.1. The second-artifact rehearsal needed no schema change and made
-every correction explicit. Keep exact schema v1 and exits 0/1/2 stable; reopen
-only for a concrete correctness or safety defect.
+Freeze v1.0.2. The demonstrated integrity blind spot justified a narrow
+artifact-validation correction without changing schema v1 or exit semantics.
+Keep exact schema v1 and exits 0/1/2 stable; reopen only for another concrete
+correctness or safety defect.

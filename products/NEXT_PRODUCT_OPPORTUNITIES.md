@@ -321,6 +321,29 @@ The next bounded opportunity is wheel `RECORD` integrity: deliberately corrupt
 hash, size, and membership evidence and determine whether current install,
 structure, and behavior checks have a real blind spot before extending a tool.
 
+## Wheel RECORD integrity result — 2026-09-26
+
+A real AgentScope wheel was rewritten into four independent variants: wrong
+payload digest, wrong declared size, one missing payload row, and one archive
+member absent from `RECORD`. Pip 25.0.1, WheelContract 1.0.0, and Twine 7.0.0
+accepted every variant. `wheel unpack` 0.45.1 caught the digest and both
+membership failures but accepted the wrong size. WheelFact v1.0.1 caught only
+the added payload because the exact contract compared archive members without
+checking `RECORD`.
+
+A focused 33-line standard-library verifier found all four corruptions. It did
+not provide WheelFact's safe-path and duplicate validation, algorithm policy,
+bounded streaming, combined deterministic diagnostics, or stable exit contract.
+Because WheelFact already owns bounded exact inspection of the same artifact,
+the blind spot justified a maintenance correction rather than a seventh tool.
+
+WheelFact v1.0.2 now verifies complete row coverage, secure hashes, and any
+declared sizes before comparing unchanged schema-v1 contract facts. It streams
+payloads under a 1 GiB aggregate uncompressed limit and treats inconsistent
+evidence as invalid-artifact exit 2. The next decision is whether a maintained
+contract-independent gate can cover all six portfolio wheels without adding a
+second interface or duplicating exact package expectations.
+
 ## Exact wheel-structure prototype result — 2026-09-20
 
 WheelFact v0.1.0 meets the initial retention threshold. Its strict contract for

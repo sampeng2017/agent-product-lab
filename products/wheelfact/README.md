@@ -1,4 +1,4 @@
-# WheelFact 1.0.1
+# WheelFact 1.0.2
 
 WheelFact is a dependency-free, read-only CLI that checks one existing Python
 wheel against an exact TOML contract. It compares distribution metadata,
@@ -7,6 +7,12 @@ or installing the artifact.
 
 The `license` fact accepts modern core-metadata `License-Expression` and falls
 back to the legacy `License` header for existing wheels.
+
+Before comparing contract facts, WheelFact verifies the wheel's complete
+`RECORD`: every archive file except `RECORD` and deprecated signature files
+must have a secure matching hash, every archive file must have the required
+row, and each provided size must match. Invalid, duplicate, unsafe, weak-hash,
+or stale entries are artifact errors (exit 2), not contract mismatches.
 
 ```bash
 wheelfact wheelfact.toml dist/example-1.0.0-py3-none-any.whl
@@ -39,8 +45,8 @@ example = "example.cli:main"
 
 `package_members` is the exact sorted set of archive files outside the wheel's
 single `.dist-info` directory. Generated metadata files are intentionally not
-listed. The checker caps the central directory at 10,000 entries and metadata
-control files at 1 MiB; it never decompresses package payloads.
+listed. The checker caps the central directory at 10,000 entries, metadata
+control files at 1 MiB, and total streamed `RECORD` verification at 1 GiB.
 
 ## Development
 
@@ -49,8 +55,8 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m wheelfact --help
 ```
 
-Version 1.0.1 is the frozen local MVP. Real contracts for ResidueCheck and
+Version 1.0.2 is the frozen local MVP. Real contracts for ResidueCheck and
 AgentScope exercise the same schema across two independent wheels. Its exact
-contract, diagnostics, bounds, and exit 0/1/2 behavior are stable. Reopen only
-for a demonstrated correctness or safety defect, not inferred names, globs,
-build behavior, or installed-command checks.
+contract, integrity validation, diagnostics, bounds, and exit 0/1/2 behavior
+are stable. Reopen only for a demonstrated correctness or safety defect, not
+inferred names, globs, build behavior, or installed-command checks.

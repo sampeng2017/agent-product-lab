@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import ast
+import base64
 import configparser
+import csv
+import hashlib
+import io
 from dataclasses import dataclass
 from email.parser import BytesParser
 from pathlib import Path, PurePosixPath
@@ -16,6 +20,8 @@ except ModuleNotFoundError:  # pragma: no cover - exercised through fallback tes
 
 _MAX_ARCHIVE_ENTRIES = 10_000
 _MAX_CONTROL_BYTES = 1024 * 1024
+_MAX_VERIFIED_BYTES = 1024 * 1024 * 1024
+_HASH_CHUNK_BYTES = 64 * 1024
 
 
 class ContractError(ValueError):
@@ -128,6 +134,10 @@ def check_wheel(path: Path, contract: Contract) -> tuple[CheckResult, ...]:
             metadata_name = f"{dist_root}/METADATA"
             if metadata_name not in file_names:
                 raise ContractError(f"wheel metadata not found: {metadata_name}")
+            record_name = f"{dist_root}/RECORD"
+            if record_name not in file_names:
+                raise ContractError(f"wheel RECORD not found: {record_name}")
+            _verify_record(archive, file_names, record_name)
             metadata = BytesParser().parsebytes(
                 _read_control_file(archive, metadata_name)
             )
@@ -191,6 +201,116 @@ def _read_control_file(archive: ZipFile, name: str) -> bytes:
             f"limit is {_MAX_CONTROL_BYTES}"
         )
     return archive.read(info)
+
+
+def _verify_record(archive: ZipFile, file_names: list[str], record_name: str) -> None:
+    try:
+        record_text = _read_control_file(archive, record_name).decode("utf-8")
+        rows = list(csv.reader(io.StringIO(record_text, newline=""), strict=True))
+    except (csv.Error, UnicodeError) as exc:
+        raise ContractError(f"cannot parse wheel RECORD {record_name}: {exc}") from exc
+
+    entries: dict[str, tuple[str, str]] = {}
+    issues: list[str] = []
+    for row_number, row in enumerate(rows, start=1):
+        if len(row) != 3:
+            issues.append(f"row {row_number} has {len(row)} fields; expected 3")
+            continue
+        name, hash_value, size_value = row
+        try:
+            _validate_member(name, "RECORD path", allow_directory=False)
+        except ContractError as exc:
+            issues.append(str(exc))
+            continue
+        if name in entries:
+            issues.append(f"duplicate row for {name}")
+            continue
+        entries[name] = (hash_value, size_value)
+
+    signature_names = {f"{record_name}.jws", f"{record_name}.p7s"}
+    expected_names = set(file_names) - signature_names
+    actual_names = set(entries)
+    missing = sorted(expected_names - actual_names)
+    unexpected = sorted(actual_names - expected_names)
+    if missing:
+        issues.append(f"missing rows: {', '.join(missing)}")
+    if unexpected:
+        issues.append(f"rows for absent files: {', '.join(unexpected)}")
+
+    if record_name in entries and entries[record_name] != ("", ""):
+        issues.append("RECORD row must have empty hash and size")
+
+    verified_bytes = sum(
+        archive.getinfo(name).file_size
+        for name in expected_names
+        if name != record_name
+    )
+    if verified_bytes > _MAX_VERIFIED_BYTES:
+        raise ContractError(
+            f"wheel files total {verified_bytes} bytes; "
+            f"RECORD verification limit is {_MAX_VERIFIED_BYTES}"
+        )
+
+    for name in sorted(expected_names & actual_names - {record_name}):
+        hash_value, size_value = entries[name]
+        if not hash_value:
+            issues.append(f"missing hash for {name}")
+            continue
+        algorithm, separator, encoded_digest = hash_value.partition("=")
+        if not separator or not algorithm or not encoded_digest:
+            issues.append(f"invalid hash for {name}: {hash_value!r}")
+            continue
+        try:
+            verifier = hashlib.new(algorithm)
+        except ValueError:
+            issues.append(f"unsupported hash algorithm for {name}: {algorithm}")
+            continue
+        normalized_algorithm = algorithm.lower().replace("-", "").replace("_", "")
+        if (
+            verifier.digest_size < hashlib.sha256().digest_size
+            or "md5" in normalized_algorithm
+            or "sha1" in normalized_algorithm
+        ):
+            issues.append(f"weak hash algorithm for {name}: {algorithm}")
+            continue
+        try:
+            expected_digest = _decode_record_digest(encoded_digest)
+        except ValueError:
+            issues.append(f"invalid {algorithm} digest for {name}")
+            continue
+        if len(expected_digest) != verifier.digest_size:
+            issues.append(f"invalid {algorithm} digest length for {name}")
+            continue
+        actual_size = 0
+        with archive.open(name) as source:
+            while True:
+                chunk = source.read(_HASH_CHUNK_BYTES)
+                if not chunk:
+                    break
+                actual_size += len(chunk)
+                verifier.update(chunk)
+        if verifier.digest() != expected_digest:
+            issues.append(f"hash mismatch for {name}")
+        if size_value:
+            if not size_value.isascii() or not size_value.isdecimal():
+                issues.append(f"invalid size for {name}: {size_value!r}")
+            elif int(size_value) != actual_size:
+                issues.append(
+                    f"size mismatch for {name}: RECORD has {size_value}; "
+                    f"archive has {actual_size}"
+                )
+
+    if issues:
+        raise ContractError(f"wheel RECORD is invalid: {'; '.join(issues)}")
+
+
+def _decode_record_digest(value: str) -> bytes:
+    if "=" in value:
+        raise ValueError("padded digest")
+    padding = "=" * (-len(value) % 4)
+    return base64.b64decode(
+        (value + padding).encode("ascii"), altchars=b"-_", validate=True
+    )
 
 
 def _single_header(message: Any, name: str, *, required: bool = False) -> str | None:
