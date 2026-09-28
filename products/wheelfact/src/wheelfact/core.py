@@ -105,39 +105,11 @@ def load_contract(path: Path) -> Contract:
 
 
 def check_wheel(path: Path, contract: Contract) -> tuple[CheckResult, ...]:
-    if not path.is_file() or path.suffix != ".whl":
-        raise ContractError(f"wheel must be an existing .whl file: {path}")
+    _validate_wheel_path(path)
     try:
         with ZipFile(path) as archive:
-            names = archive.namelist()
-            if len(names) > _MAX_ARCHIVE_ENTRIES:
-                raise ContractError(
-                    f"wheel has {len(names)} entries; limit is {_MAX_ARCHIVE_ENTRIES}"
-                )
-            if len(names) != len(set(names)):
-                duplicates = sorted(name for name in set(names) if names.count(name) > 1)
-                raise ContractError(f"wheel has duplicate entries: {', '.join(duplicates)}")
-            for name in names:
-                _validate_member(name, "wheel member", allow_directory=True)
-            file_names = [name for name in names if not name.endswith("/")]
-            dist_roots = {
-                part
-                for name in file_names
-                for part in PurePosixPath(name).parts
-                if part.endswith(".dist-info")
-            }
-            if len(dist_roots) != 1:
-                raise ContractError(
-                    f"wheel must contain exactly one .dist-info directory; found {len(dist_roots)}"
-                )
-            dist_root = next(iter(dist_roots))
+            file_names, dist_root = _verify_archive(archive)
             metadata_name = f"{dist_root}/METADATA"
-            if metadata_name not in file_names:
-                raise ContractError(f"wheel metadata not found: {metadata_name}")
-            record_name = f"{dist_root}/RECORD"
-            if record_name not in file_names:
-                raise ContractError(f"wheel RECORD not found: {record_name}")
-            _verify_record(archive, file_names, record_name)
             metadata = BytesParser().parsebytes(
                 _read_control_file(archive, metadata_name)
             )
@@ -191,6 +163,56 @@ def check_wheel(path: Path, contract: Contract) -> tuple[CheckResult, ...]:
             )
         )
     return tuple(results)
+
+
+def verify_wheel_integrity(path: Path) -> None:
+    """Reject unsafe wheel structure or internally inconsistent RECORD evidence."""
+    _validate_wheel_path(path)
+    try:
+        with ZipFile(path) as archive:
+            _verify_archive(archive)
+    except ContractError:
+        raise
+    except (BadZipFile, OSError, RuntimeError, ValueError) as exc:
+        raise ContractError(f"cannot inspect wheel {path}: {exc}") from exc
+
+
+def _validate_wheel_path(path: Path) -> None:
+    if not path.is_file() or path.suffix != ".whl":
+        raise ContractError(f"wheel must be an existing .whl file: {path}")
+
+
+def _verify_archive(archive: ZipFile) -> tuple[list[str], str]:
+    names = archive.namelist()
+    if len(names) > _MAX_ARCHIVE_ENTRIES:
+        raise ContractError(
+            f"wheel has {len(names)} entries; limit is {_MAX_ARCHIVE_ENTRIES}"
+        )
+    if len(names) != len(set(names)):
+        duplicates = sorted(name for name in set(names) if names.count(name) > 1)
+        raise ContractError(f"wheel has duplicate entries: {', '.join(duplicates)}")
+    for name in names:
+        _validate_member(name, "wheel member", allow_directory=True)
+    file_names = [name for name in names if not name.endswith("/")]
+    dist_roots = {
+        part
+        for name in file_names
+        for part in PurePosixPath(name).parts
+        if part.endswith(".dist-info")
+    }
+    if len(dist_roots) != 1:
+        raise ContractError(
+            f"wheel must contain exactly one .dist-info directory; found {len(dist_roots)}"
+        )
+    dist_root = next(iter(dist_roots))
+    metadata_name = f"{dist_root}/METADATA"
+    if metadata_name not in file_names:
+        raise ContractError(f"wheel metadata not found: {metadata_name}")
+    record_name = f"{dist_root}/RECORD"
+    if record_name not in file_names:
+        raise ContractError(f"wheel RECORD not found: {record_name}")
+    _verify_record(archive, file_names, record_name)
+    return file_names, dist_root
 
 
 def _read_control_file(archive: ZipFile, name: str) -> bytes:

@@ -2,7 +2,7 @@
 
 ## Product shape
 
-WheelFact v1.0.2 is a frozen local MVP. It reads one existing wheel, verifies
+WheelFact v1.0.3 is a frozen local MVP. It reads one existing wheel, verifies
 its complete `RECORD`, and checks exact scalar metadata, console scripts, and
 non-`.dist-info` payload members against one strict TOML contract.
 
@@ -21,6 +21,10 @@ non-`.dist-info` payload members against one strict TOML contract.
 - A focused 33-line standard-library verifier caught all four mutations but
   omitted WheelFact's safe paths, duplicates, strong-algorithm validation,
   decompression bounds, complete diagnostics, and stable artifact-error exit.
+- The v1.0.3 maintenance release exposes the same bounded structure and
+  `RECORD` validation as `verify_wheel_integrity` without adding a second CLI
+  mode. Portfolio validation calls it for all six wheels while exact contracts
+  remain focused on ResidueCheck and AgentScope.
 
 - The ResidueCheck v1.0.0 contract expresses four metadata facts, one console
   entry point, and four package modules without building or installing.
@@ -51,7 +55,8 @@ non-`.dist-info` payload members against one strict TOML contract.
 
 ## Decision
 
-Freeze v1.0.2. The demonstrated integrity blind spot justified a narrow
-artifact-validation correction without changing schema v1 or exit semantics.
-Keep exact schema v1 and exits 0/1/2 stable; reopen only for another concrete
-correctness or safety defect.
+Freeze v1.0.3. The demonstrated integrity blind spot justified a narrow
+artifact-validation correction and portfolio-wide reuse without changing
+schema v1, the exact-contract CLI, or exit semantics. Keep exact schema v1 and
+exits 0/1/2 stable; reopen only for another concrete correctness or safety
+defect.

@@ -1,4 +1,4 @@
-# WheelFact 1.0.2
+# WheelFact 1.0.3
 
 WheelFact is a dependency-free, read-only CLI that checks one existing Python
 wheel against an exact TOML contract. It compares distribution metadata,
@@ -13,6 +13,12 @@ Before comparing contract facts, WheelFact verifies the wheel's complete
 must have a secure matching hash, every archive file must have the required
 row, and each provided size must match. Invalid, duplicate, unsafe, weak-hash,
 or stale entries are artifact errors (exit 2), not contract mismatches.
+
+The package also exposes `verify_wheel_integrity(Path(...))` for a caller that
+needs the same bounded structure and `RECORD` validation without declaring
+exact metadata or payload expectations. The portfolio validator uses this
+narrow library hook for every built wheel; the command-line interface remains
+an exact-contract checker.
 
 ```bash
 wheelfact wheelfact.toml dist/example-1.0.0-py3-none-any.whl
@@ -55,8 +61,9 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 PYTHONPATH=src python3 -m wheelfact --help
 ```
 
-Version 1.0.2 is the frozen local MVP. Real contracts for ResidueCheck and
-AgentScope exercise the same schema across two independent wheels. Its exact
-contract, integrity validation, diagnostics, bounds, and exit 0/1/2 behavior
-are stable. Reopen only for a demonstrated correctness or safety defect, not
-inferred names, globs, build behavior, or installed-command checks.
+Version 1.0.3 is the frozen local MVP. Real contracts for ResidueCheck and
+AgentScope exercise the same schema across two independent wheels, while the
+contract-independent library hook protects all six portfolio artifacts. Its
+exact CLI contract, integrity validation, diagnostics, bounds, and exit 0/1/2
+behavior are stable. Reopen only for a demonstrated correctness or safety
+defect, not inferred names, globs, build behavior, or installed-command checks.

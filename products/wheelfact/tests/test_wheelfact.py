@@ -13,7 +13,12 @@ from zipfile import ZipFile
 
 import wheelfact.core
 from wheelfact.cli import main
-from wheelfact.core import ContractError, check_wheel, load_contract
+from wheelfact.core import (
+    ContractError,
+    check_wheel,
+    load_contract,
+    verify_wheel_integrity,
+)
 
 
 class WheelFactTests(unittest.TestCase):
@@ -209,6 +214,22 @@ class WheelFactTests(unittest.TestCase):
         self.assertEqual(exit_code, 2)
         self.assertEqual(stdout, "")
         self.assertIn("wheel RECORD not found", stderr)
+
+    def test_integrity_check_has_no_exact_contract_expectations(self) -> None:
+        wheel = self.write_wheel(
+            distribution="different-name",
+            version="9.8.7",
+            requires_python=">=3.12",
+            license_name="Apache-2.0",
+            scripts=(("different", "example.cli:main"),),
+            members=("example/only.py",),
+        )
+
+        self.assertIsNone(verify_wheel_integrity(wheel))
+        with self.assertRaisesRegex(ContractError, "hash mismatch for example/cli.py"):
+            verify_wheel_integrity(
+                self.write_wheel(record_corruption="wrong-digest")
+            )
 
     def test_reports_all_scalar_script_and_member_mismatches(self) -> None:
         contract = self.write_contract(

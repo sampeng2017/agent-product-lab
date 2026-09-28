@@ -151,4 +151,20 @@ validate_product agentscope agentscope --version
     "$portfolio_root/wheelcontract.toml"
 validate_product proofrun proofrun --help
 
+for built_wheel in "$validation_temp"/wheels/*/*.whl; do
+    "$validation_temp/environments/wheelfact/bin/python" - "$built_wheel" <<'PY'
+from pathlib import Path
+import sys
+
+from wheelfact.core import ContractError, verify_wheel_integrity
+
+wheel = Path(sys.argv[1])
+try:
+    verify_wheel_integrity(wheel)
+except ContractError as exc:
+    raise SystemExit(f"{wheel.name} integrity failed: {exc}") from exc
+print(f"PASS wheel integrity: {wheel.name}")
+PY
+done
+
 echo "Portfolio validation passed; temporary build output was removed."

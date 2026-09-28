@@ -1,37 +1,35 @@
-# Next run: decide portfolio-wide wheel integrity coverage
+# Next run: select a fresh bounded opportunity
 
-GrammarCheck v0.1.0 remains archived. The six maintained products are frozen.
+GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
-WheelFact v1.0.2 now verifies complete wheel `RECORD` membership, secure hashes,
-and provided sizes before checking its unchanged exact schema-v1 contract.
+WheelFact v1.0.3 now provides contract-independent integrity coverage for all
+six built wheels while retaining exact contracts for ResidueCheck and
+AgentScope.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
-messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, product handoffs, tests, and
-the portfolio validator. Check Git state/history and rerun warning-strict
-portfolio validation before editing.
+messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, product handoffs, tests, the
+workflow, and the portfolio validator. Check Git state/history and rerun
+warning-strict portfolio validation before editing.
 
 ## Bounded decision
 
-1. Determine whether all six built wheels need a maintained integrity gate. The
-   current installed WheelFact dogfood covers AgentScope and ResidueCheck; pip
-   25.0.1 accepted all four disposable `RECORD` corruptions in the 2026-09-26
-   experiment.
-2. Compare three narrow options: exact WheelFact contracts for the remaining
-   products, a contract-independent WheelFact mode, and a focused validator
-   function using the product's tested core. Include maintenance and diagnostic
-   cost, not only line count.
-3. Retain a portfolio-wide gate only if it avoids duplicated expectations and
-   keeps WheelFact's artifact-contract boundary clear. Otherwise document the
-   negative result and compare at least three fresh repository-grounded product
-   opportunities.
+1. Identify at least three fresh opportunities from concrete repository or
+   validation evidence. Name existing ecosystem ownership and the smallest
+   useful experiment for each.
+2. Select at most one opportunity. Reproduce its failure or costly manual step
+   before retaining implementation.
+3. Define an abandonment gate up front. Prefer a transparent repository-local
+   check over a new product when both provide equivalent evidence.
 
 ## Guardrails
 
-- Do not reopen another frozen product without a demonstrated defect.
-- Do not turn WheelFact into a general packaging linter, builder, installer,
-  repair tool, policy engine, provenance checker, or signature verifier.
-- Do not infer authenticity from internal `RECORD` consistency.
-- Do not retain a helper whose value is equivalent to a short transparent
-  standard-library assertion in the single portfolio validator.
+- Do not reopen a frozen product without a demonstrated correctness or safety
+  defect.
+- Do not add release gates that duplicate reproducible builds, exact artifact
+  contracts, installed behavior contracts, release-fact checks, or complete
+  wheel `RECORD` integrity.
+- Do not treat internal wheel consistency as provenance or authenticity.
+- Keep credentialed services, publishing, mutation, repair, and broad policy
+  engines out of the first experiment.

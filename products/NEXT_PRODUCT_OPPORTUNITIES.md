@@ -519,3 +519,44 @@ schemas remain frozen.
   should normally provide both.
 - [lychee](https://github.com/lycheeverse/lychee) — established link checker for
   Markdown and other documentation formats.
+
+## Portfolio-wide wheel integrity decision — 2026-09-27
+
+The prior `RECORD` experiment established that pip, WheelContract, and Twine do
+not enforce all internal wheel evidence. The remaining decision was how to
+cover every portfolio wheel without confusing exact package facts with artifact
+integrity.
+
+### Option 1: exact contracts for the remaining four products
+
+- **Benefit:** uses the existing CLI and would also freeze metadata, entry
+  points, and payload members for every artifact.
+- **Cost:** duplicates facts already owned by package definitions and creates
+  four declarations that must change with legitimate product evolution.
+- **Decision:** reject. Those expectations are not needed to prove `RECORD`
+  consistency, and contract churn would obscure the narrower integrity signal.
+
+### Option 2: contract-independent WheelFact CLI mode
+
+- **Benefit:** gives integrity checking a polished standalone command surface.
+- **Cost:** adds parsing, help, invocation, documentation, and stable exit
+  semantics for a single portfolio-internal caller. It also weakens the simple
+  statement that the WheelFact CLI checks an exact contract.
+- **Decision:** reject until an independent user workflow demonstrates demand.
+
+### Option 3: focused validator adapter over tested core — selected
+
+- **Benefit:** one deterministic loop checks the six wheels already built by
+  portfolio validation. A narrow `verify_wheel_integrity(Path)` function reuses
+  WheelFact's safe paths, archive bounds, complete membership, strong hashes,
+  declared sizes, and stable errors without exact facts.
+- **Cost:** the root validator owns a short Python adapter and the library hook
+  becomes maintained package behavior.
+- **Decision:** retain. Focused coverage proves the hook accepts changed but
+  internally consistent facts and rejects a corrupt digest. The existing CLI,
+  schema v1, and exit contract remain unchanged.
+
+WheelFact v1.0.3 contains the shared hook, and final portfolio validation checks
+all six first-build artifacts after their independent reproducibility and
+installed-behavior checks. Exact contracts remain only for ResidueCheck and
+AgentScope, where stable fact expectations provide separate value.

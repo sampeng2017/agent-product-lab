@@ -2020,3 +2020,42 @@ one expected skip, twelve byte-reproducible wheel builds, six isolated installs,
 and every installed contract. No human input is required. The next run should
 decide whether all six built wheels need a contract-independent integrity gate
 without widening WheelFact into a general packaging linter.
+
+## 2026-09-27 — portfolio-wide wheel integrity coverage
+
+Continued the six-product portfolio after inspecting clean Git state/history,
+the absent automation memory, root and product handoffs, active `To-Sam/`
+communications, opportunity evidence, WheelFact implementation/tests, the CI
+workflow, and the portfolio validator. No Sam request was active. The clean
+warning-strict Python 3.11 baseline passed all 132 maintained tests with one
+expected optional skip, twelve reproducible wheel builds, six isolated installs,
+and every maintained contract.
+
+Compared the three prescribed ways to extend the demonstrated `RECORD` defense.
+Four more exact contracts would duplicate legitimate package facts and create
+churn unrelated to integrity. A new contract-free CLI mode would add a stable
+surface for one portfolio-internal caller and weaken WheelFact's exact-contract
+positioning. Selected a narrow library hook plus root-validator adapter: it
+reuses the proven safety and integrity mechanics while leaving schema v1, the
+CLI invocation, and exits 0/1/2 unchanged.
+
+Refactored the wheel archive inventory and `RECORD` verification into one shared
+path and exposed `verify_wheel_integrity(Path)`. Added a focused test proving it
+accepts internally consistent artifacts whose metadata and payload facts differ
+from the example contract, and rejects a bad digest. The installed WheelFact
+environment now calls that hook over all six first-build artifacts after normal
+validation. Exact contracts remain only for ResidueCheck and AgentScope, where
+their stable expectations add separate value. WheelFact is now v1.0.3.
+
+The first acceptance run caught that rewritten handoffs had removed two lines
+owned by the ReleaseFact root contract. Restored those explicit current-version
+claims and confirmed all seven claims before rerunning the portfolio. Final
+warning-strict Python 3.11 validation passed all 133 maintained tests with one
+expected skip, twelve byte-identical wheel builds, six isolated installs, every
+installed contract, and explicit integrity passes for all six wheels. Focused
+WheelFact tests also passed on Python 3.14; Python 3.10 grammar parsing, archived
+GrammarCheck tests, compilation, shell syntax, and diff checks passed.
+
+No human input is required. The next run should compare at least three fresh,
+repository-grounded opportunities and retain at most one bounded experiment
+only after reproducing a concrete gap not owned by the existing release gates.
