@@ -560,3 +560,26 @@ WheelFact v1.0.3 contains the shared hook, and final portfolio validation checks
 all six first-build artifacts after their independent reproducibility and
 installed-behavior checks. Exact contracts remain only for ResidueCheck and
 AgentScope, where stable fact expectations provide separate value.
+
+## Portfolio release-drift coverage result — 2026-09-28
+
+Fresh inspection compared three repository-grounded opportunities. A full
+checkout-residue wrapper had no demonstrated failure because the validator
+already redirects bytecode and builds into temporary storage. A local Markdown
+link gate likewise found no broken repository targets, while mature link
+checkers own broader URL behavior. The concrete gap was product version drift:
+only ReleaseFact itself had an explicit local source/document contract, and
+ordinary CLI smokes did not assert most displayed versions.
+
+A disposable ProofRun wheel changed only runtime `__version__` from 1.8.1 to
+9.9.9. Its package metadata stayed 1.8.1, yet the maintained `proofrun --help`
+smoke and contract-independent WheelFact integrity check both passed. This
+cleared the retention gate: reuse ReleaseFact only if one small declaration per
+product caught the mismatch without changing a frozen schema or product.
+
+Five new three-claim contracts plus ReleaseFact's existing local contract now
+tie every maintained product's runtime, README, and STATUS release claims to
+canonical `project.version`. The installed ReleaseFact artifact checks all six
+local contracts plus the existing seven-claim portfolio contract. The mutated
+ProofRun fixture now exits 1 and names the single runtime drift. No product API,
+schema, package version, or implementation changed.

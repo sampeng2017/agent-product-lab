@@ -3,9 +3,9 @@
 ## Current direction
 
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
-remains archived. Portfolio validation now applies WheelFact's tested bounded
-structure and `RECORD` integrity checks to every built wheel without duplicating
-exact package expectations or adding another command-line mode.
+remains archived. Portfolio validation now verifies each product's runtime and
+frozen product-document version claims against canonical package metadata,
+closing a release-drift gap without changing any frozen product interface.
 
 ## Product shape
 
@@ -21,34 +21,35 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Portfolio validation derives `SOURCE_DATE_EPOCH` from the latest Git commit,
   performs two isolated wheel builds per product, rejects byte drift, checks
   all six first artifacts for integrity, and then installs and exercises them.
+- Installed ReleaseFact checks its existing seven portfolio claims plus one
+  local three-claim runtime/README/STATUS contract for every maintained product.
 
-## Completed today (2026-09-27)
+## Completed today (2026-09-28)
 
-- Passed the clean warning-strict Python 3.11 baseline: 132 maintained tests,
+- Passed the clean warning-strict Python 3.11 baseline: 133 maintained tests,
   one expected optional skip, twelve reproducible wheel builds, six isolated
-  installs, and every maintained contract.
-- Compared the three prescribed coverage options. Six additional exact
-  contracts would duplicate volatile package expectations; a new integrity-only
-  CLI mode would widen WheelFact's stable interface for a portfolio-internal
-  use case; a narrow library hook reuses the proven validation with neither
-  cost.
-- Refactored WheelFact's archive checks into one shared path and exposed
-  `verify_wheel_integrity(Path)` without changing the existing CLI, schema, or
-  exits.
-- Added focused coverage proving the hook accepts internally consistent wheels
-  regardless of exact metadata and payload facts while rejecting a corrupt
-  digest.
-- Added a final portfolio gate that checks all six independently built wheels
-  through the installed WheelFact artifact.
-- Promoted WheelFact to v1.0.3 and updated portfolio and product documentation.
+  installs, all maintained contracts, and six wheel-integrity checks.
+- Compared release-version consistency, full-validator residue wrapping, and
+  local Markdown-link validation. Only release consistency reproduced a gap;
+  the other two had no current failure and broader link behavior has mature
+  ecosystem ownership.
+- Built a disposable ProofRun wheel with runtime version 9.9.9 but package
+  metadata 1.8.1. The existing `--help` smoke and WheelFact integrity gate both
+  accepted it.
+- Added narrow ReleaseFact contracts for the five products that lacked one and
+  made portfolio validation check all six local contracts plus the existing
+  portfolio contract through the installed artifact.
+- Confirmed the new ProofRun contract rejects the mutation with drift exit 1
+  and identifies the runtime claim while preserving the two matching document
+  claims.
 
 ## Changes since the prior run
 
-Previously only the ResidueCheck and AgentScope exact WheelFact contracts
-triggered `RECORD` verification. All six built wheels now receive the same
-contract-independent integrity check after their normal build, reproducibility,
-install, behavior, and selected exact-contract validation. No other product API,
-schema, or package version changed.
+Previously only ReleaseFact had an explicit local contract tying source and
+product documentation to package metadata. Every maintained product now has
+the same three-claim release-drift check, and the root validator executes all of
+them with the installed ReleaseFact artifact. No product API, schema, package
+version, or implementation changed.
 
 ## Known issues
 
@@ -62,38 +63,40 @@ schema, or package version changed.
   `python3` on this host fails that preflight, while `python3.11` passes.
 - Internal `RECORD` consistency is not provenance, authenticity, or signature
   verification. WheelFact deliberately makes no such claim.
+- Product-local ReleaseFact contracts intentionally cover only canonical
+  runtime and frozen handoff claims; historical version examples are not
+  release assertions.
 
 ## Decisions
 
-- Keep exact WheelFact contracts only where stable metadata, entry-point, and
-  payload expectations provide distinct value: ResidueCheck and AgentScope.
-- Do not add an integrity-only CLI mode. The portfolio-owned adapter is short,
-  and the tested library hook preserves WheelFact's exact-contract CLI boundary.
-- Run the all-wheel gate after every product has been built so one deterministic
-  loop covers exactly the six artifacts already selected by validation.
-- Freeze WheelFact v1.0.3 with schema v1 and CLI exits 0/1/2 unchanged.
+- Reuse ReleaseFact rather than adding shell comparisons or reopening its
+  frozen schema; one canonical value per product matches schema v1 exactly.
+- Keep local contracts to runtime, README, and STATUS release claims. The
+  existing root contract remains responsible for portfolio-level ReleaseFact
+  claims.
+- Reject version drift before later installed behavior checks so diagnostics
+  point directly to the inconsistent claim.
 
 ## Validation
 
 - Pre-change `PYTHON_BIN=python3.11 PYTHONWARNINGS=error
-  ./scripts/validate-portfolio.sh` passed 132 maintained tests with one expected
+  ./scripts/validate-portfolio.sh` passed 133 maintained tests with one expected
   skip and every installed contract.
-- Focused warning-strict WheelFact tests pass nine methods, including the new
-  contract-independent acceptance and corruption rejection.
-- Final warning-strict Python 3.11 portfolio validation passed 133 maintained
+- All six product-local contracts pass from source; the disposable ProofRun
+  runtime mutation fails with exit 1 and one explicit drift.
+- Final warning-strict Python 3.11 portfolio validation passes all 133 maintained
   tests with one expected skip, twelve byte-reproducible wheel builds, six
-  isolated installs, every installed contract, and six explicit integrity
-  passes.
-- Final acceptance commands and post-commit proof are recorded in
-  `DAILY_LOG.md`.
+  isolated installs, seven ReleaseFact contracts, all installed behavior
+  contracts, and six explicit integrity passes. Shell syntax, four archived
+  GrammarCheck tests, 28 local Markdown targets, and diff checks also pass.
 
 ## Recommended next steps
 
 1. Compare at least three fresh repository-grounded opportunities before
    changing a frozen product.
 2. Favor a bounded experiment with a demonstrated local failure and an explicit
-   abandonment gate; avoid release checks already covered by reproducibility,
-   WheelFact, WheelContract, or ReleaseFact.
+   abandonment gate; do not add more version claims without an independently
+   drifting release surface.
 3. Keep the six product schemas and command-line contracts frozen absent a
    demonstrated correctness or safety defect.
 

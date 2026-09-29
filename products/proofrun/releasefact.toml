@@ -1,0 +1,20 @@
+schema_version = 1
+
+[canonical]
+file = "pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "runtime version"
+file = "src/proofrun/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "readme release"
+file = "README.md"
+template = "> **Portfolio status:** ProofRun v{version} is a frozen, completed local MVP. It was"
+
+[[claim]]
+name = "status release"
+file = "STATUS.md"
+template = "> Frozen on 2026-08-20 as a completed v{version} local MVP. This file preserves the"

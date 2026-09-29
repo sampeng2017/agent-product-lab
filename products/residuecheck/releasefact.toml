@@ -1,0 +1,20 @@
+schema_version = 1
+
+[canonical]
+file = "pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "runtime version"
+file = "src/residuecheck/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "readme release"
+file = "README.md"
+template = "# ResidueCheck {version}"
+
+[[claim]]
+name = "status release"
+file = "STATUS.md"
+template = "ResidueCheck v{version} is a frozen local MVP. It snapshots one explicitly bounded"

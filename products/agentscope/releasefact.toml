@@ -1,0 +1,20 @@
+schema_version = 1
+
+[canonical]
+file = "pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "runtime version"
+file = "src/agentscope/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "readme release"
+file = "README.md"
+template = "AgentScope v{version} is a frozen local MVP. Its focused suite and the portfolio"
+
+[[claim]]
+name = "status release"
+file = "STATUS.md"
+template = "AgentScope v{version} is a frozen, zero-runtime-dependency Python CLI for explaining"

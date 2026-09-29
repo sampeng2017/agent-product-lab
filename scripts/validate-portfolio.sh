@@ -136,8 +136,17 @@ validate_product wheelfact wheelfact --version
     "$portfolio_root/products/wheelfact/wheelfact.toml" \
     "$validation_temp/wheels/residuecheck"/*.whl
 validate_product releasefact releasefact --version
-"$validation_temp/environments/releasefact/bin/releasefact" \
-    "$portfolio_root/releasefact.toml"
+for release_contract in \
+    "$portfolio_root/releasefact.toml" \
+    "$portfolio_root/products/agentscope/releasefact.toml" \
+    "$portfolio_root/products/proofrun/releasefact.toml" \
+    "$portfolio_root/products/releasefact/releasefact.toml" \
+    "$portfolio_root/products/residuecheck/releasefact.toml" \
+    "$portfolio_root/products/wheelcontract/releasefact.toml" \
+    "$portfolio_root/products/wheelfact/releasefact.toml"
+do
+    "$validation_temp/environments/releasefact/bin/releasefact" "$release_contract"
+done
 validate_product wheelcontract wheelcontract --version
 "$validation_temp/environments/wheelcontract/bin/wheelcontract" \
     --wheel "$validation_temp/wheels/wheelcontract"/*.whl \

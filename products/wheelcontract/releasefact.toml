@@ -1,0 +1,20 @@
+schema_version = 1
+
+[canonical]
+file = "pyproject.toml"
+key = "project.version"
+
+[[claim]]
+name = "runtime version"
+file = "src/wheelcontract/__init__.py"
+template = "__version__ = \"{version}\""
+
+[[claim]]
+name = "readme release"
+file = "README.md"
+template = "WheelContract v{version} is a frozen local MVP. Its schema-v1 contract, exit"
+
+[[claim]]
+name = "status release"
+file = "STATUS.md"
+template = "WheelContract v{version} is a frozen, dependency-free local MVP for Python CLI"

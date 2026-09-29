@@ -2059,3 +2059,45 @@ GrammarCheck tests, compilation, shell syntax, and diff checks passed.
 No human input is required. The next run should compare at least three fresh,
 repository-grounded opportunities and retain at most one bounded experiment
 only after reproducing a concrete gap not owned by the existing release gates.
+
+## 2026-09-28 — portfolio-wide release-version consistency
+
+Continued the six-product portfolio after inspecting clean Git state/history,
+automation memory, root and product handoffs, active `To-Sam/` communications,
+opportunity evidence, product implementation/test surfaces, packaging metadata,
+the CI workflow, and the portfolio validator. No Sam request was active. The
+clean warning-strict Python 3.11 baseline passed all 133 maintained tests with
+one expected optional skip, twelve byte-reproducible wheel builds, six isolated
+installs, every maintained contract, and all six wheel-integrity checks.
+
+Compared three fresh repository-grounded opportunities. A full-validator
+ResidueCheck wrapper had no demonstrated defect because tests, bytecode, builds,
+environments, and caches already target temporary storage. A local Markdown
+link scan found no missing targets and mature tools own broader link behavior.
+Release-version consistency did expose a gap: only ReleaseFact itself had an
+explicit local source/document contract, while most installed CLI smokes merely
+required successful execution.
+
+In a disposable ProofRun copy, changed runtime `__version__` from 1.8.1 to
+9.9.9 while package metadata remained 1.8.1. The built artifact still passed
+the maintained `proofrun --help` smoke and WheelFact's complete `RECORD`
+integrity check. The retention gate required catching that mismatch with the
+existing ReleaseFact schema and no product implementation changes.
+
+Added one three-claim ReleaseFact contract to AgentScope, ProofRun,
+ResidueCheck, WheelContract, and WheelFact; ReleaseFact's existing local
+contract completes the six-product set. Each declaration ties runtime,
+README, and STATUS release claims to canonical `project.version`. Portfolio
+validation now runs all six through the installed ReleaseFact artifact in
+addition to the existing seven-claim root contract. All clean contracts pass;
+the mutated ProofRun fixture exits 1 with one runtime drift and two matching
+document claims. No product API, schema, version, or implementation changed.
+
+Final warning-strict Python 3.11 acceptance passed all 133 maintained tests with
+one expected skip, twelve byte-identical wheel builds, six isolated installs,
+the root and six product-local ReleaseFact contracts, every installed behavior
+contract, and six explicit wheel-integrity checks. The four archived
+GrammarCheck tests, shell syntax, 28 local Markdown targets, and diff checks
+also passed. No human input is required. The next run should compare three new
+repository-grounded opportunities and avoid expanding release claims without a
+separately drifting surface.

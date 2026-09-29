@@ -5,6 +5,8 @@ ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
 WheelFact v1.0.3 now provides contract-independent integrity coverage for all
 six built wheels while retaining exact contracts for ResidueCheck and
 AgentScope.
+ReleaseFact now checks local runtime and frozen product-document version claims
+for every maintained product in addition to its portfolio-wide claims.
 
 ## Required starting inspection
 
@@ -31,5 +33,7 @@ warning-strict portfolio validation before editing.
   contracts, installed behavior contracts, release-fact checks, or complete
   wheel `RECORD` integrity.
 - Do not treat internal wheel consistency as provenance or authenticity.
+- Keep each product's three-claim release contract narrow; add a claim only when
+  a real release surface can drift independently of package metadata.
 - Keep credentialed services, publishing, mutation, repair, and broad policy
   engines out of the first experiment.

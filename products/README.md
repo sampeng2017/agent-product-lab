@@ -17,6 +17,8 @@
 The selections and prototype results are documented in
 [`NEXT_PRODUCT_OPPORTUNITIES.md`](NEXT_PRODUCT_OPPORTUNITIES.md). Each product
 contains its own README, implementation, tests, and validation instructions.
+Each maintained product also has a small `releasefact.toml` contract tying its
+runtime and frozen product handoffs to canonical package metadata.
 Portfolio-wide decisions remain at the repository root. Run
 `../scripts/validate-portfolio.sh` from this directory to test, build, install,
 and exercise all six products with the active Python interpreter.

@@ -60,11 +60,13 @@ standard `SOURCE_DATE_EPOCH` convention. Installed ResidueCheck first proves its
 three change kinds against ignored files. Installed WheelFact checks all six
 artifacts for bounded structure and complete `RECORD` integrity, then checks
 ResidueCheck and AgentScope metadata, entry points, and exact payloads.
-ReleaseFact checks the seven real
-claims in [`releasefact.toml`](releasefact.toml). Installed WheelContract then
-verifies its own behavior before checking AgentScope's human, JSON, and policy-
-exit surfaces from [`wheelcontract.toml`](wheelcontract.toml). GitHub
-permissions are read-only and checkout credentials are not retained.
+ReleaseFact checks the seven portfolio claims in
+[`releasefact.toml`](releasefact.toml), then verifies each product's runtime
+version and frozen README/status claims against its own package metadata.
+Installed WheelContract verifies its own behavior before checking AgentScope's
+human, JSON, and policy-exit surfaces from
+[`wheelcontract.toml`](wheelcontract.toml). GitHub permissions are read-only
+and checkout credentials are not retained.
 
 Run the same validation with the active local interpreter:
 
