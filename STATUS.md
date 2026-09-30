@@ -3,9 +3,9 @@
 ## Current direction
 
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
-remains archived. The public five-version Portfolio CI matrix is being repaired
-after its first hosted run exposed two test fixtures that depended on local Git
-and Python behavior. No frozen product interface or runtime behavior changed.
+remains archived. The public five-version Portfolio CI matrix is green after
+its first hosted run exposed test fixtures that depended on local Git and
+Python behavior. No frozen product interface or runtime behavior changed.
 
 ## Product shape
 
@@ -102,13 +102,14 @@ API, schema, package version, or implementation changed.
   error wording differed between the fallback and standard TOML parsers. Their
   assertions now require the stable semantic fragments (`env` and
   `unsupported key`) shared by both paths.
+- Hosted run 36663392744 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14.
 
 ## Recommended next steps
 
-1. Confirm the pushed five-version hosted matrix is green; treat any remaining
+1. Confirm the latest pushed commit retains the green hosted matrix; treat any
    hosted-only failure as the next priority.
-2. If CI is green, compare a repository-level license for clear reuse terms,
-   an honest install-from-Git quick start, and a fresh user-workflow gap.
+2. Compare a repository-level license for clear reuse terms, an honest
+   install-from-Git quick start, and a fresh user-workflow gap.
 3. Keep the six product schemas and command-line contracts frozen absent a
    demonstrated correctness or safety defect.
 

@@ -2148,3 +2148,7 @@ unknown key before the shared validator, while the standard parser reaches the
 more specific shared diagnostics. Narrowed those assertions to the stable
 semantic fragments common to both supported paths without changing parser or
 product behavior.
+
+The follow-up commit (`71ab422`) passed hosted Portfolio CI on all five
+supported interpreters: Python 3.10, 3.11, 3.12, 3.13, and 3.14. This closes the
+public build failure while leaving all product versions and interfaces frozen.
