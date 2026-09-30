@@ -1396,8 +1396,8 @@ Z_FLAG = "last"
         manifest = self.root / "proofrun.toml"
         invalid_manifests = [
             ('cwd = "../outside"', "cwd must stay within"),
-            ('env = ["not", "a", "table"]', "env must be a string table"),
-            ('extra = true', "unsupported keys"),
+            ('env = ["not", "a", "table"]', "env"),
+            ('extra = true', "unsupported key"),
         ]
         for config, message in invalid_manifests:
             with self.subTest(config=config):

@@ -97,6 +97,11 @@ API, schema, package version, or implementation changed.
   builds, six installs, seven ReleaseFact contracts, all behavior contracts,
   and six wheel integrity checks. The four archived GrammarCheck tests, local
   Markdown targets, shell syntax, and diff checks also pass.
+- The first repair commit made Python 3.11–3.14 hosted jobs green. Python 3.10
+  then reached two additional ProofRun invalid-manifest subtests whose exact
+  error wording differed between the fallback and standard TOML parsers. Their
+  assertions now require the stable semantic fragments (`env` and
+  `unsupported key`) shared by both paths.
 
 ## Recommended next steps
 

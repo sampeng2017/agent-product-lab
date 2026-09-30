@@ -2140,3 +2140,11 @@ integrity checks. The four archived GrammarCheck tests, local Markdown targets,
 shell syntax, and diff checks also passed. The next run should inspect the live
 matrix first; once green, compare the repository-license and install-path gaps
 against a fresh external-user workflow opportunity.
+
+The first pushed repair (`36a0e60`) turned Python 3.11 through 3.14 green. The
+Python 3.10 job progressed to ProofRun and exposed two more test-only wording
+differences: its narrow fallback parser rejects an inline `env` value and an
+unknown key before the shared validator, while the standard parser reaches the
+more specific shared diagnostics. Narrowed those assertions to the stable
+semantic fragments common to both supported paths without changing parser or
+product behavior.
