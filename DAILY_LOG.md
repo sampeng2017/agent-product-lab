@@ -2101,3 +2101,42 @@ GrammarCheck tests, shell syntax, 28 local Markdown targets, and diff checks
 also passed. No human input is required. The next run should compare three new
 repository-grounded opportunities and avoid expanding release claims without a
 separately drifting surface.
+
+## 2026-09-29 — public Portfolio CI portability repair
+
+Continued the six-product portfolio after inspecting the clean Git state and
+history, automation memory, root and product handoffs, active `To-Sam/`
+communications, implementations and test surfaces, packaging definitions, the
+workflow, portfolio validator, and live public GitHub metadata. No Sam request
+was active. The warning-strict Python 3.11 baseline passed all 133 maintained
+tests with one expected skip, twelve byte-reproducible builds, six isolated
+installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
+integrity checks.
+
+The public audit found the current commit's only hosted Portfolio CI run red on
+all five supported Python versions. This concrete correctness and trust failure
+outranked two other observed adoption opportunities: GitHub cannot detect a
+repository-level license because licenses exist only under products, and the
+product READMEs primarily offer source-checkout commands rather than a release
+installation path.
+
+Four Python 3.11–3.14 jobs reached ProofRun and failed because a temporary test
+repository inherited Git's `master` default while the test asserted `main`.
+Python 3.10 failed earlier because a WheelFact strictness fixture used TOML's
+`true` token, which its documented narrow fallback parser does not consume.
+The equivalent ReleaseFact fixture would have failed later for the same reason.
+Made the Git initial branch explicit and changed both unknown-field fixtures to
+quoted values supported by the product schemas' fallback subset. Assertions and
+runtime product behavior remain unchanged. Added a linked Portfolio CI badge to
+the public root README so external users can see validation state immediately.
+
+Post-change warning-strict focused suites passed 53 ProofRun tests with one
+expected optional skip, 9 WheelFact tests, and 5 ReleaseFact tests. Direct
+fallback-parser probes accepted both replacement Python 3.10 fixture values.
+Final warning-strict Python 3.11 portfolio validation passed all 133 maintained
+tests with one expected skip, twelve byte-reproducible builds, six isolated
+installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
+integrity checks. The four archived GrammarCheck tests, local Markdown targets,
+shell syntax, and diff checks also passed. The next run should inspect the live
+matrix first; once green, compare the repository-license and install-path gaps
+against a fresh external-user workflow opportunity.

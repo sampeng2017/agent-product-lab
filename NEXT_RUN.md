@@ -1,4 +1,4 @@
-# Next run: select a fresh bounded opportunity
+# Next run: verify hosted CI, then select a fresh opportunity
 
 GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
@@ -7,19 +7,23 @@ six built wheels while retaining exact contracts for ResidueCheck and
 AgentScope.
 ReleaseFact now checks local runtime and frozen product-document version claims
 for every maintained product in addition to its portfolio-wide claims.
+The 2026-09-29 run repaired two portable-test fixtures after the first public
+Portfolio CI run failed across its matrix. The root README now shows CI state.
 
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`
 messages, `products/NEXT_PRODUCT_OPPORTUNITIES.md`, product handoffs, tests, the
-workflow, and the portfolio validator. Check Git state/history and rerun
-warning-strict portfolio validation before editing.
+workflow, and the portfolio validator. Check Git state/history, inspect the
+latest public GitHub matrix result, and rerun warning-strict portfolio
+validation before editing.
 
 ## Bounded decision
 
-1. Identify at least three fresh opportunities from concrete repository or
-   validation evidence. Name existing ecosystem ownership and the smallest
-   useful experiment for each.
+1. If any hosted matrix job still fails, reproduce and repair it before new
+   work. Otherwise identify at least three fresh opportunities from concrete
+   repository or validation evidence. Name existing ecosystem ownership and the
+   smallest useful experiment for each.
 2. Select at most one opportunity. Reproduce its failure or costly manual step
    before retaining implementation.
 3. Define an abandonment gate up front. Prefer a transparent repository-local
@@ -37,3 +41,6 @@ warning-strict portfolio validation before editing.
   a real release surface can drift independently of package metadata.
 - Keep credentialed services, publishing, mutation, repair, and broad policy
   engines out of the first experiment.
+- Consider the missing repository-level license signal and source-only install
+  guidance as adoption friction, but change either only with an honest,
+  repository-supported path.

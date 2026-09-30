@@ -3,9 +3,9 @@
 ## Current direction
 
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
-remains archived. Portfolio validation now verifies each product's runtime and
-frozen product-document version claims against canonical package metadata,
-closing a release-drift gap without changing any frozen product interface.
+remains archived. The public five-version Portfolio CI matrix is being repaired
+after its first hosted run exposed two test fixtures that depended on local Git
+and Python behavior. No frozen product interface or runtime behavior changed.
 
 ## Product shape
 
@@ -24,36 +24,40 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Installed ReleaseFact checks its existing seven portfolio claims plus one
   local three-claim runtime/README/STATUS contract for every maintained product.
 
-## Completed today (2026-09-28)
+## Completed today (2026-09-29)
 
-- Passed the clean warning-strict Python 3.11 baseline: 133 maintained tests,
-  one expected optional skip, twelve reproducible wheel builds, six isolated
-  installs, all maintained contracts, and six wheel-integrity checks.
-- Compared release-version consistency, full-validator residue wrapping, and
-  local Markdown-link validation. Only release consistency reproduced a gap;
-  the other two had no current failure and broader link behavior has mature
-  ecosystem ownership.
-- Built a disposable ProofRun wheel with runtime version 9.9.9 but package
-  metadata 1.8.1. The existing `--help` smoke and WheelFact integrity gate both
-  accepted it.
-- Added narrow ReleaseFact contracts for the five products that lacked one and
-  made portfolio validation check all six local contracts plus the existing
-  portfolio contract through the installed artifact.
-- Confirmed the new ProofRun contract rejects the mutation with drift exit 1
-  and identifies the runtime claim while preserving the two matching document
-  claims.
+- Audited the live public GitHub surface. The repository is public with a useful
+  description and topics, but its only hosted Portfolio CI run failed on all
+  five supported Python versions.
+- Compared the hosted failure, the missing repository-level license signal, and
+  source-only installation guidance. Selected CI because it was an observed
+  correctness and trust failure on the current commit; the other two remain
+  adoption opportunities.
+- Traced four Python 3.11–3.14 failures to a ProofRun test repository inheriting
+  Git's machine-specific default branch. The fixture now explicitly initializes
+  `main`.
+- Traced Python 3.10's earlier failure to a WheelFact strictness fixture using a
+  TOML boolean outside the intentionally narrow fallback value subset. Changed
+  it and the equivalent later ReleaseFact fixture to schema-relevant quoted
+  unknown values, retaining the exact unsupported-key assertion.
+- Added a Portfolio CI badge to the root README so visitors can see the hosted
+  validation state directly.
 
 ## Changes since the prior run
 
-Previously only ReleaseFact had an explicit local contract tying source and
-product documentation to package metadata. Every maintained product now has
-the same three-claim release-drift check, and the root validator executes all of
-them with the installed ReleaseFact artifact. No product API, schema, package
-version, or implementation changed.
+Local validation previously hid two platform-dependent fixtures: this host
+defaults new Git repositories to `main` and Python 3.11 uses the full standard
+TOML parser. The tests are now deterministic across the hosted Git default and
+Python 3.10 fallback path. The public README now exposes CI state. No product
+API, schema, package version, or implementation changed.
 
 ## Known issues
 
-- Hosted portfolio CI remains Ubuntu-only, and the repository has no Git remote.
+- Hosted portfolio CI remains Ubuntu-only.
+- GitHub does not currently detect a repository-level license because licenses
+  exist only inside product directories.
+- Product READMEs primarily document source-checkout usage; there is no release
+  or package-index installation path.
 - The archived GrammarCheck code uses CPython's documented best-effort target
   grammar and is not exact interpreter compatibility evidence.
 - Standard setuptools sdists were not byte-reproducible across source copies in
@@ -69,34 +73,37 @@ version, or implementation changed.
 
 ## Decisions
 
-- Reuse ReleaseFact rather than adding shell comparisons or reopening its
-  frozen schema; one canonical value per product matches schema v1 exactly.
-- Keep local contracts to runtime, README, and STATUS release claims. The
-  existing root contract remains responsible for portfolio-level ReleaseFact
-  claims.
-- Reject version drift before later installed behavior checks so diagnostics
-  point directly to the inconsistent claim.
+- Fix the observed hosted matrix before starting a new product or onboarding
+  experiment.
+- Make Git fixture state explicit instead of depending on user or runner
+  `init.defaultBranch` configuration.
+- Keep strictness tests inside the declared value subset of each Python 3.10
+  fallback parser; the tested behavior is unknown-key rejection, not general
+  TOML conformance.
+- Expose hosted validation in the README rather than making visitors discover
+  the Actions page manually.
 
 ## Validation
 
-- Pre-change `PYTHON_BIN=python3.11 PYTHONWARNINGS=error
-  ./scripts/validate-portfolio.sh` passed 133 maintained tests with one expected
-  skip and every installed contract.
-- All six product-local contracts pass from source; the disposable ProofRun
-  runtime mutation fails with exit 1 and one explicit drift.
-- Final warning-strict Python 3.11 portfolio validation passes all 133 maintained
-  tests with one expected skip, twelve byte-reproducible wheel builds, six
-  isolated installs, seven ReleaseFact contracts, all installed behavior
-  contracts, and six explicit integrity passes. Shell syntax, four archived
-  GrammarCheck tests, 28 local Markdown targets, and diff checks also pass.
+- Pre-change warning-strict Python 3.11 portfolio validation passed all 133
+  maintained tests with one expected skip, twelve reproducible builds, six
+  installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
+  integrity checks, reproducing the local/hosted discrepancy.
+- Post-change focused warning-strict suites pass: ProofRun 53 tests with one
+  expected skip, WheelFact 9 tests, and ReleaseFact 5 tests.
+- Direct calls to both Python 3.10 fallback parsers accept the replacement
+  quoted fixture value. Final warning-strict Python 3.11 portfolio validation
+  passes all 133 maintained tests with one expected skip, twelve reproducible
+  builds, six installs, seven ReleaseFact contracts, all behavior contracts,
+  and six wheel integrity checks. The four archived GrammarCheck tests, local
+  Markdown targets, shell syntax, and diff checks also pass.
 
 ## Recommended next steps
 
-1. Compare at least three fresh repository-grounded opportunities before
-   changing a frozen product.
-2. Favor a bounded experiment with a demonstrated local failure and an explicit
-   abandonment gate; do not add more version claims without an independently
-   drifting release surface.
+1. Confirm the pushed five-version hosted matrix is green; treat any remaining
+   hosted-only failure as the next priority.
+2. If CI is green, compare a repository-level license for clear reuse terms,
+   an honest install-from-Git quick start, and a fresh user-workflow gap.
 3. Keep the six product schemas and command-line contracts frozen absent a
    demonstrated correctness or safety defect.
 

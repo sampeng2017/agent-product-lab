@@ -43,7 +43,11 @@ class ProofRunTests(unittest.TestCase):
     def setUp(self) -> None:
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name)
-        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "init", "-q", "--initial-branch=main"],
+            cwd=self.root,
+            check=True,
+        )
         subprocess.run(
             ["git", "config", "user.email", "proofrun@example.com"],
             cwd=self.root,

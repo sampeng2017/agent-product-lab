@@ -276,7 +276,7 @@ class WheelFactTests(unittest.TestCase):
         contract = self.write_contract()
         original = contract.read_text(encoding="utf-8")
         contract.write_text(
-            original.replace('[wheel]\n', '[wheel]\nextra = true\n'),
+            original.replace('[wheel]\n', '[wheel]\nextra = "unsupported"\n'),
             encoding="utf-8",
         )
         with self.assertRaisesRegex(ContractError, "unsupported keys: extra"):

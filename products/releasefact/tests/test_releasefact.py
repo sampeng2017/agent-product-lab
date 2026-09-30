@@ -107,7 +107,9 @@ class ReleaseFactTests(unittest.TestCase):
         manifest = self.write_project()
         text = manifest.read_text(encoding="utf-8")
         manifest.write_text(
-            text.replace('name = "package"', 'name = "package"\nextra = true'),
+            text.replace(
+                'name = "package"', 'name = "package"\nextra = "unsupported"'
+            ),
             encoding="utf-8",
         )
         with self.assertRaisesRegex(ContractError, "unsupported keys"):

@@ -1,5 +1,7 @@
 # Autonomous Product Lab
 
+[![Portfolio CI](https://github.com/sampeng2017/agent-product-lab/actions/workflows/portfolio-ci.yml/badge.svg)](https://github.com/sampeng2017/agent-product-lab/actions/workflows/portfolio-ci.yml)
+
 This repository is a workspace for building and validating a sequence of small
 software products. Each product lives under `products/`; root-level status and
 log files tell future autonomous runs which product is active and what to do
