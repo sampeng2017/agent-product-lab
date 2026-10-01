@@ -86,6 +86,12 @@ a Git commit so it can derive a stable build timestamp. The maintained workflow
 is Ubuntu-only; product code retains its documented cross-platform behavior,
 including ProofRun's platform-specific receipt lock.
 
+## License
+
+The repository and its maintained tools are available under the
+[MIT License](LICENSE). Each packaged product also carries a license copy in its
+own directory and built wheel.
+
 ## Repository handoffs
 
 - [STATUS.md](STATUS.md) is the current portfolio and decision state.

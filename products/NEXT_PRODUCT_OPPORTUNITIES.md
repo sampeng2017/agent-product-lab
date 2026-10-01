@@ -583,3 +583,57 @@ canonical `project.version`. The installed ReleaseFact artifact checks all six
 local contracts plus the existing seven-claim portfolio contract. The mutated
 ProofRun fixture now exits 1 and names the single runtime drift. No product API,
 schema, package version, or implementation changed.
+
+## Public adoption comparison — 2026-09-30
+
+The latest public matrix was green, so selection moved from correctness repair
+to external adoption friction visible on GitHub.
+
+### Candidate 1: repository-level license — selected
+
+- **Demonstrated gap:** GitHub returned `licenseInfo: null`; the public root had
+  no license even though every package directory used MIT.
+- **External value:** visitors can now tell that the whole repository may be
+  used, modified, and redistributed, and GitHub can surface the license beside
+  the project.
+- **Smallest useful change:** add the standard MIT text already shared by six
+  product directories and link it from the root README.
+- **Retention gate:** keep only if the file is byte-identical to the established
+  Autonomous Product Lab license and GitHub detects it after a normal push.
+
+### Candidate 2: install-from-Git quick start
+
+- **Demonstrated gap:** product READMEs assume a checkout and the repository has
+  no release or package-index publication. Pip supports VCS subdirectory URLs,
+  so every product is technically installable from this monorepo.
+- **Why deferred:** documenting `@main` makes installation move over time, while
+  a pinned revision is unfriendly and no stable tag exists. The next run should
+  select and validate an honest stability contract before publishing commands.
+
+### Candidate 3: root product chooser
+
+- **Demonstrated gap:** the root README lists seven experiments in historical
+  order, but a first-time visitor must read dense descriptions to decide which
+  maintained tool solves their problem.
+- **Why deferred:** clearer selection helps discoverability but does not resolve
+  the more fundamental legal ambiguity, and an actionable chooser should point
+  to a proven installation path rather than source-only prose.
+
+### Decision
+
+Select the root license. This changes no runtime behavior or package contract,
+but removes the most consequential public adoption blocker with terms already
+chosen consistently across the portfolio. Do not add a synchronization gate:
+package-local notices intentionally remain standalone artifact metadata.
+
+## Sources inspected for the 2026-09-30 comparison
+
+- [GitHub licensing guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
+  — public code without a license remains under default copyright; GitHub
+  recommends a simple root license file for reuse and detection.
+- [GitHub README guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
+  — a repository README should explain usefulness, getting started, and project
+  expectations, including licensing.
+- [pip VCS support](https://pip.pypa.io/en/latest/topics/vcs-support/)
+  — pip supports direct Git requirements and `subdirectory` fragments for
+  packages housed below a repository root.

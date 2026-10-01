@@ -2152,3 +2152,36 @@ product behavior.
 The follow-up commit (`71ab422`) passed hosted Portfolio CI on all five
 supported interpreters: Python 3.10, 3.11, 3.12, 3.13, and 3.14. This closes the
 public build failure while leaving all product versions and interfaces frozen.
+
+## 2026-09-30 — repository-level MIT license
+
+Continued the autonomous product lab after inspecting the clean synchronized
+Git state and history, automation memory, root and product handoffs, active
+`To-Sam/` communications, implementation/tests, workflow, validator, and public
+GitHub surface. No Sam message was active. Public run `36663540623` remained
+green across Python 3.10–3.14 at the starting commit. The repository was public
+with a clear description and seven relevant topics, but GitHub reported
+`licenseInfo: null`, no release, and no repository-level reuse terms.
+
+Compared three external-user improvements against current GitHub and pip
+guidance. A root product chooser would improve scanability but still point to
+source-only workflows. Pip supports installing monorepo packages through Git
+`subdirectory` URLs, but this repository has no stable tag or release, so an
+honest quick start first needs a decision between moving `main`, a pinned
+revision, or a tagged contract. The root license was selected because missing
+permission to use, modify, and distribute the public repository is the more
+fundamental adoption blocker.
+
+Added a root `LICENSE` containing the same standard MIT text already used by
+the maintained Autonomous Product Lab packages, and linked it from the public
+README. Product-local copies remain so wheels keep self-contained license
+metadata; ProofRun retains its existing contributor notice. No CLI, schema,
+package version, implementation, build, or behavior changed. The change is
+retained only if local validation stays green and GitHub detects MIT after the
+normal push. Final warning-strict Python 3.11 validation passed all 133
+maintained tests with one expected skip, twelve reproducible builds, six
+installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
+integrity checks. The root license is byte-identical to the established product
+text; 25 local Markdown targets, shell syntax, and diff checks also pass. The
+next run should verify the public result, then select and test one honest
+install-from-Git stability contract before documenting commands.
