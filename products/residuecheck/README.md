@@ -4,6 +4,10 @@ ResidueCheck is a dependency-free CLI that reports filesystem residue left by
 one command, including files ignored by Git. It snapshots a bounded tree before
 and after the command and names created, modified, and removed paths.
 
+Use the [tested Git installation guide](../../docs/INSTALLATION.md#residuecheck-100)
+to install this package alone. Run it from the tree you want to inspect;
+everything after `--` is the command being measured.
+
 ```bash
 residuecheck --root . --exclude .venv --exclude node_modules -- python -m build
 ```

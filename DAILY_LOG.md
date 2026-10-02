@@ -2185,3 +2185,66 @@ integrity checks. The root license is byte-identical to the established product
 text; 25 local Markdown targets, shell syntax, and diff checks also pass. The
 next run should verify the public result, then select and test one honest
 install-from-Git stability contract before documenting commands.
+
+## 2026-10-01 — tested installation and first-use onboarding
+
+Started from clean synchronized `84e76fa`, read automation memory, Git history,
+root/product documentation, implementation/test surfaces, validator, workflow,
+and active To-Sam communications. No Sam message was present. GitHub detected
+MIT and public run `36809212730` passed Python 3.10–3.14. The warning-strict
+Python 3.11 baseline passed 133 maintained tests with one expected skip, twelve
+reproducible wheel builds, six installs, seven ReleaseFact contracts, all
+behavior contracts, and six wheel integrity checks.
+
+Compared installing from moving `main`, a full validated revision, and a source
+checkout. Selected full public commit `84e76faa7f837a858fe6b6efdea9da8c24856b99`
+for the first-user path: the source stays fixed without inventing a tagged or
+package-index release. Current pip documentation supports direct Git requirements
+with `subdirectory` fragments and recommends full commit hashes. `main` remains
+an explicitly described development option and checkout installs a secondary
+path. No custom installer is needed.
+
+Installed all six tools from real HTTPS GitHub requirements into a new Python
+3.11 virtual environment using default build isolation. Verified the installed
+versions, exact revision and subdirectories in pip's `direct_url.json`, zero
+runtime requirements, command surfaces, and `pip check`. In a separate sample
+Git repository with unittest tests, installed ProofRun completed dry-run init,
+init, verify, validity gating, and chain audit. Installed AgentScope inspected
+and compared a planned file and ResidueCheck's no-op reported a clean tree.
+
+Added `docs/INSTALLATION.md` with six copyable package-specific commands, a
+task-oriented chooser, macOS/Linux and Windows environment setup, first-use
+examples, checkout installs, source tracking, and troubleshooting. Reframed the
+root introduction around the tools' jobs, put installation before lab history,
+and added installed-use entry points in each maintained product README. All
+runtime implementations, versions, schemas, and CLI interfaces remain stable.
+The source pin does not freeze build dependency resolution; Windows activation
+was not executed on this host. Next: one worked example showing a useful
+failure, its interpretation, a correction, and success; separately assess the
+hosted runner migration announced for October 19.
+
+Final warning-strict portfolio validation passed 133 maintained tests with one
+expected skip, twelve reproducible builds, six installs, seven ReleaseFact
+contracts, all behavior contracts, and six integrity checks. All 43 local links
+and anchors in edited docs passed; AgentScope's 48 tests, compilation and
+instruction inspection, shell syntax, and whitespace checks passed.
+
+Inspection and validation commands (from the lab root unless noted):
+
+```sh
+git status --short --branch
+git log -5 --oneline
+gh repo view sampeng2017/agent-product-lab --json licenseInfo,latestRelease,url
+gh run list --repo sampeng2017/agent-product-lab --workflow portfolio-ci.yml --limit 1 --json headSha,status,conclusion,url
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+PYTHONPATH=products/releasefact/src python3.11 -m releasefact releasefact.toml
+git diff --check
+```
+
+The installation commands are recorded verbatim in `docs/INSTALLATION.md`.
+After activating the disposable install environment in the sample project,
+ran `proofrun init --dry-run`, `proofrun init`, `proofrun verify`,
+`proofrun status --require-valid`, `proofrun audit`,
+`agentscope --root . src/app.py`, `agentscope compare --root . src/app.py`,
+`residuecheck --root . --exclude .venv -- python -c "print('checked')"`, and
+`python -m pip check`.

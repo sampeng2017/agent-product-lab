@@ -1,4 +1,4 @@
-# Next run: verify public license, then improve install onboarding
+# Next run: improve the first useful result
 
 GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
@@ -11,6 +11,9 @@ The 2026-09-29 run repaired two portable-test fixtures after the first public
 Portfolio CI run failed across its matrix. The root README now shows CI state.
 The 2026-09-30 run added the repository-level MIT license that GitHub previously
 could not detect while licenses existed only inside product directories.
+The 2026-10-01 run added tested installation commands pinned to public revision
+`84e76fa` and examples that work in the user's own repository. The root and each
+maintained product now link to `docs/INSTALLATION.md`.
 
 ## Required starting inspection
 
@@ -24,9 +27,10 @@ portfolio validation before editing.
 
 1. If GitHub does not detect the root MIT license or a hosted matrix job fails,
    repair that public surface before new work.
-2. Otherwise compare an install from moving `main`, an install pinned to a Git
-   revision or new stable tag, and source-checkout onboarding. Select one honest
-   path and test it in a clean environment before documenting it.
+2. Otherwise compare a worked ProofRun stale-proof example, an AgentScope scope
+   debugging example, and a release-tool mismatch example. Select the clearest
+   real task and demonstrate failure, interpretation, correction, and success
+   using an installed tool in a disposable project.
 3. Define an abandonment gate up front. Do not advertise package-index or
    release availability that the repository does not provide.
 
@@ -44,5 +48,8 @@ portfolio validation before editing.
   engines out of the first experiment.
 - Keep root and package-local license copies: the former communicates repository
   reuse terms, while the latter keeps built artifacts self-contained.
-- Treat source-only install guidance as the next adoption friction, but change
-  it only with an honest, repository-supported path.
+- Change any installation promise only with an honest, tested path. Preserve the
+  documented public revision unless a newly tested runtime change warrants
+  updating it.
+- Assess the announced October 19 hosted runner migration independently; do
+  not mix an untested platform switch into a worked-example change.

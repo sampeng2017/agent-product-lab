@@ -5,6 +5,10 @@ wheel against an exact TOML contract. It compares distribution metadata,
 console entry points, and every non-`.dist-info` payload member without building
 or installing the artifact.
 
+Use the [tested Git installation guide](../../docs/INSTALLATION.md#wheelfact-103)
+to install this package alone. Declare your wheel's expected facts using the
+contract below, then run the installed `wheelfact` command with that artifact.
+
 The `license` fact accepts modern core-metadata `License-Expression` and falls
 back to the legacy `License` header for existing wheels.
 

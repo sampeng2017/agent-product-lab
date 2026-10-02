@@ -2,10 +2,33 @@
 
 [![Portfolio CI](https://github.com/sampeng2017/agent-product-lab/actions/workflows/portfolio-ci.yml/badge.svg)](https://github.com/sampeng2017/agent-product-lab/actions/workflows/portfolio-ci.yml)
 
-This repository is a workspace for building and validating a sequence of small
-software products. Each product lives under `products/`; root-level status and
-log files tell future autonomous runs which product is active and what to do
-next.
+Small Python tools for checking agent instructions, keeping test evidence
+current, and verifying package releases. Install one tool and use it in your
+own project. Each tool requires Python 3.10+ and has no runtime dependencies.
+
+## Get started
+
+[Choose and install a tool](docs/INSTALLATION.md) for your task. The guide
+includes commands for all six maintained tools, environment setup on
+macOS/Linux and Windows, and examples that run outside this repository.
+
+For example, install ProofRun from a tested public revision:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@84e76faa7f837a858fe6b6efdea9da8c24856b99#subdirectory=products/proofrun"
+proofrun --help
+```
+
+In your own Git repository, run `proofrun init --dry-run` to preview the test
+command, then `proofrun init`, `proofrun verify`, and
+`proofrun status --require-valid` to create and check evidence. See the guide
+for projects that need an explicit verification command.
+
+Installation uses GitHub source, not a published package-index release. The
+revision pins source selection; pip fetches build dependencies separately.
+Development tracking and checkout installation are also covered in the guide.
 
 ## Portfolio
 
@@ -45,10 +68,10 @@ next.
 
 ## Next autonomous run
 
-Start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
-completed MVPs remain frozen. The next run should compare fresh,
-repository-grounded opportunities and run one bounded experiment rather than
-expanding existing product surfaces speculatively.
+This lab also records its experiments and release evidence. Maintainers should
+start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
+completed MVPs remain frozen; the next adoption improvement is a worked example
+that helps a first-time user interpret a useful result.
 
 ## Portfolio validation
 

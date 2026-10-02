@@ -637,3 +637,39 @@ package-local notices intentionally remain standalone artifact metadata.
 - [pip VCS support](https://pip.pypa.io/en/latest/topics/vcs-support/)
   — pip supports direct Git requirements and `subdirectory` fragments for
   packages housed below a repository root.
+
+## Installation-path decision — 2026-10-01
+
+The public license now resolves to MIT and the current matrix is green. The
+remaining adoption gap was concrete: console commands appeared in product docs,
+but first-time users were expected to infer how to install monorepo packages.
+
+Compared three paths using pip's current VCS documentation:
+
+- **Moving `main`:** concise and current, but its source changes on each run;
+  keep it as an explicitly described development-tracking option.
+- **Full public revision — selected:** preserves the validated source without
+  promising a release/tag that does not exist. The long command is copyable,
+  and pip recommends full hashes for efficient resolution.
+- **Checkout install:** useful for development and offline reuse of a local
+  checkout, but requires choosing a directory and manual revision management;
+  retain as the documented secondary path.
+
+Retention required a real HTTPS GitHub install with default build isolation in
+a fresh environment, exact recorded revision/subdirectory evidence, functioning
+console commands, and an installed first-use workflow without `PYTHONPATH`.
+All six tools installed successfully from `84e76fa`; pip metadata confirmed the
+full revision and product subdirectory and `pip check` passed. ProofRun's
+preview/init/verify/validity/audit, AgentScope's inspection/comparison, and a
+clean ResidueCheck invocation passed in a separate sample project.
+
+The shared guide now supplies individual install commands, a task chooser,
+environment setup, installed examples, checkout installs, update semantics,
+and troubleshooting. Root/product entry points link directly to it. This
+removes adoption friction through standard pip behavior without adding another
+installer or internal validation gate. A full source revision is not a pin of
+pip build dependencies, and Windows activation remains documented rather than
+locally executed.
+
+Sources: [pip VCS support](https://pip.pypa.io/en/stable/topics/vcs-support/)
+and [Python venv](https://docs.python.org/3/library/venv.html).

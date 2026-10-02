@@ -16,6 +16,23 @@ inside the repository under `.proofrun/` and are ignored by Git.
 
 ProofRun requires Python 3.10 or newer.
 
+Install it using the [tested Git installation guide](../../docs/INSTALLATION.md#proofrun-181).
+In your own Git repository, preview the detected verification command and then
+create evidence:
+
+```sh
+proofrun init --dry-run
+proofrun init
+proofrun verify
+proofrun status --require-valid
+proofrun audit
+```
+
+If your layout is not detected, provide the test command explicitly with
+`proofrun init -- YOUR_COMMAND`. Existing configuration is preserved by default.
+
+### Develop from this checkout
+
 ```bash
 cat > proofrun.toml <<'EOF'
 [checks.unit]

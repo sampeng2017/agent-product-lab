@@ -10,6 +10,12 @@ metadata had advanced to v0.3.0 while a portfolio page still called it v0.1.0.
 ReleaseFact deliberately does not search for versions or decide whether a
 historical mention is stale. Maintainers declare only current claims.
 
+## Install
+
+Use the [tested Git installation guide](../../docs/INSTALLATION.md#releasefact-100)
+to install this package alone. Create a contract for your project using the
+example below, then run `releasefact releasefact.toml` from your project.
+
 ## Contract
 
 ```toml

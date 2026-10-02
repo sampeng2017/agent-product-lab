@@ -8,6 +8,17 @@ and multi-format Copilot CLI aggregation visible before an agent edits code.
 
 AgentScope requires Python 3.10 or newer and has no runtime dependencies.
 
+[Install AgentScope](../../docs/INSTALLATION.md#agentscope-100), then run these
+commands in the repository you want to inspect, replacing `src/app.py` with
+your target:
+
+```sh
+agentscope --root . src/app.py
+agentscope compare --root . src/app.py
+```
+
+The following examples inspect this lab from its source checkout:
+
 ```bash
 cd products/agentscope
 PYTHONPATH=src python3 -m agentscope --root ../.. products/agentscope/src/agentscope/core.py

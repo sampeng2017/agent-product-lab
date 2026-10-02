@@ -9,6 +9,12 @@ The v1.0 local MVP focuses on the release gap demonstrated by this portfolio:
 source tests can pass while an installed command, JSON shape, or documented
 policy exit has regressed.
 
+## Install
+
+Use the [tested Git installation guide](../../docs/INSTALLATION.md#wheelcontract-100)
+to install this package alone. Then create a contract like the one below and run
+`wheelcontract --wheel dist/example.whl wheelcontract.toml` with your wheel path.
+
 ## Contract
 
 ```toml
