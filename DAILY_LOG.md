@@ -2248,3 +2248,61 @@ ran `proofrun init --dry-run`, `proofrun init`, `proofrun verify`,
 `agentscope --root . src/app.py`, `agentscope compare --root . src/app.py`,
 `residuecheck --root . --exclude .venv -- python -c "print('checked')"`, and
 `python -m pip check`.
+
+## 2026-10-02 — replayable stale-proof example
+
+Started clean at synchronized `67b0465`. Inspected Git history, automation memory,
+root/product handoffs, implementation/tests, installation guide, opportunity
+record, and active To-Sam messages. No Sam message was present. GitHub detected
+MIT, remote main matched local HEAD, and run `36958968701` was green across
+Python 3.10–3.14. The warning-strict baseline passed 133 tests with one expected
+skip, twelve reproducible builds, six installs, seven ReleaseFact contracts,
+every behavior contract, and six wheel integrity checks.
+
+Compared ProofRun stale evidence, AgentScope scope debugging, and release-tool
+mismatch examples. Selected ProofRun because a stale gate can surprise a user
+whose previous tests passed and whose edited code would also pass. The example
+needed to show when evidence stops applying and the action that restores it,
+rather than merely provide a failure screenshot.
+
+Added a small calculator/unittest project and an executable demo that copies it
+into a temporary repository, commits a baseline with a local demonstration
+identity, runs installed ProofRun, edits one implementation, and verifies again.
+The gate sequence is `VALID -> STALE -> VALID`; the stale JSON must name
+`calculator.py`, and the final audit verifies both receipt hashes and links.
+The demo asserts expected exits and states, clears inherited Git-directory
+overrides, bounds subprocess time, and removes the temporary copy afterward.
+Its guide records actual output, explains stale evidence versus test failure,
+and gives the command pattern to use in a reader's own project. Linked it from
+the root README, ProofRun README, and shared installation guide. Product runtime
+code, versions, schemas, and the tested installation revision are unchanged.
+
+Repeated installed replay and replay with caller Git directory overrides passed;
+missing installed ProofRun returned the documented helpful exit 2. Next: choose
+a worked instruction-scope or artifact-release example based on the harder
+remaining interpretation gap. Assess the October 19 runner migration separately.
+
+Inspection and validation commands:
+
+```sh
+git status --short --branch
+git log -5 --oneline
+gh repo view sampeng2017/agent-product-lab --json licenseInfo,url
+gh run list --repo sampeng2017/agent-product-lab --workflow portfolio-ci.yml --limit 1 --json databaseId,headSha,status,conclusion,url
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+python examples/proofrun-stale-proof/demo.py
+python -B -m unittest discover -s tests -v  # from the example project directory
+git diff --check
+```
+
+The replay command uses a Python environment containing the installed ProofRun
+v1.8.1 artifact at the documented public revision, not checkout imports.
+
+Final warning-strict portfolio acceptance passed 133 maintained tests with one
+expected skip, twelve reproducible builds, six isolated installs, seven
+ReleaseFact contracts, every behavior contract, and six integrity checks. The
+fixture's unittest, Python 3.10 grammar/compilation, 35 local links/anchors,
+shell syntax, and diff checks passed. Replayed successfully from outside the
+lab and confirmed missing Git returns exit 2. The guide explicitly explains
+that example files live on current main while the pinned installed artifact
+predates the example, so pip-only readers know which checkout to obtain.

@@ -30,6 +30,11 @@ Installation uses GitHub source, not a published package-index release. The
 revision pins source selection; pip fetches build dependencies separately.
 Development tracking and checkout installation are also covered in the guide.
 
+[Replay a stale-proof example](examples/proofrun-stale-proof/README.md) to see
+why passing tests become stale after a code edit, which file caused the gate
+to fail, and how fresh verification restores valid evidence. The demo runs
+installed ProofRun in a temporary project and leaves your checkout unchanged.
+
 ## Portfolio
 
 - [ProofRun](products/proofrun/README.md) — local-first verification receipts

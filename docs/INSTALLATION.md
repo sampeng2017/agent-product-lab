@@ -71,6 +71,10 @@ example `proofrun init -- python -B -m unittest discover -s tests -v` for a
 project with unittest tests. Checks must leave Git-visible inputs unchanged.
 Changing code after verification makes the corresponding proof stale.
 
+The [stale-proof worked example](../examples/proofrun-stale-proof/README.md)
+provides a replayable project and explains the expected exit-1 result before
+fresh verification restores the status gate.
+
 ### AgentScope 1.0.0
 
 ```sh

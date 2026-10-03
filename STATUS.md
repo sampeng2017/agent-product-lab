@@ -4,8 +4,9 @@
 
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
 remains archived. The public matrix is green and GitHub detects MIT. External
-users now have a tested, source-pinned installation path for each maintained
-tool plus first-use examples in their own repositories.
+users have a tested installation path for each maintained tool. A new runnable
+ProofRun example demonstrates how an edit invalidates earlier test evidence
+and how another verification restores the status gate.
 
 ## Product shape
 
@@ -26,37 +27,38 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - `docs/INSTALLATION.md` documents six separate packages and their console
   commands, virtual environments, a tested public source revision, checkout
   installs, updates, and troubleshooting.
+- `examples/proofrun-stale-proof/` contains a minimal unittest project, a
+  disposable replay script, and a guide to the actual command results.
 
-## Completed today (2026-10-01)
+## Completed today (2026-10-02)
 
-- Confirmed MIT detection and green Python 3.10–3.14 CI for `84e76fa`.
-- Compared moving `main`, a pinned public revision, and checkout installs.
-  Selected the validated full revision for the first-user path; documented
-  development tracking separately without creating an unsupported release tag.
-- Installed all six tools from real GitHub VCS requirements in a new Python 3.11
-  environment with normal build isolation and no checkout import paths.
-- Verified recorded source revisions, package names, versions, zero runtime
-  requirements, and `pip check` on the installed tools.
-- Rehearsed installed ProofRun preview/init/verify/validity/audit, AgentScope
-  inspection/comparison, and a clean ResidueCheck command in a separate project.
-- Added a shared installation guide, a task-oriented chooser, and installed-use
-  entry points in the root README and all six product READMEs.
+- Confirmed MIT detection, synchronized `67b0465`, and green public CI.
+- Compared ProofRun stale evidence, AgentScope scope debugging, and release
+  mismatch examples. Selected ProofRun because fresh users need to understand
+  why a previously passing test result can fail the status gate.
+- Added a replayable `VALID -> STALE -> VALID` demonstration using the installed
+  v1.8.1 artifact and a small committed calculator/unittest fixture.
+- The demo asserts exits and JSON states, checks the changed calculator path,
+  verifies again, and audits both receipt links. All edits stay in a temporary
+  copy, with inherited Git repository overrides removed.
+- Added expected output and interpretation, plus links from the root README,
+  ProofRun README, and installation guide. Verified repeated replay, an external
+  working directory, and clear missing-prerequisite behavior.
 
 ## Changes since the prior run
 
-Previously, product docs assumed a source checkout and `PYTHONPATH`; several
-showed console commands without explaining how to install them. Users can now
-copy a package-specific Git requirement and run the tool in their own project.
-The root starts with usefulness and installation before lab history. Package
-versions, runtime behavior, schemas, and interfaces are unchanged.
+The prior run supplied installation and first commands. This run supplies the
+next useful experience: a realistic stale status, the named changed path, and
+the action that makes current evidence valid again. Package versions, runtime
+implementations, schemas, and interfaces are unchanged.
 
 ## External-user value
 
-Readers can choose by task, install one tool, preview their first verification,
-and understand package-name versus command-name differences. A full public
-revision keeps the chosen source stable while the lab continues developing.
-The guide makes build-index access and source tracking explicit and explains
-common environment, directory, and certificate failures.
+Readers can reproduce a status-gate failure without editing their own project
+and see that stale evidence is different from failing tests. The example shows
+the exact refresh command and explains why a receipt audit does not establish
+that old tests cover newly edited code. A repeatable replay makes the product's
+benefit visible after installation.
 
 ## Known issues
 
@@ -66,6 +68,8 @@ common environment, directory, and certificate failures.
   changes. Source pinning does not pin build dependency versions.
 - Windows activation is documented from Python's official instructions but was
   not executed on this macOS host; installed workflow rehearsal used Python 3.11.
+- The new demo was executed on macOS with installed ProofRun under Python 3.11;
+  its script supports Python 3.10 syntax, but Windows replay is not yet tested.
 - Hosted runners announced an `ubuntu-latest` migration beginning October 19;
   assess whether to pin the runner separately from this onboarding change.
 - The archived GrammarCheck code uses CPython's documented best-effort target
@@ -83,13 +87,14 @@ common environment, directory, and certificate failures.
 
 ## Decisions
 
-- Use a tested full Git revision for onboarding. Pip's standard subdirectory
-  syntax already supports this monorepo without a custom installer.
-- Offer `main` with explicit upgrade guidance only for development tracking.
-- Keep installation instructions centralized; each product links to its section
-  and demonstrates the installed command before checkout development examples.
-- No new installer, dependency, test framework, or release gate is needed for
-  this documentation and adoption change.
+- Preserve the tested installation revision; the demonstration exercises the
+  existing frozen artifact through its CLI, without requiring a runtime change.
+- Use a disposable Git copy and local commit identity so replay cannot alter
+  the reader's repository or Git identity configuration.
+- Verify structured states and exits in the demo itself; keep product tests
+  focused on their existing contracts and avoid another internal release gate.
+- Explain the stale failure separately from a code defect; both calculator
+  implementations pass the same tests after appropriate verification.
 
 ## Validation
 
@@ -97,21 +102,21 @@ common environment, directory, and certificate failures.
   maintained tests with one expected skip, twelve reproducible builds, six
   installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
   integrity checks.
-- Public run 36809212730 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
+- Public run 36958968701 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
   the inspected starting commit.
-- The real VCS install and first-use rehearsal passed for the documented source
-  revision. All six `direct_url.json` records confirm that exact commit and the
-  expected subdirectory; no installed package declares runtime dependencies.
+- Installed demo replay passed repeatedly, including with caller Git directory
+  overrides. Missing installed ProofRun returns a useful message and exit 2.
 - Final warning-strict portfolio validation passed 133 tests with one expected
   skip, twelve reproducible builds, six installs, seven ReleaseFact contracts,
-  all behavior contracts, and six integrity checks. All 43 edited-document
-  local links and anchors passed, as did AgentScope's required tests, compilation,
-  instruction inspection, shell syntax, and diff checks.
+  all behavior contracts, and six integrity checks. The fixture test, Python
+  3.10 grammar/compilation, 35 edited-document links/anchors, shell syntax, and
+  diff checks passed. Replay from outside the lab and missing-Git exit 2 also
+  passed.
 
 ## Recommended next steps
 
-1. Add a small worked example for an external user showing a useful failing
-   result, how to interpret it, and the successful result after correction.
+1. Compare an AgentScope scope-debugging example with an artifact-release
+   mismatch example and retain whichever clarifies a harder first-user task.
 2. Assess the upcoming hosted runner migration and retain stable release
    evidence before October 19.
 3. Keep the six product schemas and command-line contracts frozen absent a

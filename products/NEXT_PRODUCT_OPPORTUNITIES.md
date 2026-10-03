@@ -673,3 +673,27 @@ locally executed.
 
 Sources: [pip VCS support](https://pip.pypa.io/en/stable/topics/vcs-support/)
 and [Python venv](https://docs.python.org/3/library/venv.html).
+
+## First useful result — 2026-10-02
+
+The installed-tool quick starts still required readers to infer what a useful
+failure looks like and what to do about it. Compared three bounded examples:
+
+- **ProofRun stale evidence — selected:** a passing test run followed by an edit
+  creates a status failure even when tests would still pass. This subtlety needs
+  an actual sequence, a named changed path, and a fresh verification result.
+- **AgentScope instruction debugging:** valuable for multiple-client or nested
+  guidance, but its README already contains both inspection and divergence
+  output and installed quick starts. A correction sequence is a next candidate.
+- **Release-tool mismatch:** clear drift diagnostics are already shown in
+  ReleaseFact's README and its executable stale-release fixture. A first-user
+  replay would help but the interpretation gap is smaller.
+
+Retention required the installed, pinned ProofRun artifact to demonstrate valid
+evidence, a stale gate naming the changed source file, and restored validity
+after verification, without writing into the caller's repository. The example
+passed repeatedly and with inherited Git directory overrides. It also detects
+missing prerequisites clearly. The fixture, CLI calls, actual output, and
+explanation now live together under `examples/proofrun-stale-proof/`, with links
+from public entry points. The product implementation and installation pin did
+not need to change, and no new release gate was added.

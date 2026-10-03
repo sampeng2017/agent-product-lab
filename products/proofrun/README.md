@@ -31,6 +31,10 @@ proofrun audit
 If your layout is not detected, provide the test command explicitly with
 `proofrun init -- YOUR_COMMAND`. Existing configuration is preserved by default.
 
+For a complete demonstration, [replay the stale-proof example](../../examples/proofrun-stale-proof/README.md).
+It shows `VALID`, then `STALE` after a source edit, then `VALID` after another
+verification. The demo uses installed ProofRun in a disposable Git repository.
+
 ### Develop from this checkout
 
 ```bash

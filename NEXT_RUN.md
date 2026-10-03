@@ -1,4 +1,4 @@
-# Next run: improve the first useful result
+# Next run: choose the next useful worked example
 
 GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
@@ -14,6 +14,9 @@ could not detect while licenses existed only inside product directories.
 The 2026-10-01 run added tested installation commands pinned to public revision
 `84e76fa` and examples that work in the user's own repository. The root and each
 maintained product now link to `docs/INSTALLATION.md`.
+The 2026-10-02 run added `examples/proofrun-stale-proof/`: a temporary-repository
+replay and guide that demonstrate valid evidence, a stale status after an edit,
+and restored validity after fresh verification with the frozen installed tool.
 
 ## Required starting inspection
 
@@ -27,9 +30,9 @@ portfolio validation before editing.
 
 1. If GitHub does not detect the root MIT license or a hosted matrix job fails,
    repair that public surface before new work.
-2. Otherwise compare a worked ProofRun stale-proof example, an AgentScope scope
-   debugging example, and a release-tool mismatch example. Select the clearest
-   real task and demonstrate failure, interpretation, correction, and success
+2. Otherwise compare an AgentScope scope debugging example and a release-tool
+   mismatch example against a fresh user-workflow improvement. Choose the task
+   with the largest remaining interpretation gap and demonstrate correction
    using an installed tool in a disposable project.
 3. Define an abandonment gate up front. Do not advertise package-index or
    release availability that the repository does not provide.
@@ -53,3 +56,5 @@ portfolio validation before editing.
   updating it.
 - Assess the announced October 19 hosted runner migration independently; do
   not mix an untested platform switch into a worked-example change.
+- Preserve the ProofRun replay as an external-user example, not a new product
+  or a mandatory internal release gate.

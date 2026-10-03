@@ -1,0 +1,2 @@
+[checks.unit]
+command = ["python", "-B", "-m", "unittest", "discover", "-s", "tests", "-v"]
