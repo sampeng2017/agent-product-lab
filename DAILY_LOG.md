@@ -2364,3 +2364,9 @@ expected skip, twelve reproducible builds, six installs, seven ReleaseFact
 contracts, all behavior contracts, and six integrity checks. Example Python
 3.10 grammar/compilation, 46 local links/anchors, ReleaseFact claims, shell
 syntax, and diff checks passed alongside the required focused AgentScope checks.
+
+Final reader review clarified the working directory for manual fixture
+inspection: the displayed CLI commands run in the temporary project during
+replay, or in `examples/agentscope-rule-scope/project` for read-only manual
+inspection. The replay remains the path for trying corrections without editing
+the checked-in fixture.

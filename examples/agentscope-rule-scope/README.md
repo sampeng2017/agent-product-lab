@@ -38,6 +38,17 @@ results exit 1. Replays start from a fresh copy and remove it afterward.
 
 ## Find the missed rule
 
+The commands below run automatically inside the replay's temporary project.
+For manual inspection of the checked-in fixture, start from the lab root and
+change directory first:
+
+```sh
+cd examples/agentscope-rule-scope/project
+```
+
+Use the replay to try the pattern correction without editing that checked-in
+fixture.
+
 The fixture's [.github/instructions/api.instructions.md](project/.github/instructions/api.instructions.md)
 contains:
 
