@@ -4,9 +4,9 @@
 
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
 remains archived. The public matrix is green and GitHub detects MIT. External
-users have a tested installation path for each maintained tool. A new runnable
-ProofRun example demonstrates how an edit invalidates earlier test evidence
-and how another verification restores the status gate.
+users have tested installation paths and two worked examples. AgentScope's
+new replay explains why a discovered instruction rule is ignored, how to make
+that mismatch actionable, and how corrected scope changes target coverage.
 
 ## Product shape
 
@@ -29,36 +29,39 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
   installs, updates, and troubleshooting.
 - `examples/proofrun-stale-proof/` contains a minimal unittest project, a
   disposable replay script, and a guide to the actual command results.
+- `examples/agentscope-rule-scope/` contains a two-target fixture and replay
+  that correct a misdirected modular rule using installed AgentScope v1.0.0.
 
-## Completed today (2026-10-02)
+## Completed today (2026-10-03)
 
-- Confirmed MIT detection, synchronized `67b0465`, and green public CI.
-- Compared ProofRun stale evidence, AgentScope scope debugging, and release
-  mismatch examples. Selected ProofRun because fresh users need to understand
-  why a previously passing test result can fail the status gate.
-- Added a replayable `VALID -> STALE -> VALID` demonstration using the installed
-  v1.8.1 artifact and a small committed calculator/unittest fixture.
-- The demo asserts exits and JSON states, checks the changed calculator path,
-  verifies again, and audits both receipt links. All edits stay in a temporary
-  copy, with inherited Git repository overrides removed.
-- Added expected output and interpretation, plus links from the root README,
-  ProofRun README, and installation guide. Verified repeated replay, an external
-  working directory, and clear missing-prerequisite behavior.
+- Confirmed MIT detection, synchronized `dd40ea7`, and green public CI.
+- Compared AgentScope scope debugging, release mismatch onboarding, and a
+  runner-platform pin. Selected the missed-rule interpretation gap; runner
+  stability remains a separate upcoming maintenance task.
+- Added a fixture where repository-wide instructions apply but an API-specific
+  rule incorrectly selects web files. Default inspection exits 0; the explicit
+  ignored-source gate exits 1 for the API target.
+- The replay changes only the temporary rule's `applyTo`, then confirms the
+  gate exits 0 and coverage changes from API ignored/web matched to the reverse.
+- Checks inspection schema v5 and coverage schema v1, source states/counts,
+  expected exits, and unchanged file fingerprints around each inspection.
+- Linked the worked guide from root/AgentScope READMEs and installation docs.
+  Repeated replay, external-directory replay, and missing-install exit 2 passed.
 
 ## Changes since the prior run
 
-The prior run supplied installation and first commands. This run supplies the
-next useful experience: a realistic stale status, the named changed path, and
-the action that makes current evidence valid again. Package versions, runtime
-implementations, schemas, and interfaces are unchanged.
+The prior run explained stale test evidence through ProofRun. This run explains
+instruction-rule scope through AgentScope, including why informational success
+does not establish that every discovered rule matched. Package versions,
+runtime implementations, schemas, and command-line interfaces are unchanged.
 
 ## External-user value
 
-Readers can reproduce a status-gate failure without editing their own project
-and see that stale evidence is different from failing tests. The example shows
-the exact refresh command and explains why a receipt audit does not establish
-that old tests cover newly edited code. A repeatable replay makes the product's
-benefit visible after installation.
+Readers can see a real `IGNORED` explanation, identify the wrong path pattern,
+and confirm a correction across intended and unintended targets. The guide
+distinguishes informational inspection from an explicit policy gate and warns
+that intentional nonmatches also trigger the ignored-source gate. Replay edits
+only a temporary fixture and verifies the inspector leaves its files unchanged.
 
 ## Known issues
 
@@ -68,8 +71,8 @@ benefit visible after installation.
   changes. Source pinning does not pin build dependency versions.
 - Windows activation is documented from Python's official instructions but was
   not executed on this macOS host; installed workflow rehearsal used Python 3.11.
-- The new demo was executed on macOS with installed ProofRun under Python 3.11;
-  its script supports Python 3.10 syntax, but Windows replay is not yet tested.
+- Both demos were executed on macOS with installed tools under Python 3.11;
+  their scripts support Python 3.10 syntax, but Windows replay is not tested.
 - Hosted runners announced an `ubuntu-latest` migration beginning October 19;
   assess whether to pin the runner separately from this onboarding change.
 - The archived GrammarCheck code uses CPython's documented best-effort target
@@ -87,14 +90,13 @@ benefit visible after installation.
 
 ## Decisions
 
-- Preserve the tested installation revision; the demonstration exercises the
-  existing frozen artifact through its CLI, without requiring a runtime change.
-- Use a disposable Git copy and local commit identity so replay cannot alter
-  the reader's repository or Git identity configuration.
-- Verify structured states and exits in the demo itself; keep product tests
-  focused on their existing contracts and avoid another internal release gate.
-- Explain the stale failure separately from a code defect; both calculator
-  implementations pass the same tests after appropriate verification.
+- Preserve the tested installation revision and inspect through the installed
+  artifact's CLI, using an explicit modeled `copilot-cli` profile.
+- Keep the strict target gate scoped to the intended API target. The web
+  target's intentional ignored result belongs in informational coverage.
+- Verify state, coverage, and file preservation in the replay itself rather
+  than introducing another portfolio release gate or client-compatibility claim.
+- Keep the announced runner migration separate from worked-example changes.
 
 ## Validation
 
@@ -102,21 +104,20 @@ benefit visible after installation.
   maintained tests with one expected skip, twelve reproducible builds, six
   installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
   integrity checks.
-- Public run 36958968701 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
+- Public run 37092262982 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
   the inspected starting commit.
-- Installed demo replay passed repeatedly, including with caller Git directory
-  overrides. Missing installed ProofRun returns a useful message and exit 2.
+- Installed AgentScope replay passed repeatedly, from outside the lab, and
+  with file-fingerprint checks around each inspection. Missing install exits 2.
 - Final warning-strict portfolio validation passed 133 tests with one expected
   skip, twelve reproducible builds, six installs, seven ReleaseFact contracts,
-  all behavior contracts, and six integrity checks. The fixture test, Python
-  3.10 grammar/compilation, 35 edited-document links/anchors, shell syntax, and
-  diff checks passed. Replay from outside the lab and missing-Git exit 2 also
-  passed.
+  all behavior contracts, and six integrity checks. AgentScope's required tests,
+  compilation/instruction inspection, example Python 3.10 grammar/compilation,
+  46 local links/anchors, shell syntax, and diff checks passed.
 
 ## Recommended next steps
 
-1. Compare an AgentScope scope-debugging example with an artifact-release
-   mismatch example and retain whichever clarifies a harder first-user task.
+1. Compare artifact-release onboarding with a fresh external-user workflow
+   improvement; avoid adding examples without a demonstrated interpretation gap.
 2. Assess the upcoming hosted runner migration and retain stable release
    evidence before October 19.
 3. Keep the six product schemas and command-line contracts frozen absent a

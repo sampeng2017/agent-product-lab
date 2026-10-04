@@ -2306,3 +2306,61 @@ shell syntax, and diff checks passed. Replayed successfully from outside the
 lab and confirmed missing Git returns exit 2. The guide explicitly explains
 that example files live on current main while the pinned installed artifact
 predates the example, so pip-only readers know which checkout to obtain.
+
+## 2026-10-03 — runnable instruction-scope correction
+
+Started clean and synchronized at `dd40ea7`. Read automation memory, Git history,
+root/product documentation, AgentScope contributor instructions, implementation
+and tests, the portfolio workflow/validator, opportunity records, and active
+To-Sam messages. No active Sam message existed. GitHub detected MIT, remote
+main matched HEAD, and run `37092262982` passed Python 3.10–3.14. Warning-strict
+baseline validation passed 133 tests with one expected skip, twelve reproducible
+builds, six installs, seven ReleaseFact contracts, all behavior contracts, and
+six integrity checks.
+
+Compared an AgentScope correction, artifact-release onboarding, and the upcoming
+runner migration. Selected AgentScope's interpretation gap: a valid discovered
+rule can be ignored for its intended target, while the presence of other applied
+instructions and default exit 0 can make the overall result seem satisfactory.
+
+Added `examples/agentscope-rule-scope/` with repository-wide instructions, an API
+rule accidentally selecting `web/**/*.py`, two target files, and a temporary-copy
+replay script. It shows default informational success, explicit ignored-source
+gate failure on the API target, and corrected success after changing `applyTo`
+to `api/**/*.py`. Coverage changes from API ignored/web matched to API matched/
+web ignored. The latter web nonmatch is intentional; the strict gate remains
+scoped to the intended API target.
+
+The replay checks inspection schema v5, coverage schema v1, source states/counts,
+command exits, and file fingerprints around every inspection. Its edit stays
+inside the temporary copy. The guide records actual output, explains policy
+scope and modeled-client boundaries, and tells pip-only readers to obtain the
+current example checkout. Linked it from root/AgentScope READMEs and the install
+guide. Product runtime implementations, schemas, versions, and the installation
+revision remain unchanged.
+
+Repeated installed replay and an external-working-directory replay passed.
+Missing installed AgentScope returned the documented message and exit 2. The
+48 focused AgentScope tests, compilation, and instruction inspection passed.
+Next: reassess artifact-release onboarding against a fresh user-workflow gap and
+the approaching October 19 runner migration; do not add examples only for symmetry.
+
+Inspection/replay/validation commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh run list --repo sampeng2017/agent-product-lab --workflow portfolio-ci.yml --limit 1 --json databaseId,headSha,status,conclusion,url
+python examples/agentscope-rule-scope/demo.py
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Replay uses the installed AgentScope v1.0.0 artifact at the installation guide's
+public source revision. The example is not another mandatory release gate.
+
+Final warning-strict portfolio acceptance passed 133 maintained tests with one
+expected skip, twelve reproducible builds, six installs, seven ReleaseFact
+contracts, all behavior contracts, and six integrity checks. Example Python
+3.10 grammar/compilation, 46 local links/anchors, ReleaseFact claims, shell
+syntax, and diff checks passed alongside the required focused AgentScope checks.

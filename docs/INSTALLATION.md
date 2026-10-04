@@ -94,6 +94,10 @@ The profiles model the documented subset of `agents-md` and `copilot-cli` in
 the product README. Review that boundary before interpreting profile results
 as client behavior.
 
+The [instruction-scope worked example](../examples/agentscope-rule-scope/README.md)
+shows an ignored `applyTo` rule, an explicit policy failure, and the coverage
+after correcting its target pattern.
+
 ### WheelContract 1.0.0
 
 ```sh

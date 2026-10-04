@@ -697,3 +697,25 @@ missing prerequisites clearly. The fixture, CLI calls, actual output, and
 explanation now live together under `examples/proofrun-stale-proof/`, with links
 from public entry points. The product implementation and installation pin did
 not need to change, and no new release gate was added.
+
+## Instruction-scope worked example — 2026-10-03
+
+Compared a runnable AgentScope correction, artifact-release onboarding, and a
+hosted runner pin ahead of the announced October 19 migration. The latest
+matrix was green, so the operational pin had no immediate failed-job evidence.
+ReleaseFact already supplies drift excerpts and an executable stale fixture.
+AgentScope's quick start, however, leaves a subtle interpretation gap: exit 0
+can coexist with an ignored rule while repository-wide instructions still apply.
+
+Selected a misdirected `applyTo` example. Retention required the frozen installed
+tool to find the rule, explain its API mismatch, reject it under an explicit
+gate, then accept corrected scope while showing intentional noncoverage of the
+web target. The replay must preserve file fingerprints during inspection and
+make the pattern edit only in a disposable fixture.
+
+The installed v1.0.0 artifact passed that sequence. Inspection schema v5 and
+coverage schema v1 confirm states/counts and the source-by-target reversal. The
+guide explains default exit 0 versus policy exit 1, documents actual output,
+and scopes the strict gate to the target where matching is expected. This
+provides a correction workflow without changing product behavior or claiming
+broader client fidelity. Public entry points now link to the replay.

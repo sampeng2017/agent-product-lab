@@ -17,6 +17,10 @@ agentscope --root . src/app.py
 agentscope compare --root . src/app.py
 ```
 
+[Replay the instruction-scope example](../../examples/agentscope-rule-scope/README.md)
+to see an ignored path rule, enforce the intended-target gate, fix `applyTo`,
+and confirm coverage. The replay uses installed AgentScope in a temporary copy.
+
 The following examples inspect this lab from its source checkout:
 
 ```bash

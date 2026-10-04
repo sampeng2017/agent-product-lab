@@ -35,6 +35,10 @@ why passing tests become stale after a code edit, which file caused the gate
 to fail, and how fresh verification restores valid evidence. The demo runs
 installed ProofRun in a temporary project and leaves your checkout unchanged.
 
+[Debug a missed instruction rule](examples/agentscope-rule-scope/README.md)
+with installed AgentScope: identify an ignored `applyTo` pattern, correct its
+scope, and confirm coverage of API and web targets in a temporary fixture.
+
 ## Portfolio
 
 - [ProofRun](products/proofrun/README.md) — local-first verification receipts
@@ -75,8 +79,9 @@ installed ProofRun in a temporary project and leaves your checkout unchanged.
 
 This lab also records its experiments and release evidence. Maintainers should
 start with [NEXT_RUN.md](NEXT_RUN.md) and [STATUS.md](STATUS.md). The six
-completed MVPs remain frozen; the next adoption improvement is a worked example
-that helps a first-time user interpret a useful result.
+completed MVPs remain frozen. Current work improves first-user workflows and
+maintains release evidence; the worked examples above make two useful results
+replayable after installation.
 
 ## Portfolio validation
 

@@ -1,4 +1,4 @@
-# Next run: choose the next useful worked example
+# Next run: reassess adoption and runner stability
 
 GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
@@ -17,6 +17,9 @@ maintained product now link to `docs/INSTALLATION.md`.
 The 2026-10-02 run added `examples/proofrun-stale-proof/`: a temporary-repository
 replay and guide that demonstrate valid evidence, a stale status after an edit,
 and restored validity after fresh verification with the frozen installed tool.
+The 2026-10-03 run added `examples/agentscope-rule-scope/`, which diagnoses a
+misdirected API instruction pattern, corrects its scope in a temporary copy,
+and distinguishes informational coverage from an intended-target policy gate.
 
 ## Required starting inspection
 
@@ -30,10 +33,9 @@ portfolio validation before editing.
 
 1. If GitHub does not detect the root MIT license or a hosted matrix job fails,
    repair that public surface before new work.
-2. Otherwise compare an AgentScope scope debugging example and a release-tool
-   mismatch example against a fresh user-workflow improvement. Choose the task
-   with the largest remaining interpretation gap and demonstrate correction
-   using an installed tool in a disposable project.
+2. Otherwise compare artifact-release onboarding, the approaching hosted runner
+   migration, and a fresh user-workflow improvement. Prioritize concrete gaps
+   over producing another example for symmetry.
 3. Define an abandonment gate up front. Do not advertise package-index or
    release availability that the repository does not provide.
 
@@ -58,3 +60,5 @@ portfolio validation before editing.
   not mix an untested platform switch into a worked-example change.
 - Preserve the ProofRun replay as an external-user example, not a new product
   or a mandatory internal release gate.
+- Preserve the AgentScope replay's explicit modeled profile and policy scope;
+  intentional ignored rules are not automatically defects.
