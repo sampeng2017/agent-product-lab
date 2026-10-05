@@ -4,9 +4,10 @@
 
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
 remains archived. The public matrix is green and GitHub detects MIT. External
-users have tested installation paths and two worked examples. AgentScope's
-new replay explains why a discovered instruction rule is ignored, how to make
-that mismatch actionable, and how corrected scope changes target coverage.
+users have tested installation paths and runnable workflow examples. The new
+WheelContract replay exposes a concrete release gap: source tests pass while
+the built wheel omits its advertised console command. A metadata correction
+makes the same artifact-behavior contract pass.
 
 ## Product shape
 
@@ -31,37 +32,40 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
   disposable replay script, and a guide to the actual command results.
 - `examples/agentscope-rule-scope/` contains a two-target fixture and replay
   that correct a misdirected modular rule using installed AgentScope v1.0.0.
+- `examples/wheelcontract-entry-point/` contains a real setuptools CLI project,
+  passing source tests, a two-case release contract, and a disposable replay.
 
-## Completed today (2026-10-03)
+## Completed today (2026-10-04)
 
-- Confirmed MIT detection, synchronized `dd40ea7`, and green public CI.
-- Compared AgentScope scope debugging, release mismatch onboarding, and a
-  runner-platform pin. Selected the missed-rule interpretation gap; runner
-  stability remains a separate upcoming maintenance task.
-- Added a fixture where repository-wide instructions apply but an API-specific
-  rule incorrectly selects web files. Default inspection exits 0; the explicit
-  ignored-source gate exits 1 for the API target.
-- The replay changes only the temporary rule's `applyTo`, then confirms the
-  gate exits 0 and coverage changes from API ignored/web matched to the reverse.
-- Checks inspection schema v5 and coverage schema v1, source states/counts,
-  expected exits, and unchanged file fingerprints around each inspection.
-- Linked the worked guide from root/AgentScope READMEs and installation docs.
-  Repeated replay, external-directory replay, and missing-install exit 2 passed.
+- Confirmed MIT detection, synchronized `da1b04a`, no public issues/PRs, and
+  green hosted CI at the starting commit.
+- Compared artifact-release onboarding, runner pinning, and contract-independent
+  integrity CLI expansion. Selected the demonstrated first-user packaging gap
+  while retaining current runtime interfaces.
+- Built a sample wheel with passing source greeting/version tests but no
+  `[project.scripts]`. Both installed-command cases fail with precise missing
+  command diagnostics and exit 1, even though build/install succeed.
+- Added the standard console entry point only in a temporary copy; rebuilding
+  and isolated installation make the unchanged contract pass both cases.
+- Installed pinned WheelContract in a fresh environment, supplied the declared
+  backend explicitly, and replayed from both the lab and another directory.
+- Documented build-environment prerequisites, setup-versus-behavior exit codes,
+  source import isolation, correction, and adaptation to a reader's own wheel.
 
 ## Changes since the prior run
 
-The prior run explained stale test evidence through ProofRun. This run explains
-instruction-rule scope through AgentScope, including why informational success
-does not establish that every discovered rule matched. Package versions,
-runtime implementations, schemas, and command-line interfaces are unchanged.
+The prior run clarified instruction scope. This run gives CLI maintainers a
+complete installed-artifact release rehearsal instead of a contract that
+requires them to invent a package and all setup steps. Runtime implementations,
+versions, schemas, command-line interfaces, and installation pins are unchanged.
 
 ## External-user value
 
-Readers can see a real `IGNORED` explanation, identify the wrong path pattern,
-and confirm a correction across intended and unintended targets. The guide
-distinguishes informational inspection from an explicit policy gate and warns
-that intentional nonmatches also trigger the ignored-source gate. Replay edits
-only a temporary fixture and verifies the inspector leaves its files unchanged.
+Readers can reproduce a release defect invisible to direct function tests,
+interpret the missing installed command, correct its packaging declaration,
+and reuse a small contract for their own CLI. Explicit backend setup removes
+a separate first-run failure caused by WheelContract's disabled build isolation.
+Wheels, build metadata, caches, and corrections remain in a disposable copy.
 
 ## Known issues
 
@@ -71,7 +75,7 @@ only a temporary fixture and verifies the inspector leaves its files unchanged.
   changes. Source pinning does not pin build dependency versions.
 - Windows activation is documented from Python's official instructions but was
   not executed on this macOS host; installed workflow rehearsal used Python 3.11.
-- Both demos were executed on macOS with installed tools under Python 3.11;
+- The demos were executed on macOS with installed tools under Python 3.11;
   their scripts support Python 3.10 syntax, but Windows replay is not tested.
 - Hosted runners announced an `ubuntu-latest` migration beginning October 19;
   assess whether to pin the runner separately from this onboarding change.
@@ -87,16 +91,20 @@ only a temporary fixture and verifies the inspector leaves its files unchanged.
 - Product-local ReleaseFact contracts intentionally cover only canonical
   runtime and frozen handoff claims; historical version examples are not
   release assertions.
+- The new release fixture is intentionally incomplete before replay. Its
+  sample builds require `setuptools>=77` in the invoking environment and have
+  no runtime dependencies; WheelContract does not resolve application dependencies.
 
 ## Decisions
 
-- Preserve the tested installation revision and inspect through the installed
-  artifact's CLI, using an explicit modeled `copilot-cli` profile.
-- Keep the strict target gate scoped to the intended API target. The web
-  target's intentional ignored result belongs in informational coverage.
-- Verify state, coverage, and file preservation in the replay itself rather
-  than introducing another portfolio release gate or client-compatibility claim.
-- Keep the announced runner migration separate from worked-example changes.
+- Retain the example only after real builds reproduce source success, missing
+  installed behavior, and corrected behavior under the same contract.
+- Use an explicit build-backend prerequisite rather than installing dependencies
+  from the replay script. Installation instructions already pin the tool source.
+- Keep `PYTHONPATH` only in the fixture source-test subprocess; run WheelContract
+  through its installed package with checkout import variables removed.
+- Do not expand the integrity CLI or create another mandatory release gate.
+  Keep the approaching runner-platform decision separate from this user workflow.
 
 ## Validation
 
@@ -104,22 +112,25 @@ only a temporary fixture and verifies the inspector leaves its files unchanged.
   maintained tests with one expected skip, twelve reproducible builds, six
   installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
   integrity checks.
-- Public run 37092262982 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
+- Public run 37173398504 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
   the inspected starting commit.
-- Installed AgentScope replay passed repeatedly, from outside the lab, and
-  with file-fingerprint checks around each inspection. Missing install exits 2.
+- The installed release replay passed repeatedly and from outside the lab.
+  Its two source tests pass, the broken artifact's two cases fail with exit 1,
+  and the corrected artifact's same cases pass with exit 0.
+- Missing backend and missing installed WheelContract each produce documented
+  exit 2. Example Python 3.10 grammar/compilation and 39 local links/anchors pass.
 - Final warning-strict portfolio validation passed 133 tests with one expected
   skip, twelve reproducible builds, six installs, seven ReleaseFact contracts,
-  all behavior contracts, and six integrity checks. AgentScope's required tests,
-  compilation/instruction inspection, example Python 3.10 grammar/compilation,
-  46 local links/anchors, shell syntax, and diff checks passed.
+  all behavior contracts, and six integrity checks. ReleaseFact, shell syntax,
+  license identity, and diff checks passed. The normal push must match local
+  HEAD and its hosted matrix result must be inspected.
 
 ## Recommended next steps
 
-1. Compare artifact-release onboarding with a fresh external-user workflow
-   improvement; avoid adding examples without a demonstrated interpretation gap.
-2. Assess the upcoming hosted runner migration and retain stable release
-   evidence before October 19.
+1. Assess the approaching hosted runner migration against concrete release
+   stability requirements; retain a documented runner choice before October 19.
+2. Reassess installation and first-use workflows for further concrete friction;
+   avoid another worked example without a newly demonstrated interpretation gap.
 3. Keep the six product schemas and command-line contracts frozen absent a
    demonstrated correctness or safety defect.
 

@@ -116,6 +116,11 @@ If you ask WheelContract to build a project instead, its invoking interpreter
 must provide that project's build backend. WheelContract disables build
 isolation and installs the artifact without resolving its runtime dependencies.
 
+The [missing-command worked example](../examples/wheelcontract-entry-point/README.md)
+builds a real sample wheel whose source tests pass, diagnoses its missing console
+entry point, and rebuilds successfully after a metadata correction. It explicitly
+requires the sample's build backend in the invoking environment.
+
 ### ReleaseFact 1.0.0
 
 ```sh

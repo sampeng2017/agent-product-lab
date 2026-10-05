@@ -719,3 +719,28 @@ guide explains default exit 0 versus policy exit 1, documents actual output,
 and scopes the strict gate to the target where matching is expected. This
 provides a correction workflow without changing product behavior or claiming
 broader client fidelity. Public entry points now link to the replay.
+
+## Installed-command release rehearsal — 2026-10-04
+
+Compared artifact-release onboarding, an explicit runner pin ahead of the
+announced migration, and a contract-independent integrity CLI. The public
+matrix remained green; integrity already has a library hook and no independent
+CLI workflow had been demonstrated. The release README still required new
+users to invent a buildable project before seeing an installed-behavior failure.
+
+Selected a real missing-entry-point fixture. Two tests directly exercise the
+source greeting and version behavior and pass. A wheel built from that same
+project installs successfully but exposes no console command because
+`[project.scripts]` is absent. WheelContract names the missing command for both
+contract cases and exits 1. Adding only the standard entry point in a disposable
+copy, then rebuilding, makes the unchanged contract pass both cases.
+
+This cleared the retention gate: the example proves a packaging failure that
+source tests miss and guides the correction without weakening expectations.
+It uses the frozen installed tool, requires the declared backend explicitly,
+and keeps build/install output outside the checkout. The guide distinguishes
+setup exit 2 from behavior exit 1 and explains why the tool's isolated install
+does not inherit the fixture's source import path. No runtime feature or new
+portfolio gate was needed.
+
+The mapping follows the [PyPA entry-point specification](https://packaging.python.org/en/latest/specifications/pyproject-toml/#entry-points).

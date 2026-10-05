@@ -2370,3 +2370,63 @@ inspection: the displayed CLI commands run in the temporary project during
 replay, or in `examples/agentscope-rule-scope/project` for read-only manual
 inspection. The replay remains the path for trying corrections without editing
 the checked-in fixture.
+
+## 2026-10-04 — real wheel release correction
+
+Started clean at synchronized `da1b04a`. Read automation memory, Git history,
+root/product handoffs, WheelContract and WheelFact implementation/tests/docs,
+validator/workflow, active To-Sam messages, and the public GitHub surface.
+No active Sam message or public issue/PR was present. MIT detection and run
+`37173398504` were healthy across Python 3.10–3.14. The warning-strict baseline
+passed 133 tests with one expected skip, twelve reproducible builds, six installs,
+seven ReleaseFact contracts, all behavior contracts, and six integrity checks.
+
+Compared artifact-release onboarding, an explicit runner pin, and expansion of
+the integrity CLI. Selected the concrete onboarding gap: the release contract
+README gave a declaration but required readers to invent a project and build
+setup before seeing an actual packaging failure. The approaching runner change
+remains important, but its current matrix is green and it stays a separate decision.
+
+Created a small setuptools project with two passing source tests for greeting
+and version, but no console entry-point metadata. The real wheel builds and
+installs; both WheelContract cases nevertheless fail with missing-command
+diagnostics and exit 1. The replay adds only `[project.scripts]` in its temporary
+copy, rebuilds/isolated-installs, and passes the same two-case contract with
+exit 0. This is a packaging correction, not weakened expectations or a frozen
+product change. Source import access is explicit only in the test subprocess.
+
+Installed the documented pinned WheelContract artifact in a fresh Python 3.11
+environment with `setuptools>=77` supplied explicitly. Replay checks prerequisites
+without downloading anything, keeps build/cache/install output in temporary
+storage, and removes it afterward. The worked guide records real output, setup
+versus behavior exits, the standard PyPA entry-point mapping, and adaptation to
+a user's prebuilt wheel. Root/product READMEs and the install guide link to it.
+Product versions, runtime implementations, schemas, and installation pins stay
+unchanged; this is not another mandatory portfolio gate.
+
+Repeated installed replay and external-directory replay passed. Missing backend
+and missing WheelContract returned the documented exit 2 messages. Python 3.10
+grammar/compilation and 39 local links/anchors passed. Next: decide runner
+stability ahead of October 19, then reassess further adoption friction from evidence.
+
+Inspection/replay/validation commands:
+
+```sh
+git status --short --branch
+git log -5 --oneline
+gh run list --repo sampeng2017/agent-product-lab --workflow portfolio-ci.yml --limit 1 --json databaseId,headSha,status,conclusion,url
+python -m pip install "setuptools>=77"
+python examples/wheelcontract-entry-point/demo.py
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+The replay requires installed WheelContract in the selected Python environment;
+its sample license matches the existing repository MIT text.
+
+Final warning-strict portfolio acceptance passed 133 maintained tests with one
+expected skip, twelve reproducible builds, six isolated installs, seven
+ReleaseFact contracts, every behavior contract, and six integrity checks.
+ReleaseFact claims, shell syntax, sample/root license identity, and diff checks
+passed. The local project remains runnable and the example's expected failure
+is distinguished from a validation failure.

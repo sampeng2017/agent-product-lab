@@ -1,0 +1,18 @@
+schema_version = 1
+
+[artifact]
+source = "project"
+
+[run]
+timeout_seconds = 10
+max_output_bytes = 4096
+
+[[case]]
+name = "greeting"
+argv = ["release-demo"]
+stdout_contains = ["hello from the installed wheel"]
+
+[[case]]
+name = "version"
+argv = ["release-demo", "--version"]
+stdout_contains = ["release-demo 1.0.0"]

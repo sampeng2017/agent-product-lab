@@ -1,4 +1,4 @@
-# Next run: reassess adoption and runner stability
+# Next run: decide runner stability before the migration
 
 GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
@@ -20,6 +20,9 @@ and restored validity after fresh verification with the frozen installed tool.
 The 2026-10-03 run added `examples/agentscope-rule-scope/`, which diagnoses a
 misdirected API instruction pattern, corrects its scope in a temporary copy,
 and distinguishes informational coverage from an intended-target policy gate.
+The 2026-10-04 run added `examples/wheelcontract-entry-point/`: real builds show
+passing source tests but a missing installed CLI, then corrected packaging makes
+the same contract pass. The guide explicitly supplies the sample build backend.
 
 ## Required starting inspection
 
@@ -33,9 +36,9 @@ portfolio validation before editing.
 
 1. If GitHub does not detect the root MIT license or a hosted matrix job fails,
    repair that public surface before new work.
-2. Otherwise compare artifact-release onboarding, the approaching hosted runner
-   migration, and a fresh user-workflow improvement. Prioritize concrete gaps
-   over producing another example for symmetry.
+2. Otherwise assess the approaching hosted runner migration against release
+   stability requirements, then compare any needed operational change with
+   concrete installation or first-use friction. Do not add examples for symmetry.
 3. Define an abandonment gate up front. Do not advertise package-index or
    release availability that the repository does not provide.
 
@@ -62,3 +65,5 @@ portfolio validation before editing.
   or a mandatory internal release gate.
 - Preserve the AgentScope replay's explicit modeled profile and policy scope;
   intentional ignored rules are not automatically defects.
+- Preserve the WheelContract replay's unchanged contract across its correction;
+  source tests alone do not establish installed command availability.
