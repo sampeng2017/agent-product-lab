@@ -2,6 +2,10 @@
 
 ## Current direction
 
+On 2026-10-05 the root CI baseline was made explicit with `ubuntu-24.04`,
+retaining the OS observed in the latest green job. `docs/CI_PLATFORM.md` records
+the rationale, limits, review deadline, and upgrade procedure.
+
 The six completed local MVPs remain the maintained portfolio and GrammarCheck
 remains archived. The public matrix is green and GitHub detects MIT. External
 users have tested installation paths and runnable workflow examples. The new
@@ -35,7 +39,17 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - `examples/wheelcontract-entry-point/` contains a real setuptools CLI project,
   passing source tests, a two-case release contract, and a disposable replay.
 
-## Completed today (2026-10-04)
+## Completed today (2026-10-05)
+
+- Inspected synchronized `b0b174b`, public MIT metadata, the green matrix, and
+  its setup log: Ubuntu 24.04.5 and image `ubuntu-24.04`.
+- Verified GitHub's October 19–November 19 alias migration and supported label.
+- Preserved that baseline, documented review by November 5 or an earlier
+  platform/deprecation event, and left product runtime interfaces unchanged.
+- Local warning-strict validation passed 133 tests with one expected skip,
+  twelve reproducible builds, six installs, and all existing contracts.
+
+## Prior run (2026-10-04)
 
 - Confirmed MIT detection, synchronized `da1b04a`, no public issues/PRs, and
   green hosted CI at the starting commit.
@@ -54,12 +68,18 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
 ## Changes since the prior run
 
+The root workflow now selects its OS series instead of following a moving alias.
+No interpreter matrix, product command, schema, or package version changed.
+
 The prior run clarified instruction scope. This run gives CLI maintainers a
 complete installed-artifact release rehearsal instead of a contract that
 requires them to invent a package and all setup steps. Runtime implementations,
 versions, schemas, command-line interfaces, and installation pins are unchanged.
 
 ## External-user value
+
+Published release results keep their known OS baseline through GitHub's alias
+migration. Users can see its limits and the criteria for an intentional upgrade.
 
 Readers can reproduce a release defect invisible to direct function tests,
 interpret the missing installed command, correct its packaging declaration,
@@ -77,8 +97,9 @@ Wheels, build metadata, caches, and corrections remain in a disposable copy.
   not executed on this macOS host; installed workflow rehearsal used Python 3.11.
 - The demos were executed on macOS with installed tools under Python 3.11;
   their scripts support Python 3.10 syntax, but Windows replay is not tested.
-- Hosted runners announced an `ubuntu-latest` migration beginning October 19;
-  assess whether to pin the runner separately from this onboarding change.
+- Hosted images and dependencies still update despite the explicit OS label.
+  Review the platform choice by November 5. Windows and Ubuntu 26.04 are not
+  validated release baselines.
 - The archived GrammarCheck code uses CPython's documented best-effort target
   grammar and is not exact interpreter compatibility evidence.
 - Standard setuptools sdists were not byte-reproducible across source copies in
@@ -127,8 +148,8 @@ Wheels, build metadata, caches, and corrections remain in a disposable copy.
 
 ## Recommended next steps
 
-1. Assess the approaching hosted runner migration against concrete release
-   stability requirements; retain a documented runner choice before October 19.
+1. Review the explicit platform policy by November 5 or an earlier relevant
+   event; test Ubuntu 26.04 in a deliberate trial before changing the baseline.
 2. Reassess installation and first-use workflows for further concrete friction;
    avoid another worked example without a newly demonstrated interpretation gap.
 3. Keep the six product schemas and command-line contracts frozen absent a

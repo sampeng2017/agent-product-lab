@@ -91,7 +91,9 @@ replayable after installation.
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
 all six frozen products on every supported stable Python line from 3.10 through
-3.14. It runs every maintained unit suite, promotes warnings to errors on the
+3.14 on explicit `ubuntu-24.04` runners. The [CI platform policy](docs/CI_PLATFORM.md)
+explains image updates and upgrade validation. CI runs every maintained unit
+suite, promotes warnings to errors on the
 oldest supported version, compiles the sources, independently builds each wheel
 twice, requires byte-identical artifacts, and installs the first artifact in a
 fresh environment. Wheel timestamps use the latest Git commit through the

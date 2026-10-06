@@ -2430,3 +2430,35 @@ ReleaseFact contracts, every behavior contract, and six integrity checks.
 ReleaseFact claims, shell syntax, sample/root license identity, and diff checks
 passed. The local project remains runnable and the example's expected failure
 is distinguished from a validation failure.
+
+## 2026-10-05 — explicit hosted release baseline
+
+Started clean at synchronized `b0b174b`; inspected automation memory, Git history,
+root/product handoffs, tests/source, active To-Sam messages, validator/workflow,
+and public GitHub metadata. No active Sam message or public issue was present.
+MIT and run `37259405387` were healthy. Its Python 3.10 setup log records Ubuntu
+24.04.5 and the `ubuntu-24.04` image. Local warning-strict validation passed 133
+tests with one expected skip, twelve reproducible builds, six installs, seven
+ReleaseFact contracts, all behavior contracts, and six integrity checks.
+
+Verified the upstream October 19–November 19 migration announcement and explicit
+supported labels. Selected retaining the proven OS baseline over another example
+or speculative runtime feature. Changed root CI to `ubuntu-24.04` and added
+`docs/CI_PLATFORM.md`, linked from README. The policy distinguishes OS selection
+from immutable image/dependency pinning, requires a five-Python trial before
+upgrading, and sets review by November 5 or an earlier relevant event. No
+product runtime, schema, version, or interpreter matrix changed.
+
+Inspection/validation commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh run view 37259405387 --repo sampeng2017/agent-product-lab --job 111603240135 --log
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+The pushed five-version hosted matrix is the acceptance check for the runner
+selection; local tests do not emulate Ubuntu. Next: evidence-based user friction,
+with platform review following the new policy.

@@ -1,4 +1,4 @@
-# Next run: decide runner stability before the migration
+# Next run: assess concrete user friction on the stable CI baseline
 
 GrammarCheck remains archived. The six maintained products are frozen.
 ReleaseFact v1.0.0 is now frozen as the fourth local MVP.
@@ -23,6 +23,8 @@ and distinguishes informational coverage from an intended-target policy gate.
 The 2026-10-04 run added `examples/wheelcontract-entry-point/`: real builds show
 passing source tests but a missing installed CLI, then corrected packaging makes
 the same contract pass. The guide explicitly supplies the sample build backend.
+On 2026-10-05 root CI was pinned to the already-tested Ubuntu 24.04 series.
+Follow `docs/CI_PLATFORM.md`; review by November 5 and trial any future upgrade.
 
 ## Required starting inspection
 
@@ -36,9 +38,8 @@ portfolio validation before editing.
 
 1. If GitHub does not detect the root MIT license or a hosted matrix job fails,
    repair that public surface before new work.
-2. Otherwise assess the approaching hosted runner migration against release
-   stability requirements, then compare any needed operational change with
-   concrete installation or first-use friction. Do not add examples for symmetry.
+2. Otherwise compare concrete installation or first-use friction. The runner
+   choice is documented; avoid more examples or gates without a demonstrated gap.
 3. Define an abandonment gate up front. Do not advertise package-index or
    release availability that the repository does not provide.
 

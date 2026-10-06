@@ -11,7 +11,8 @@ permissions:
 jobs:
   validate:
     name: Python ${{ matrix.python-version }}
-    runs-on: ubuntu-latest
+    # Keep the release baseline explicit; see docs/CI_PLATFORM.md.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
