@@ -2502,3 +2502,13 @@ reproducible builds, six installs, all seven ReleaseFact contracts, behavior
 contracts, and six wheel integrity checks. The regression also passed with the
 checker imported from a newly built/isolated-installed v1.0.1 wheel and no source
 import path, including CLI exit 1 and complete aggregate counts.
+
+Published fix revision `724abde58abd410bba031e7a781255bde49bfb9a` supplies the
+updated WheelContract install command. Other tools keep their original pins.
+The guide documents upgrading from 1.0.0 and preserves its old section anchor
+so links from earlier installed documentation remain usable.
+
+The exact new GitHub requirement installed v1.0.1 in a fresh environment and
+passed the regression, including CLI behavior. Forty links/anchors and local
+release claims passed. This validates the user-facing pin update without
+changing the other five tools' source selection.

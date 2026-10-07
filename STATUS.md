@@ -27,7 +27,9 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Added matching/mismatching cases, all-field diagnostics, CLI exit 1, and
   aggregate-result assertions. Updated runtime/package versions and self-contract.
 - Built and isolated-installed the corrected checker; its regression passed
-  without checkout imports. Refresh its public install pin after publication.
+  without checkout imports. The public guide now selects the published fix.
+- Reinstalled that exact GitHub revision in a fresh environment and confirmed
+  version 1.0.1 plus the regression. Preserved the old documentation anchor.
 
 ## Changes since the prior run
 
@@ -43,8 +45,8 @@ escaped otherwise strict installed-artifact contracts.
 
 ## Known issues
 
-- The guide's WheelContract install pin must advance to the validated patch.
-  Other tools retain their existing tested source pin; build dependencies vary.
+- WheelContract's source pin is the validated v1.0.1 patch; other tools retain
+  their existing tested pin. Build dependencies remain independently resolved.
 - No tagged or package-index release is advertised.
 - Hosted validation is Ubuntu-only; Windows example replay is not verified.
 - Hosted images update despite an explicit OS label. Ubuntu 26.04 needs a trial.
@@ -67,10 +69,12 @@ escaped otherwise strict installed-artifact contracts.
 - Corrected portfolio: 134 tests with one expected skip and the same artifact
   checks passed. The built v1.0.1 regression also checks CLI exit and totals.
 - ReleaseFact and whitespace checks pass; hosted CI must validate the pushed patch.
+- The published VCS install and 40 documentation links/anchors passed; other
+  products' installation pins are unchanged.
 
 ## Recommended next steps
 
-1. Complete and verify the public WheelContract installation-pin refresh.
+1. Keep the public WheelContract pin on the validated correction.
 2. Investigate further JSON decoding edge cases only through a reproducible
    contract; retain existing numeric compatibility.
 3. Follow the platform policy review deadline rather than redoing its decision.
