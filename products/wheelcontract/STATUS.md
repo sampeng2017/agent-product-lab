@@ -2,12 +2,22 @@
 
 ## Product shape
 
-WheelContract v1.0.0 is a frozen, dependency-free local MVP for Python CLI
+WheelContract v1.0.1 is a frozen, dependency-free local MVP for Python CLI
 maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
-## Completed on 2026-09-15
+## Completed on 2026-10-06
+
+- Reproduced a false passing installed contract: JSON `1`/`0` satisfied boolean
+  expectations, and `true`/`false` satisfied numeric expectations through Python
+  equality. Added a real installed-wheel regression before fixing the comparison.
+- Boolean and numeric categories now remain distinct. Numeric `1`/`1.0` value
+  equality and existing string behavior remain compatible.
+- All fields still report their mismatches; schema v1 and exits 0/1/2 remain
+  unchanged. Promoted the correctness patch to v1.0.1.
+
+## Release audit on 2026-09-15
 
 - Audited package metadata, wheel contents, source and installed invocation,
   help/version, default and explicit manifests, both checked-in contracts,
@@ -44,16 +54,17 @@ behavior from strict schema-v1 TOML.
 
 ## Decisions
 
-- Freeze WheelContract at v1.0.0 and preserve schema v1 plus exit 0/1/2.
+- Freeze WheelContract at v1.0.1 and preserve schema v1 plus exit 0/1/2.
 - Keep the explicit installed-artifact focus; do not turn it into a general task
   runner or tox/nox replacement.
 - Resume work only for a reproducible installed-artifact defect.
 
 ## Validation
 
-- Warning-strict Python 3.11 validation passes all 10 focused tests.
+- The regression failed before the patch and passes afterward. The focused
+  suite now contains 11 tests.
 - The built wheel contains only package modules, license, entry point, and
-  standard distribution metadata; metadata reports version 1.0.0 and Python
+  standard distribution metadata; metadata reports version 1.0.1 and Python
   3.10+.
 - Portfolio validation builds and isolated-installs all three products, passes
   the WheelContract self-contract and six-case AgentScope contract, and retains

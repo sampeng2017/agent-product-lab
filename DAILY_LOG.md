@@ -2462,3 +2462,43 @@ git diff --check
 The pushed five-version hosted matrix is the acceptance check for the runner
 selection; local tests do not emulate Ubuntu. Next: evidence-based user friction,
 with platform review following the new policy.
+
+## 2026-10-06 — reject false passing JSON scalar assertions
+
+Started clean at `01c44a4`; inspected memory, Git history, root/product handoffs,
+active To-Sam communications, public GitHub metadata, and WheelContract source,
+tests, and installation guidance. No active Sam message was present. Compared
+first-use guidance improvements with a concrete correctness gap in installed
+JSON assertions and selected the latter over more documentation alone.
+
+A real installed fixture outputs numeric 1/0 and boolean true/false. Before the
+fix, numeric fields incorrectly satisfied boolean expectations and vice versa,
+because Python considers True equal to 1 and False equal to 0. Added a regression
+first and observed both false passing cases. The patch keeps boolean/numeric
+categories distinct while preserving numeric 1/1.0 value equality and existing
+string behavior. Both incompatible cases now report every mismatch and fail.
+Version 1.0.1 retains schema v1 and exit 0/1/2 contracts.
+
+Updated runtime/package versions, self-contract, product README/STATUS, portfolio
+index/README, and handoffs. The install guide's WheelContract revision will be
+refreshed to the validated published fix; other tools retain their existing pins.
+Source and installed validation are required before a normal push.
+
+Commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+PYTHONPATH=src python3.11 -m unittest discover -s tests -p test_wheelcontract.py -k json_booleans -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+The focused command runs from `products/wheelcontract`; portfolio commands run
+from the root. Next: assess further correctness or adoption friction from evidence.
+
+Corrected portfolio validation passed 134 tests with one expected skip, twelve
+reproducible builds, six installs, all seven ReleaseFact contracts, behavior
+contracts, and six wheel integrity checks. The regression also passed with the
+checker imported from a newly built/isolated-installed v1.0.1 wheel and no source
+import path, including CLI exit 1 and complete aggregate counts.

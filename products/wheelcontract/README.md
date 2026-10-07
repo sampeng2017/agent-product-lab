@@ -88,6 +88,11 @@ duplicate keys and sections consistently with the standard parser.
 
 ## Deliberate limits
 
+JSON expectations distinguish booleans from numbers: `ready = true` rejects
+JSON `1`, and an expected numeric `1` rejects JSON `true`. Numeric values
+retain value equality, so JSON `1.0` satisfies an expected `1`. Strings do not
+coerce to numbers. Mismatches are reported per field and fail the case.
+
 - One Python project or wheel and one disposable environment per contract.
 - No dependency resolution, environment matrix, shell, hooks, or arbitrary
   working-directory configuration.
@@ -104,7 +109,7 @@ directory.
 
 ## Maintenance status
 
-WheelContract v1.0.0 is a frozen local MVP. Its schema-v1 contract, exit
+WheelContract v1.0.1 is a frozen local MVP. Its schema-v1 contract, exit
 semantics, and synchronous process-lifecycle boundary remain stable. Resume
 feature work only for a reproduced installed-artifact defect; use the focused
 suite and portfolio validator as the release contract.

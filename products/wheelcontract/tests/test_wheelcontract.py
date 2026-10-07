@@ -36,6 +36,8 @@ class WheelContractTests(unittest.TestCase):
                 "elif '--error' in sys.argv:\n"
                 "    print('fixture warning', file=sys.stderr)\n"
                 "    raise SystemExit(4)\n"
+                "elif '--json-types' in sys.argv:\n"
+                "    print(json.dumps({'one': 1, 'zero': 0, 'truth': True, 'falsehood': False, 'decimal_one': 1.0}))\n"
                 "elif '--json' in sys.argv:\n"
                 "    print(json.dumps({'schema': 3, 'ready': True}))\n"
                 "    raise SystemExit(3)\n"
@@ -68,6 +70,31 @@ class WheelContractTests(unittest.TestCase):
             encoding="utf-8",
         )
         return manifest
+
+    def test_json_booleans_cannot_satisfy_numeric_expectations_or_reverse(self) -> None:
+        cases = (
+            ("numbers-as-booleans", "one = true\nzero = false\n"),
+            ("booleans-as-numbers", "truth = 1\nfalsehood = 0\n"),
+            ("booleans-match", "truth = true\nfalsehood = false\n"),
+            ("numbers-match", "one = 1\nzero = 0\ndecimal_one = 1\n"),
+            ("strings-do-not-coerce", 'one = "1"\n'),
+        )
+        manifest = self.write_contract("".join(
+            f'[[case]]\nname = "{name}"\n'
+            'argv = ["python", "-m", "fixture_cli", "--json-types"]\n'
+            f"[case.json]\n{expectations}\n"
+            for name, expectations in cases
+        ))
+        results = run_contract(load_contract(manifest))
+        self.assertEqual([result.passed for result in results], [False, False, True, True, False])
+        self.assertEqual(len(results[0].errors), 2)
+        self.assertEqual(len(results[1].errors), 2)
+        self.assertIn("JSON field 'one' was 1; expected True", results[0].errors)
+        self.assertIn("JSON field 'truth' was True; expected 1", results[1].errors)
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main([str(manifest)]), 1)
+        self.assertIn("Result: 2 passed, 3 failed, 5 total", output.getvalue())
 
     def test_installs_wheel_and_checks_all_contract_surfaces(self) -> None:
         manifest = self.write_contract(

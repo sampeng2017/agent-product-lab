@@ -2,157 +2,77 @@
 
 ## Current direction
 
-On 2026-10-05 the root CI baseline was made explicit with `ubuntu-24.04`,
-retaining the OS observed in the latest green job. `docs/CI_PLATFORM.md` records
-the rationale, limits, review deadline, and upgrade procedure.
-
-The six completed local MVPs remain the maintained portfolio and GrammarCheck
-remains archived. The public matrix is green and GitHub detects MIT. External
-users have tested installation paths and runnable workflow examples. The new
-WheelContract replay exposes a concrete release gap: source tests pass while
-the built wheel omits its advertised console command. A metadata correction
-makes the same artifact-behavior contract pass.
+The six maintained tools retain their existing product shapes. WheelContract
+v1.0.1 closes a reproduced false passing JSON assertion: booleans and numbers
+cannot satisfy each other's expectations. Schema v1 and exit 0/1/2 stay stable.
 
 ## Product shape
 
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
 - ProofRun, AgentScope, WheelContract, ReleaseFact, ResidueCheck, and WheelFact
-  remain frozen and covered by portfolio validation.
-- `products/grammarcheck/` remains runnable decision evidence with four tests,
-  but is excluded from active validation and the release portfolio.
-- WheelFact v1.0.3 keeps schema v1 and the exact-contract CLI unchanged. Its
-  `verify_wheel_integrity` library hook reuses the same safe archive inventory,
-  complete `RECORD` membership, secure hash, and declared-size validation.
-- Portfolio validation derives `SOURCE_DATE_EPOCH` from the latest Git commit,
-  performs two isolated wheel builds per product, rejects byte drift, checks
-  all six first artifacts for integrity, and then installs and exercises them.
-- Installed ReleaseFact checks its existing seven portfolio claims plus one
-  local three-claim runtime/README/STATUS contract for every maintained product.
-- `docs/INSTALLATION.md` documents six separate packages and their console
-  commands, virtual environments, a tested public source revision, checkout
-  installs, updates, and troubleshooting.
-- `examples/proofrun-stale-proof/` contains a minimal unittest project, a
-  disposable replay script, and a guide to the actual command results.
-- `examples/agentscope-rule-scope/` contains a two-target fixture and replay
-  that correct a misdirected modular rule using installed AgentScope v1.0.0.
-- `examples/wheelcontract-entry-point/` contains a real setuptools CLI project,
-  passing source tests, a two-case release contract, and a disposable replay.
+  remain maintained; GrammarCheck remains archived decision evidence.
+- WheelContract v1.0.1 adds a correctness patch, not a new contract format.
+- Root CI uses explicit Ubuntu 24.04 across Python 3.10–3.14. Follow
+  `docs/CI_PLATFORM.md` and review the platform choice by November 5.
+- The installation guide and three runnable examples remain public entry points.
 
-## Completed today (2026-10-05)
+## Completed today (2026-10-06)
 
-- Inspected synchronized `b0b174b`, public MIT metadata, the green matrix, and
-  its setup log: Ubuntu 24.04.5 and image `ubuntu-24.04`.
-- Verified GitHub's October 19–November 19 alias migration and supported label.
-- Preserved that baseline, documented review by November 5 or an earlier
-  platform/deprecation event, and left product runtime interfaces unchanged.
-- Local warning-strict validation passed 133 tests with one expected skip,
-  twelve reproducible builds, six installs, and all existing contracts.
-
-## Prior run (2026-10-04)
-
-- Confirmed MIT detection, synchronized `da1b04a`, no public issues/PRs, and
-  green hosted CI at the starting commit.
-- Compared artifact-release onboarding, runner pinning, and contract-independent
-  integrity CLI expansion. Selected the demonstrated first-user packaging gap
-  while retaining current runtime interfaces.
-- Built a sample wheel with passing source greeting/version tests but no
-  `[project.scripts]`. Both installed-command cases fail with precise missing
-  command diagnostics and exit 1, even though build/install succeed.
-- Added the standard console entry point only in a temporary copy; rebuilding
-  and isolated installation make the unchanged contract pass both cases.
-- Installed pinned WheelContract in a fresh environment, supplied the declared
-  backend explicitly, and replayed from both the lab and another directory.
-- Documented build-environment prerequisites, setup-versus-behavior exit codes,
-  source import isolation, correction, and adaptation to a reader's own wheel.
+- Started clean at `01c44a4`; no active Sam communication was present.
+- Verified MIT, zero public issues, and green hosted run `37410408966`.
+- Reproduced the JSON scalar bug with a real installed fixture before editing
+  the checker: both boolean/number mismatch cases incorrectly passed.
+- Corrected comparison while preserving numeric 1/1.0 equality and strings.
+- Added matching/mismatching cases, all-field diagnostics, CLI exit 1, and
+  aggregate-result assertions. Updated runtime/package versions and self-contract.
+- Built and isolated-installed the corrected checker; its regression passed
+  without checkout imports. Refresh its public install pin after publication.
 
 ## Changes since the prior run
 
-The root workflow now selects its OS series instead of following a moving alias.
-No interpreter matrix, product command, schema, or package version changed.
-
-The prior run clarified instruction scope. This run gives CLI maintainers a
-complete installed-artifact release rehearsal instead of a contract that
-requires them to invent a package and all setup steps. Runtime implementations,
-versions, schemas, command-line interfaces, and installation pins are unchanged.
+Yesterday documented the existing CI platform. Today corrects adopter-visible
+release checking. The other five products, interpreter matrix, and public
+schemas are unchanged.
 
 ## External-user value
 
-Published release results keep their known OS baseline through GitHub's alias
-migration. Users can see its limits and the criteria for an intentional upgrade.
-
-Readers can reproduce a release defect invisible to direct function tests,
-interpret the missing installed command, correct its packaging declaration,
-and reuse a small contract for their own CLI. Explicit backend setup removes
-a separate first-run failure caused by WheelContract's disabled build isolation.
-Wheels, build metadata, caches, and corrections remain in a disposable copy.
+A numeric readiness flag cannot pass a boolean assertion, and a boolean
+schema/version field cannot pass a numeric assertion. Both errors previously
+escaped otherwise strict installed-artifact contracts.
 
 ## Known issues
 
-- Hosted portfolio CI remains Ubuntu-only.
-- There is no published tag or release. The guide pins the tested public
-  `84e76fa` revision; maintainers must deliberately refresh it for future runtime
-  changes. Source pinning does not pin build dependency versions.
-- Windows activation is documented from Python's official instructions but was
-  not executed on this macOS host; installed workflow rehearsal used Python 3.11.
-- The demos were executed on macOS with installed tools under Python 3.11;
-  their scripts support Python 3.10 syntax, but Windows replay is not tested.
-- Hosted images and dependencies still update despite the explicit OS label.
-  Review the platform choice by November 5. Windows and Ubuntu 26.04 are not
-  validated release baselines.
-- The archived GrammarCheck code uses CPython's documented best-effort target
-  grammar and is not exact interpreter compatibility evidence.
-- Standard setuptools sdists were not byte-reproducible across source copies in
-  the prior rehearsal because tar member mtimes retained wall-clock state; the
-  portfolio does not publish sdists.
-- Local validation requires an interpreter with `setuptools>=77`; the default
-  `python3` on this host fails that preflight, while `python3.11` passes.
-- Internal `RECORD` consistency is not provenance, authenticity, or signature
-  verification. WheelFact deliberately makes no such claim.
-- Product-local ReleaseFact contracts intentionally cover only canonical
-  runtime and frozen handoff claims; historical version examples are not
-  release assertions.
-- The new release fixture is intentionally incomplete before replay. Its
-  sample builds require `setuptools>=77` in the invoking environment and have
-  no runtime dependencies; WheelContract does not resolve application dependencies.
+- The guide's WheelContract install pin must advance to the validated patch.
+  Other tools retain their existing tested source pin; build dependencies vary.
+- No tagged or package-index release is advertised.
+- Hosted validation is Ubuntu-only; Windows example replay is not verified.
+- Hosted images update despite an explicit OS label. Ubuntu 26.04 needs a trial.
+- Source distributions are not published or proven byte-reproducible.
+- Local validation needs setuptools>=77; use a suitable interpreter.
+- Wheel integrity and receipt chaining are consistency evidence, not signatures.
+- Product profiles and selectors retain the limits in their individual READMEs.
 
 ## Decisions
 
-- Retain the example only after real builds reproduce source success, missing
-  installed behavior, and corrected behavior under the same contract.
-- Use an explicit build-backend prerequisite rather than installing dependencies
-  from the replay script. Installation instructions already pin the tool source.
-- Keep `PYTHONPATH` only in the fixture source-test subprocess; run WheelContract
-  through its installed package with checkout import variables removed.
-- Do not expand the integrity CLI or create another mandatory release gate.
-  Keep the approaching runner-platform decision separate from this user workflow.
+- Reopen a frozen product only for the demonstrated false passing check.
+- Separate booleans from numeric values; preserve numeric value equality.
+- Keep schema v1 and existing diagnostics/exits, reporting every wrong field.
+- Refresh only WheelContract's installation revision after validated publication.
 
 ## Validation
 
-- Pre-change warning-strict Python 3.11 portfolio validation passed all 133
-  maintained tests with one expected skip, twelve reproducible builds, six
-  installs, seven ReleaseFact contracts, all behavior contracts, and six wheel
-  integrity checks.
-- Public run 37173398504 passes on Python 3.10, 3.11, 3.12, 3.13, and 3.14 at
-  the inspected starting commit.
-- The installed release replay passed repeatedly and from outside the lab.
-  Its two source tests pass, the broken artifact's two cases fail with exit 1,
-  and the corrected artifact's same cases pass with exit 0.
-- Missing backend and missing installed WheelContract each produce documented
-  exit 2. Example Python 3.10 grammar/compilation and 39 local links/anchors pass.
-- Final warning-strict portfolio validation passed 133 tests with one expected
-  skip, twelve reproducible builds, six installs, seven ReleaseFact contracts,
-  all behavior contracts, and six integrity checks. ReleaseFact, shell syntax,
-  license identity, and diff checks passed. The normal push must match local
-  HEAD and its hosted matrix result must be inspected.
+- Baseline portfolio: 133 tests, one expected skip, twelve reproducible builds,
+  six installs, all release/behavior contracts, and six integrity checks.
+- Corrected portfolio: 134 tests with one expected skip and the same artifact
+  checks passed. The built v1.0.1 regression also checks CLI exit and totals.
+- ReleaseFact and whitespace checks pass; hosted CI must validate the pushed patch.
 
 ## Recommended next steps
 
-1. Review the explicit platform policy by November 5 or an earlier relevant
-   event; test Ubuntu 26.04 in a deliberate trial before changing the baseline.
-2. Reassess installation and first-use workflows for further concrete friction;
-   avoid another worked example without a newly demonstrated interpretation gap.
-3. Keep the six product schemas and command-line contracts frozen absent a
-   demonstrated correctness or safety defect.
+1. Complete and verify the public WheelContract installation-pin refresh.
+2. Investigate further JSON decoding edge cases only through a reproducible
+   contract; retain existing numeric compatibility.
+3. Follow the platform policy review deadline rather than redoing its decision.
 
 No human input is required.

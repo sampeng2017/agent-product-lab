@@ -307,7 +307,10 @@ def _run_case(
                 for field, expected in case.json_fields:
                     if field not in document:
                         errors.append(f"JSON field {field!r} is missing")
-                    elif document[field] != expected:
+                    elif (
+                        document[field] != expected
+                        or isinstance(document[field], bool) != isinstance(expected, bool)
+                    ):
                         errors.append(
                             f"JSON field {field!r} was {document[field]!r}; expected {expected!r}"
                         )

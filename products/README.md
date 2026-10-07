@@ -2,7 +2,7 @@
 
 - `proofrun/` — completed ProofRun v1.8.1 local MVP.
 - `agentscope/` — completed AgentScope v1.0.0 instruction-scope debugger.
-- `wheelcontract/` — completed WheelContract v1.0.0 installed-artifact behavior
+- `wheelcontract/` — completed WheelContract v1.0.1 installed-artifact behavior
   contract local MVP.
 - `releasefact/` — completed ReleaseFact v1.0.0 read-only release-version
   consistency local MVP.

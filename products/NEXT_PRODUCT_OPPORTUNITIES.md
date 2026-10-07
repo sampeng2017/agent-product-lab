@@ -744,3 +744,18 @@ does not inherit the fixture's source import path. No runtime feature or new
 portfolio gate was needed.
 
 The mapping follows the [PyPA entry-point specification](https://packaging.python.org/en/latest/specifications/pyproject-toml/#entry-points).
+
+## Correctness before more onboarding — 2026-10-06
+
+Compared clearer first-use guidance, a shorter installation path, and a concrete
+WheelContract JSON assertion gap. Its checker used Python scalar equality, which
+lets 1/0 equal True/False. A real installed fixture confirmed both directions
+falsely passed while correct boolean/numeric cases and a string mismatch behaved
+as expected. That reproduced defect justifies reopening the frozen product for
+a patch rather than adding documentation or features alone.
+
+Version 1.0.1 separates boolean and numeric categories, preserves numeric
+1/1.0 equality, reports every mismatch, and retains schema v1 and exit 0/1/2.
+The installed regression also checks CLI exit 1 and aggregate failure counts.
+Adopters now catch readiness/schema scalar regressions that previously passed.
+Only WheelContract's public installation pin needs refreshing for this fix.
