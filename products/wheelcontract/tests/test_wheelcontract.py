@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import tempfile
 import time
 import unittest
@@ -36,6 +37,8 @@ class WheelContractTests(unittest.TestCase):
                 "elif '--error' in sys.argv:\n"
                 "    print('fixture warning', file=sys.stderr)\n"
                 "    raise SystemExit(4)\n"
+                "elif '--json-token' in sys.argv:\n"
+                "    print('{\"ready\": true, \"unasserted\": ' + sys.argv[-1] + '}')\n"
                 "elif '--json-types' in sys.argv:\n"
                 "    print(json.dumps({'one': 1, 'zero': 0, 'truth': True, 'falsehood': False, 'decimal_one': 1.0}))\n"
                 "elif '--json' in sys.argv:\n"
@@ -70,6 +73,23 @@ class WheelContractTests(unittest.TestCase):
             encoding="utf-8",
         )
         return manifest
+
+    def test_nonstandard_json_constants_fail_even_in_unasserted_nested_values(self) -> None:
+        tokens = ('NaN', 'Infinity', '-Infinity', '[NaN]', '{"value": Infinity}', '"NaN"', '{"text": "Infinity"}')
+        manifest = self.write_contract("".join(
+            f'[[case]]\nname = "token-{index}"\n'
+            f'argv = ["python", "-m", "fixture_cli", "--json-token", {json.dumps(token)}]\n'
+            '[case.json]\nready = true\n\n'
+            for index, token in enumerate(tokens)
+        ))
+        results = run_contract(load_contract(manifest))
+        self.assertEqual([result.passed for result in results], [False] * 5 + [True, True])
+        for result in results[:5]:
+            self.assertIn("stdout is not JSON: nonstandard constant", result.errors[0])
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main([str(manifest)]), 1)
+        self.assertIn("Result: 2 passed, 5 failed, 7 total", output.getvalue())
 
     def test_json_booleans_cannot_satisfy_numeric_expectations_or_reverse(self) -> None:
         cases = (

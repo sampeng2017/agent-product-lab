@@ -2512,3 +2512,44 @@ The exact new GitHub requirement installed v1.0.1 in a fresh environment and
 passed the regression, including CLI behavior. Forty links/anchors and local
 release claims passed. This validates the user-facing pin update without
 changing the other five tools' source selection.
+
+## 2026-10-07 — reject nonstandard JSON constants
+
+Started clean at synchronized `893930c`; read automation memory, Git history,
+root/product handoffs, source/tests, active To-Sam communications, validator,
+and public GitHub metadata. No active Sam message existed. MIT, zero issues,
+and run `37565945139` were healthy. Baseline warning-strict validation passed
+134 tests with one expected skip and all existing build/install/contracts.
+
+Selected a decoder correctness gap over more onboarding changes. A real
+installed fixture prints a correct ready flag alongside bare NaN/Infinity/
+-Infinity, including nested unasserted values. Five invalid cases falsely passed.
+The new regression was added first and failed before changing the decoder.
+Python's official JSON docs identify these extensions and the rejection hook.
+
+WheelContract v1.0.2 now rejects bare constants in JSON assertion cases through
+parse_constant, reports invalid stdout as behavior exit 1, and continues the
+suite. Existing syntax diagnostics and quoted-string positives remain intact;
+schema v1, exit surfaces, prior boolean/number correction, and numeric equality
+remain unchanged. Updated versions, self-contract, product/portfolio docs, and
+handoffs. Only its public install pin will advance after validation/publication.
+
+Commands (focused tests run from products/wheelcontract):
+
+```sh
+git status --short --branch
+git log -4 --oneline
+PYTHONPATH=src python3.11 -m unittest discover -s tests -p test_wheelcontract.py -k nonstandard_json -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+This is not a general JSON-schema validator: decoding limits and duplicate-key
+semantics remain Python defaults. Further changes require independent evidence
+and an explicit compatibility decision.
+
+Corrected warning-strict portfolio validation passed 135 tests with one expected
+skip, twelve reproducible builds, six installs, all ReleaseFact/behavior contracts,
+and six integrity checks. The newly built/isolated-installed v1.0.2 checker also
+passed the new regression without checkout imports, including CLI failure and
+aggregate totals. Local release claims and diff checks passed.

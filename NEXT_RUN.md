@@ -27,6 +27,8 @@ On 2026-10-05 root CI was pinned to the already-tested Ubuntu 24.04 series.
 Follow `docs/CI_PLATFORM.md`; review by November 5 and trial any future upgrade.
 On 2026-10-06 WheelContract v1.0.1 fixed a reproduced JSON boolean/number
 comparison defect. Keep schema v1 and numeric value equality unchanged.
+On 2026-10-07 v1.0.2 rejects bare NaN/Infinity/-Infinity in JSON assertion
+cases, even in unasserted nested values. Preserve quoted strings and schema v1.
 
 ## Required starting inspection
 

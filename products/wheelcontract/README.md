@@ -93,6 +93,12 @@ JSON `1`, and an expected numeric `1` rejects JSON `true`. Numeric values
 retain value equality, so JSON `1.0` satisfies an expected `1`. Strings do not
 coerce to numbers. Mismatches are reported per field and fail the case.
 
+When a case declares JSON expectations, bare `NaN`, `Infinity`, and `-Infinity`
+make its stdout invalid even in nested or unasserted values. Such output fails
+the case with exit 1. Quoted strings containing those words remain valid.
+Python's default decoder accepts these extensions, so WheelContract rejects
+them explicitly; see the [Python JSON documentation](https://docs.python.org/3/library/json.html#infinite-and-nan-number-values).
+
 - One Python project or wheel and one disposable environment per contract.
 - No dependency resolution, environment matrix, shell, hooks, or arbitrary
   working-directory configuration.
@@ -109,7 +115,7 @@ directory.
 
 ## Maintenance status
 
-WheelContract v1.0.1 is a frozen local MVP. Its schema-v1 contract, exit
+WheelContract v1.0.2 is a frozen local MVP. Its schema-v1 contract, exit
 semantics, and synchronous process-lifecycle boundary remain stable. Resume
 feature work only for a reproduced installed-artifact defect; use the focused
 suite and portfolio validator as the release contract.

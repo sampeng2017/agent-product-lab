@@ -2,12 +2,21 @@
 
 ## Product shape
 
-WheelContract v1.0.1 is a frozen, dependency-free local MVP for Python CLI
+WheelContract v1.0.2 is a frozen, dependency-free local MVP for Python CLI
 maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
-## Completed on 2026-10-06
+## Completed on 2026-10-07
+
+- A real installed fixture reproduced five false passing cases with bare
+  nonstandard JSON constants, including unasserted nested values.
+- JSON assertion cases now reject NaN/Infinity/-Infinity through the decoder;
+  quoted strings and ordinary JSON remain compatible. Decode failures report
+  behavior exit 1 instead of aborting the suite.
+- Added positive/negative and CLI aggregate regressions; promoted to v1.0.2.
+
+## Correctness patch on 2026-10-06
 
 - Reproduced a false passing installed contract: JSON `1`/`0` satisfied boolean
   expectations, and `true`/`false` satisfied numeric expectations through Python
@@ -54,7 +63,7 @@ behavior from strict schema-v1 TOML.
 
 ## Decisions
 
-- Freeze WheelContract at v1.0.1 and preserve schema v1 plus exit 0/1/2.
+- Freeze WheelContract at v1.0.2 and preserve schema v1 plus exit 0/1/2.
 - Keep the explicit installed-artifact focus; do not turn it into a general task
   runner or tox/nox replacement.
 - Resume work only for a reproducible installed-artifact defect.
@@ -62,9 +71,9 @@ behavior from strict schema-v1 TOML.
 ## Validation
 
 - The regression failed before the patch and passes afterward. The focused
-  suite now contains 11 tests.
+  suite now contains 12 tests.
 - The built wheel contains only package modules, license, entry point, and
-  standard distribution metadata; metadata reports version 1.0.1 and Python
+  standard distribution metadata; metadata reports version 1.0.2 and Python
   3.10+.
 - Portfolio validation builds and isolated-installs all three products, passes
   the WheelContract self-contract and six-case AgentScope contract, and retains

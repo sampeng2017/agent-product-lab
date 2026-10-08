@@ -759,3 +759,19 @@ Version 1.0.1 separates boolean and numeric categories, preserves numeric
 The installed regression also checks CLI exit 1 and aggregate failure counts.
 Adopters now catch readiness/schema scalar regressions that previously passed.
 Only WheelContract's public installation pin needs refreshing for this fix.
+
+## Invalid JSON-output contract — 2026-10-07
+
+Compared further onboarding polish with the prior run's decoder-edge hypothesis.
+A real fixture outputs a matching ready field plus unasserted NaN/Infinity/
+-Infinity values, including nested arrays/objects. All five invalid cases passed
+under the default decoder. Python explicitly documents these as extensions
+outside JSON's number syntax and provides parse_constant for rejection.
+
+Retained a bounded correction: use that decoder hook in JSON assertion cases,
+report behavior failure, and preserve valid quoted strings and ordinary values.
+The regression covers positive strings, negative tokens, CLI exit, and suite
+totals. No general schema engine, nested expectation syntax, dependency, or new
+release gate is needed. Product v1.0.2 and its public pin carry the patch.
+
+Source: [Python JSON number extensions](https://docs.python.org/3/library/json.html#infinite-and-nan-number-values).

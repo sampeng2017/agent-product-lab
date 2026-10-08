@@ -228,6 +228,10 @@ def _run_setup(argv: list[str], action: str) -> None:
     raise ContractError(f"could not {action} (exit {completed.returncode}): {detail}")
 
 
+def _reject_json_constant(value: str) -> None:
+    raise ValueError(f"nonstandard constant {value}")
+
+
 def _run_case(
     case: Case,
     contract: Contract,
@@ -297,9 +301,11 @@ def _run_case(
             errors.append(f"stderr missing {fragment!r}")
     if case.json_fields:
         try:
-            document = json.loads(stdout)
+            document = json.loads(stdout, parse_constant=_reject_json_constant)
         except json.JSONDecodeError as exc:
             errors.append(f"stdout is not JSON: {exc.msg}")
+        except ValueError as exc:
+            errors.append(f"stdout is not JSON: {exc}")
         else:
             if not isinstance(document, dict):
                 errors.append("stdout JSON must be an object")
