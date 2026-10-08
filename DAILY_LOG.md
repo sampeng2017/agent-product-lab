@@ -2553,3 +2553,12 @@ skip, twelve reproducible builds, six installs, all ReleaseFact/behavior contrac
 and six integrity checks. The newly built/isolated-installed v1.0.2 checker also
 passed the new regression without checkout imports, including CLI failure and
 aggregate totals. Local release claims and diff checks passed.
+
+Published correction revision `09617c324310229972567e71e4a477edbc7161a5`
+supplies the new install command; old 1.0.0/1.0.1 section anchors remain usable.
+Other products retain their current source pins. Verify the exact VCS install
+and hosted matrix before completing the documentation publication.
+
+The exact published VCS requirement installed v1.0.2 in a fresh environment
+and passed the regression without checkout imports. Hosted run `37720757395`
+passed Python 3.10–3.14. Forty links/anchors and local release claims passed.

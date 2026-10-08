@@ -28,8 +28,8 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Configured the JSON decoder to reject those tokens and report case failures;
   preserved existing syntax-error diagnostics and continued suite evaluation.
 - Regression covers quoted-string positives, CLI exit 1, and aggregate totals.
-- Bumped package/runtime/self-contract/docs to 1.0.2; refresh only its public
-  installation pin after validated publication.
+- Bumped package/runtime/self-contract/docs to 1.0.2; the public guide now
+  selects its verified correction, with older section anchors preserved.
 
 ## Changes since the prior run
 
@@ -45,8 +45,8 @@ constant and the suite continues reporting other cases.
 
 ## Known issues
 
-- The public WheelContract source pin must advance to the verified patch;
-  other tools keep their current pins. Build dependencies resolve separately.
+- WheelContract's guide selects the v1.0.2 correction; other tools keep their
+  current pins. Build dependencies resolve separately.
 - JSON validation applies only to cases declaring JSON expectations.
 - Decoder limits and duplicate-name behavior otherwise remain Python defaults.
   The patch does not promise a general JSON-schema validator.
@@ -72,6 +72,8 @@ constant and the suite continues reporting other cases.
   builds, six installs, release/behavior contracts, and six integrity checks pass.
 - The newly built/isolated-installed v1.0.2 checker passes the regression without
   checkout imports, including CLI exit and totals. ReleaseFact/diff checks pass.
+- Exact GitHub VCS installation and regression passed in a fresh environment.
+  Hosted run 37720757395 passed Python 3.10–3.14; 40 local links/anchors pass.
 
 ## Recommended next steps
 

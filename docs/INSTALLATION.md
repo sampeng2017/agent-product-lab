@@ -47,8 +47,8 @@ Run only the install command for the tool you choose. Most commands pin source
 to public commit `84e76faa7f837a858fe6b6efdea9da8c24856b99`, whose portfolio CI
 passed Python 3.10–3.14. The full revision keeps the source selection stable as
 `main` evolves; it is not a release tag or a pin of pip's build dependencies.
-WheelContract instead uses the validated v1.0.1 revision
-`724abde58abd410bba031e7a781255bde49bfb9a` to include its JSON assertion fix.
+WheelContract instead uses the validated v1.0.2 revision
+`09617c324310229972567e71e4a477edbc7161a5` to include its JSON assertion fixes.
 
 ### ProofRun 1.8.1
 
@@ -101,18 +101,20 @@ shows an ignored `applyTo` rule, an explicit policy failure, and the coverage
 after correcting its target pattern.
 
 <a id="wheelcontract-100"></a>
+<a id="wheelcontract-101"></a>
 
-### WheelContract 1.0.1
+### WheelContract 1.0.2
 
 ```sh
-python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@724abde58abd410bba031e7a781255bde49bfb9a#subdirectory=products/wheelcontract"
+python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@09617c324310229972567e71e4a477edbc7161a5#subdirectory=products/wheelcontract"
 wheelcontract --version
 ```
 
-To upgrade an existing 1.0.0 environment, add `--upgrade` to that install command.
-Version 1.0.1 rejects JSON numbers where booleans are expected and vice versa,
-while retaining numeric value equality. The old section anchor remains available
-for links from previously installed documentation.
+To upgrade an existing 1.0.0/1.0.1 environment, add `--upgrade` to that command.
+Version 1.0.2 rejects bare NaN/Infinity/-Infinity in JSON assertion output and
+retains the boolean/number correction from 1.0.1. Numeric value equality and
+quoted strings remain compatible. Old section anchors remain available for
+links from previously installed documentation.
 
 Create a contract using the [product example](../products/wheelcontract/README.md#contract),
 then name your existing wheel:
