@@ -10,7 +10,7 @@ metadata is corrected. No assertion is weakened to make the result pass.
 
 ## Replay the example
 
-[Install WheelContract](../../docs/INSTALLATION.md#wheelcontract-102) in a
+[Install WheelContract](../../docs/INSTALLATION.md#wheelcontract-103) in a
 Python 3.10+ environment and keep it active. This example builds a setuptools
 project, so also install its declared build backend into that environment:
 

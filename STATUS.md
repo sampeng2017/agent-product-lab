@@ -26,6 +26,9 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Regression checks child exit 0 versus case failure, continuation, CLI exit 1,
   and aggregate results. Bumped package/runtime/self-contract/docs to 1.0.3.
 - Refresh only WheelContract's published installation pin after acceptance.
+- Hosted Linux accepted the initial depth fixture. Made the decoder-error
+  regression deterministic while keeping normal output parsed by the real
+  decoder; no runtime depth limit changed.
 
 ## Changes since the prior run
 
@@ -40,7 +43,7 @@ Users receive a concise reason and the complete suite summary without a tracebac
 
 ## Known issues
 
-- Source pin must advance to the verified patch; other tools keep their pins.
+- The guide selects the v1.0.3 correction; other tools keep their pins.
 - Validation applies to cases declaring JSON expectations; decoder limits and
   duplicate-name semantics remain defaults, not a general schema engine.
 - No tagged/package-index release is advertised; dependencies resolve separately.
@@ -60,7 +63,9 @@ Users receive a concise reason and the complete suite summary without a tracebac
 - New regression was red with an uncaught RecursionError before the patch.
 - Corrected portfolio: 136 tests with one expected skip, twelve reproducible
   builds, six installs, release/behavior contracts, and integrity checks passed.
-- Exact installed/VCS regression and hosted acceptance are required for the pin.
+- The published repair revision installed v1.0.3 and passed the deterministic
+  continuation regression. Hosted run 37947298474 passed Python 3.10–3.14.
+- Forty local links/anchors passed; older install section anchors remain usable.
 
 ## Recommended next steps
 

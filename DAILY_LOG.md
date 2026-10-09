@@ -2603,3 +2603,8 @@ Made the error-path regression deterministic with a controlled decoder failure
 for the large fixture while parsing the normal second case with the real
 decoder. Product recursion limits remain untouched. Revalidate before refreshing
 the public pin to the green repair revision.
+
+Repair revision `9a0ca657e46df6e7401007bdc7520c0d73f08618` passed hosted run
+37947298474 on Python 3.10–3.14. Its exact GitHub VCS install confirmed v1.0.3
+and the continuation regression. The guide selects this green revision and
+preserves old section anchors; forty local links/anchors passed.
