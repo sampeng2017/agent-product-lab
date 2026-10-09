@@ -2595,3 +2595,11 @@ Future changes must preserve complete reporting and the existing decoder limits.
 Corrected warning-strict portfolio passed 136 tests with one expected skip,
 twelve reproducible builds, six installs, all release/behavior contracts, and
 six integrity checks. Local release claims and diff checks also passed.
+
+Hosted Python 3.12/3.13 accepted the 5,000-level document, unlike this host;
+the first regression had incorrectly assumed a universal decoder capacity.
+The log showed both cases passing instead of the expected first failure.
+Made the error-path regression deterministic with a controlled decoder failure
+for the large fixture while parsing the normal second case with the real
+decoder. Product recursion limits remain untouched. Revalidate before refreshing
+the public pin to the green repair revision.

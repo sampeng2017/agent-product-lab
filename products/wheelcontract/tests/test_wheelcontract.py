@@ -90,12 +90,20 @@ argv = ["python", "-m", "fixture_cli", "--json-token", "0"]
 [case.json]
 ready = true
 ''')
-        results = run_contract(load_contract(manifest))
+        # Decoder depth capacity varies by interpreter and platform. Reproduce
+        # its documented error deterministically; normal output is parsed normally.
+        decoder = json.loads
+        def limited_decoder(value, **options):
+            if len(value) > 5000:
+                raise RecursionError("fixture decoder depth limit")
+            return decoder(value, **options)
+        with patch("wheelcontract.core.json.loads", side_effect=limited_decoder):
+            results = run_contract(load_contract(manifest))
         self.assertEqual([result.passed for result in results], [False, True])
         self.assertEqual(results[0].errors, ("stdout JSON exceeds decoder nesting limit",))
         self.assertEqual(results[0].exit_code, 0)
         output = io.StringIO()
-        with redirect_stdout(output):
+        with redirect_stdout(output), patch("wheelcontract.core.json.loads", side_effect=limited_decoder):
             self.assertEqual(main([str(manifest)]), 1)
         self.assertIn("PASS normal-output", output.getvalue())
         self.assertIn("Result: 1 passed, 1 failed, 2 total", output.getvalue())
