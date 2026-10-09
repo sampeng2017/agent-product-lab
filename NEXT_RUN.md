@@ -29,6 +29,8 @@ On 2026-10-06 WheelContract v1.0.1 fixed a reproduced JSON boolean/number
 comparison defect. Keep schema v1 and numeric value equality unchanged.
 On 2026-10-07 v1.0.2 rejects bare NaN/Infinity/-Infinity in JSON assertion
 cases, even in unasserted nested values. Preserve quoted strings and schema v1.
+The delayed October 8 run resumed October 9 and v1.0.3 now reports JSON
+decoder-depth errors per case while continuing the remaining suite.
 
 ## Required starting inspection
 

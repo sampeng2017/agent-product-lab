@@ -2562,3 +2562,36 @@ and hosted matrix before completing the documentation publication.
 The exact published VCS requirement installed v1.0.2 in a fresh environment
 and passed the regression without checkout imports. Hosted run `37720757395`
 passed Python 3.10–3.14. Forty links/anchors and local release claims passed.
+
+## 2026-10-09 — decoder-depth failure no longer aborts a suite
+
+The October 8 scheduled turn resumed October 9. Started clean at synchronized
+2cdec4c; read memory, Git/history, root/product handoffs, source/tests, active
+To-Sam messages, and public GitHub metadata. No active Sam communication existed.
+Selected a concrete complete-reporting defect over more onboarding prose.
+
+A valid, roughly 10 KB JSON output with 5,000 array levels stayed below the
+byte bound but caused an uncaught RecursionError. The suite aborted and did not
+run its normal second case. Added a real installed-fixture regression first and
+observed the crash. Version 1.0.3 records the decoder-depth error as a bounded
+case failure, continues later cases, and returns normal aggregate exit 1.
+No recursion limit is raised and schema/exit semantics remain stable.
+
+Updated package/runtime/self-contract versions, product/portfolio documentation,
+and handoffs. Only WheelContract's installation pin advances after publication.
+
+Commands (focused tests from products/wheelcontract):
+
+```sh
+git status --short --branch
+git log -4 --oneline
+PYTHONPATH=src python3.11 -m unittest discover -s tests -p test_wheelcontract.py -k nesting_limit -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Future changes must preserve complete reporting and the existing decoder limits.
+
+Corrected warning-strict portfolio passed 136 tests with one expected skip,
+twelve reproducible builds, six installs, all release/behavior contracts, and
+six integrity checks. Local release claims and diff checks also passed.

@@ -2,12 +2,19 @@
 
 ## Product shape
 
-WheelContract v1.0.2 is a frozen, dependency-free local MVP for Python CLI
+WheelContract v1.0.3 is a frozen, dependency-free local MVP for Python CLI
 maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
-## Completed on 2026-10-07
+## Completed on 2026-10-09
+
+- Reproduced a decoder nesting-limit traceback that aborted the remaining cases
+  even though the output stayed inside the configured byte bound.
+- Record this as case failure, continue the suite, and retain decoder limits.
+- Added real installed-fixture and CLI continuation regressions; promoted 1.0.3.
+
+## Correctness patch on 2026-10-07
 
 - A real installed fixture reproduced five false passing cases with bare
   nonstandard JSON constants, including unasserted nested values.
@@ -63,7 +70,7 @@ behavior from strict schema-v1 TOML.
 
 ## Decisions
 
-- Freeze WheelContract at v1.0.2 and preserve schema v1 plus exit 0/1/2.
+- Freeze WheelContract at v1.0.3 and preserve schema v1 plus exit 0/1/2.
 - Keep the explicit installed-artifact focus; do not turn it into a general task
   runner or tox/nox replacement.
 - Resume work only for a reproducible installed-artifact defect.
@@ -71,9 +78,9 @@ behavior from strict schema-v1 TOML.
 ## Validation
 
 - The regression failed before the patch and passes afterward. The focused
-  suite now contains 12 tests.
+  suite now contains 13 tests.
 - The built wheel contains only package modules, license, entry point, and
-  standard distribution metadata; metadata reports version 1.0.2 and Python
+  standard distribution metadata; metadata reports version 1.0.3 and Python
   3.10+.
 - Portfolio validation builds and isolated-installs all three products, passes
   the WheelContract self-contract and six-case AgentScope contract, and retains

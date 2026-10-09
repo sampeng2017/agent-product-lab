@@ -2,84 +2,70 @@
 
 ## Current direction
 
-WheelContract v1.0.2 fixes a reproduced false passing JSON-output check:
-bare NaN, Infinity, and -Infinity are rejected in cases with JSON expectations,
-including nested and unasserted values. Valid strings and numeric compatibility
-remain unchanged. The other five maintained tools retain their product shapes.
+WheelContract v1.0.3 turns a reproduced JSON decoder-depth crash into a bounded
+case failure and continues later cases. Decoder limits, schema v1, and exits
+0/1/2 remain in place. The other maintained tools retain their product shapes.
 
 ## Product shape
 
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
-- Six maintained tools remain covered by source, build, install, and contract
-  validation. GrammarCheck is archived.
-- WheelContract uses schema v1 and exits 0/1/2; only correctness patches reopen
-  its frozen feature boundary.
-- Root CI uses Ubuntu 24.04 and Python 3.10–3.14. Review platform policy by
-  November 5. The installation guide and three worked examples remain public.
+- Six tools retain source/build/install/contract validation; GrammarCheck is archived.
+- Root CI uses Ubuntu 24.04 and Python 3.10–3.14; review policy by November 5.
+- The install guide and three worked examples remain public entry points.
+- WheelContract correctness patches preserve its bounded artifact-checking scope.
 
-## Completed today (2026-10-07)
+## Completed today (2026-10-09)
 
-- Inspected clean synchronized 893930c, Git history, docs/source/tests, active
-  Sam communications, and the public GitHub surface.
-- Confirmed MIT, zero issues, and green hosted run 37565945139.
-- Added a real installed-fixture regression first: five nonstandard constant
-  cases incorrectly passed, including unasserted nested arrays/objects.
-- Configured the JSON decoder to reject those tokens and report case failures;
-  preserved existing syntax-error diagnostics and continued suite evaluation.
-- Regression covers quoted-string positives, CLI exit 1, and aggregate totals.
-- Bumped package/runtime/self-contract/docs to 1.0.2; the public guide now
-  selects its verified correction, with older section anchors preserved.
+- The October 8 scheduled turn resumed October 9 from clean synchronized 2cdec4c.
+  Read memory, Git history, docs, implementation/tests, and active Sam messages.
+- Reproduced an uncaught RecursionError on a roughly 10 KB JSON document, below
+  the configured byte bound; it aborted the suite before the normal second case.
+- Added a real installed-fixture regression first, then handled only the decoder
+  recursion failure as a case error with a stable, bounded diagnostic.
+- Regression checks child exit 0 versus case failure, continuation, CLI exit 1,
+  and aggregate results. Bumped package/runtime/self-contract/docs to 1.0.3.
+- Refresh only WheelContract's published installation pin after acceptance.
 
 ## Changes since the prior run
 
-Version 1.0.1 fixed boolean/number equality. This patch closes invalid JSON
-output slipping through when asserted fields happen to match. No schema,
-command-line option, dependency, or interpreter matrix changes were needed.
+The prior patch rejected nonstandard constants. This patch makes an existing
+decoder limit a reported behavior failure rather than an exception escaping
+the complete-reporting contract. No limit is raised and no option/schema added.
 
 ## External-user value
 
-Release checks now detect output that standard JSON consumers reject even when
-the checked readiness field looks correct. Diagnostics identify the offending
-constant and the suite continues reporting other cases.
+One deeply nested output can no longer hide results from later release checks.
+Users receive a concise reason and the complete suite summary without a traceback.
 
 ## Known issues
 
-- WheelContract's guide selects the v1.0.2 correction; other tools keep their
-  current pins. Build dependencies resolve separately.
-- JSON validation applies only to cases declaring JSON expectations.
-- Decoder limits and duplicate-name behavior otherwise remain Python defaults.
-  The patch does not promise a general JSON-schema validator.
-- No tagged or package-index release is advertised.
-- Hosted validation is Ubuntu-only; Windows replay is not verified.
-- Hosted images update despite OS selection; follow the November 5 policy review.
+- Source pin must advance to the verified patch; other tools keep their pins.
+- Validation applies to cases declaring JSON expectations; decoder limits and
+  duplicate-name semantics remain defaults, not a general schema engine.
+- No tagged/package-index release is advertised; dependencies resolve separately.
+- Hosted checks are Ubuntu-only; Windows replay remains unverified.
 - Source distributions are not published or proven byte-reproducible.
-- Integrity/chaining are consistency evidence, not signatures.
+- Integrity/chaining are consistency evidence, not authentication.
 
 ## Decisions
 
-- Prefer a demonstrated consumer-visible correctness defect over more examples.
-- Use the standard decoder hook rather than textual searches or regexes, so
-  quoted strings are never confused with bare tokens.
-- Reject invalid output as behavior exit 1; preserve setup exit 2 and schema v1.
-- Refresh the public source pin only after the published artifact passes tests.
+- Fix the demonstrated suite-abort defect rather than changing recursion limits.
+- Report this output failure as exit 1; preserve setup exit 2 and complete results.
+- Retain prior JSON compatibility and publish only after acceptance checks.
 
 ## Validation
 
-- Baseline: 134 tests with one expected skip plus the existing twelve builds,
-  six installs, release/behavior contracts, and wheel integrity checks passed.
-- Corrected portfolio: 135 tests with one expected skip, twelve reproducible
-  builds, six installs, release/behavior contracts, and six integrity checks pass.
-- The newly built/isolated-installed v1.0.2 checker passes the regression without
-  checkout imports, including CLI exit and totals. ReleaseFact/diff checks pass.
-- Exact GitHub VCS installation and regression passed in a fresh environment.
-  Hosted run 37720757395 passed Python 3.10–3.14; 40 local links/anchors pass.
+- Baseline had 135 tests and existing build/install/contracts.
+- New regression was red with an uncaught RecursionError before the patch.
+- Corrected portfolio: 136 tests with one expected skip, twelve reproducible
+  builds, six installs, release/behavior contracts, and integrity checks passed.
+- Exact installed/VCS regression and hosted acceptance are required for the pin.
 
 ## Recommended next steps
 
-1. Keep the installation pin on the verified correctness patch.
-2. Evaluate decoder edge cases only with a concrete failing contract and an
-   explicit compatibility decision; avoid claiming universal validation.
-3. Review the CI platform by November 5 or an earlier relevant event.
+1. Preserve complete suite reporting when considering any future decoder issue.
+2. Compare concrete user friction with independently reproduced correctness gaps.
+3. Follow the November 5 platform-policy review.
 
 No human input is required.

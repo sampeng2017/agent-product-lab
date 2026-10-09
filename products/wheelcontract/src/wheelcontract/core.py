@@ -304,6 +304,8 @@ def _run_case(
             document = json.loads(stdout, parse_constant=_reject_json_constant)
         except json.JSONDecodeError as exc:
             errors.append(f"stdout is not JSON: {exc.msg}")
+        except RecursionError:
+            errors.append("stdout JSON exceeds decoder nesting limit")
         except ValueError as exc:
             errors.append(f"stdout is not JSON: {exc}")
         else:

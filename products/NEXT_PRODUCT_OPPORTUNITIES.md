@@ -775,3 +775,15 @@ totals. No general schema engine, nested expectation syntax, dependency, or new
 release gate is needed. Product v1.0.2 and its public pin carry the patch.
 
 Source: [Python JSON number extensions](https://docs.python.org/3/library/json.html#infinite-and-nan-number-values).
+
+## Complete reporting at decoder limits — 2026-10-09
+
+Compared more onboarding polish with a reproduced suite-abort defect. A deeply
+nested JSON document below the byte bound raised RecursionError and prevented
+later contract cases from running. This violates the existing complete-reporting
+promise; it is stronger evidence than another speculative decoder policy change.
+
+Version 1.0.3 catches the depth error per case, retains the decoder limit, and
+continues the suite with bounded diagnostics and ordinary behavior exit 1.
+The installed-fixture regression verifies both the failed first case and passing
+second case plus CLI totals. No new gate, dependency, or contract syntax is needed.

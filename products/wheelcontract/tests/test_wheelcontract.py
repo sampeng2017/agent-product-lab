@@ -37,6 +37,8 @@ class WheelContractTests(unittest.TestCase):
                 "elif '--error' in sys.argv:\n"
                 "    print('fixture warning', file=sys.stderr)\n"
                 "    raise SystemExit(4)\n"
+                "elif '--json-deep' in sys.argv:\n"
+                "    print('{\"ready\": true, \"data\": ' + '[' * 5000 + '0' + ']' * 5000 + '}')\n"
                 "elif '--json-token' in sys.argv:\n"
                 "    print('{\"ready\": true, \"unasserted\": ' + sys.argv[-1] + '}')\n"
                 "elif '--json-types' in sys.argv:\n"
@@ -73,6 +75,30 @@ class WheelContractTests(unittest.TestCase):
             encoding="utf-8",
         )
         return manifest
+
+    def test_json_decoder_nesting_limit_fails_case_and_continues_suite(self) -> None:
+        manifest = self.write_contract('''
+[[case]]
+name = "deep-output"
+argv = ["python", "-m", "fixture_cli", "--json-deep"]
+[case.json]
+ready = true
+
+[[case]]
+name = "normal-output"
+argv = ["python", "-m", "fixture_cli", "--json-token", "0"]
+[case.json]
+ready = true
+''')
+        results = run_contract(load_contract(manifest))
+        self.assertEqual([result.passed for result in results], [False, True])
+        self.assertEqual(results[0].errors, ("stdout JSON exceeds decoder nesting limit",))
+        self.assertEqual(results[0].exit_code, 0)
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main([str(manifest)]), 1)
+        self.assertIn("PASS normal-output", output.getvalue())
+        self.assertIn("Result: 1 passed, 1 failed, 2 total", output.getvalue())
 
     def test_nonstandard_json_constants_fail_even_in_unasserted_nested_values(self) -> None:
         tokens = ('NaN', 'Infinity', '-Infinity', '[NaN]', '{"value": Infinity}', '"NaN"', '{"text": "Infinity"}')

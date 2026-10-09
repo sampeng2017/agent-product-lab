@@ -99,6 +99,10 @@ the case with exit 1. Quoted strings containing those words remain valid.
 Python's default decoder accepts these extensions, so WheelContract rejects
 them explicitly; see the [Python JSON documentation](https://docs.python.org/3/library/json.html#infinite-and-nan-number-values).
 
+Output beyond the interpreter's JSON nesting limit fails that case with a
+bounded diagnostic. Later cases still run; WheelContract does not increase the
+decoder's recursion limit or abort the suite with a traceback.
+
 - One Python project or wheel and one disposable environment per contract.
 - No dependency resolution, environment matrix, shell, hooks, or arbitrary
   working-directory configuration.
@@ -115,7 +119,7 @@ directory.
 
 ## Maintenance status
 
-WheelContract v1.0.2 is a frozen local MVP. Its schema-v1 contract, exit
+WheelContract v1.0.3 is a frozen local MVP. Its schema-v1 contract, exit
 semantics, and synchronous process-lifecycle boundary remain stable. Resume
 feature work only for a reproduced installed-artifact defect; use the focused
 suite and portfolio validator as the release contract.
