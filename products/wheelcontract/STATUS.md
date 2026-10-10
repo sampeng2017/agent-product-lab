@@ -74,8 +74,8 @@ behavior from strict schema-v1 TOML.
   spooled to disposable files.
 - Successful commands that intentionally daemonize are outside the synchronous
   contract model; only timeout cleanup owns an entire process tree.
-- Unix child cleanup is live-tested on macOS and will run in hosted Ubuntu CI
-  when a remote is available. Windows cleanup is unit-pinned, not live-tested.
+- Unix child cleanup is live-tested on macOS and in hosted Ubuntu CI.
+  Windows cleanup is unit-pinned, not live-tested.
 
 ## Decisions
 

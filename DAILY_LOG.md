@@ -2678,3 +2678,9 @@ Repeated warning-strict portfolio validation after the installation/doc changes
 passed the same 138 tests and all build/install/contracts/integrity checks.
 The root product summary now describes current behavior rather than accumulating
 patch-by-patch history; detailed release evidence remains in this log.
+
+A third disposable environment rehearsed the documented --upgrade from the
+previous public 1.0.3 pin to 1.0.4, confirmed the new version and exact commit,
+and passed both installed regressions. Final status inspection found another
+obsolete pre-remote statement: Unix cleanup already runs in successful Ubuntu
+CI. Corrected that evidence claim while retaining the honest Windows limit.

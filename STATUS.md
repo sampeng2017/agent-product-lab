@@ -81,6 +81,9 @@ from later checks, and a complete failure summary.
   also confirmed version 1.0.4; older section anchors remain available.
 - Forty local links/anchors passed. The installed missing-command replay still
   passes its unchanged contract after correcting packaging in the temporary copy.
+- The documented --upgrade path replaced public 1.0.3 with 1.0.4 and passed both
+  new installed regressions. Product status now reflects existing Ubuntu evidence
+  rather than its obsolete pre-remote limitation.
 
 ## Recommended next steps
 
