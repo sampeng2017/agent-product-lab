@@ -71,6 +71,12 @@ contracts passed, 1 means behavior differed, and 2 means the manifest, build, or
 installation was invalid. Output beyond `max_output_bytes` fails the case and is
 truncated in diagnostics; each case also has a timeout.
 
+An installed command that exists but cannot start (for example, its script
+names a missing interpreter) fails that case with an OS error diagnostic.
+Later cases still run and the suite returns exit 1. No child exit code or
+stdout/stderr is invented for a process that never started. Build and
+installation failures remain setup exit 2.
+
 ## Run locally
 
 ```bash
@@ -119,7 +125,7 @@ directory.
 
 ## Maintenance status
 
-WheelContract v1.0.3 is a frozen local MVP. Its schema-v1 contract, exit
+WheelContract v1.0.4 is a frozen local MVP. Its schema-v1 contract, exit
 semantics, and synchronous process-lifecycle boundary remain stable. Resume
 feature work only for a reproduced installed-artifact defect; use the focused
 suite and portfolio validator as the release contract.

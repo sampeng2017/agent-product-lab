@@ -2608,3 +2608,51 @@ Repair revision `9a0ca657e46df6e7401007bdc7520c0d73f08618` passed hosted run
 37947298474 on Python 3.10–3.14. Its exact GitHub VCS install confirmed v1.0.3
 and the continuation regression. The guide selects this green revision and
 preserves old section anchors; forty local links/anchors passed.
+
+## 2026-10-09 19:58 PDT — broken installed script no longer aborts release checks
+
+The October 10 UTC heartbeat started October 9 local time from clean synchronized
+76dab9a. Read memory, Git/history, root/product handoffs, implementation, tests,
+active To-Sam, and public GitHub metadata. No active human request was present.
+GitHub detected MIT and run 37947671599 passed Python 3.10–3.14. Warning-strict
+baseline passed 136 tests with one expected optional skip and the full portfolio.
+
+Compared onboarding friction with a concrete failure of WheelContract's promise
+to report every case. A real wheel installed a Unix executable script whose
+interpreter did not exist. WheelContract found the installed file, then Popen
+raised FileNotFoundError and prevented a subsequent normal case from running.
+The new regression reproduced that traceback before implementation.
+
+Version 1.0.4 catches only OSError from case process creation. It reports the
+command name, OS error number, and a bounded reason without the temporary path
+or arguments; no child exit/output is fabricated. Later cases run and CLI exit 1
+summarizes all results. Missing commands, build/install setup exit 2, timeout
+cleanup, JSON semantics, and schema v1 remain unchanged. Added an installed
+script/CLI continuation regression plus a portable permission-error bound test.
+The actual interpreter fixture is Unix-only; no Windows live evidence is claimed.
+
+Updated package/runtime/self-contract, product/portfolio docs, and handoffs.
+Fixed obsolete product-status references to three validated products and an
+already-completed ReleaseFact experiment. Only WheelContract's public install
+pin may advance after publication and acceptance.
+
+Inspection and run commands (focused tests from products/wheelcontract):
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh run list --repo sampeng2017/agent-product-lab --limit 3 --json databaseId,headSha,status,conclusion
+PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error python3.11 -m unittest discover -s tests -p test_wheelcontract.py -k broken_installed -v
+PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error python3.11 -m unittest discover -s tests -p test_wheelcontract.py -k launch_os_error -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Next: preserve complete reporting and assess first-user friction before another
+runtime change; keep the November 5 platform-review deadline.
+
+Corrected warning-strict portfolio passed 138 tests with one expected optional
+skip, twelve reproducible builds, six installs, release/behavior contracts,
+and complete wheel integrity. The focused 15-test suite also passed on local
+Python 3.14. Diff checks passed. Public CI and the exact Git install must pass
+before the installation guide selects the correction revision.

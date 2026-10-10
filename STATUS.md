@@ -2,9 +2,9 @@
 
 ## Current direction
 
-WheelContract v1.0.3 turns a reproduced JSON decoder-depth crash into a bounded
-case failure and continues later cases. Decoder limits, schema v1, and exits
-0/1/2 remain in place. The other maintained tools retain their product shapes.
+WheelContract v1.0.4 reports installed-command launch errors per case and
+continues the suite. It preserves schema v1, exits 0/1/2, and its bounded
+artifact-checking scope. Other maintained tools retain their product shapes.
 
 ## Product shape
 
@@ -13,64 +13,74 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Six tools retain source/build/install/contract validation; GrammarCheck is archived.
 - Root CI uses Ubuntu 24.04 and Python 3.10–3.14; review policy by November 5.
 - The install guide and three worked examples remain public entry points.
-- WheelContract correctness patches preserve its bounded artifact-checking scope.
+- WheelContract correctness patches preserve complete reporting.
 
-## Completed today (2026-10-09)
+## Completed today (2026-10-09, evening run)
 
-- The October 8 scheduled turn resumed October 9 from clean synchronized 2cdec4c.
-  Read memory, Git history, docs, implementation/tests, and active Sam messages.
-- Reproduced an uncaught RecursionError on a roughly 10 KB JSON document, below
-  the configured byte bound; it aborted the suite before the normal second case.
-- Added a real installed-fixture regression first, then handled only the decoder
-  recursion failure as a case error with a stable, bounded diagnostic.
-- Regression checks child exit 0 versus case failure, continuation, CLI exit 1,
-  and aggregate results. Bumped package/runtime/self-contract/docs to 1.0.3.
-- Refresh only WheelContract's published installation pin after acceptance.
-- Hosted Linux accepted the initial depth fixture. Made the decoder-error
-  regression deterministic while keeping normal output parsed by the real
-  decoder; no runtime depth limit changed.
+- Started clean at synchronized 76dab9a. Inspected memory, Git/history, root and
+  product documentation, implementation/tests, active To-Sam, and public GitHub.
+  Public MIT detection and the latest full Python matrix were healthy.
+- Baseline warning-strict portfolio passed 136 tests with one expected skip,
+  reproducible builds, isolated installs, release/behavior contracts, and integrity.
+- Compared first-use friction with a concrete failure of the documented promise
+  to execute every case. A real wheel installed an executable script naming an
+  unavailable interpreter; its launch raised FileNotFoundError and aborted the
+  suite before the next valid command. The regression was red before the fix.
+- Catch only OSError from case process creation. Report a bounded OS reason and
+  command name, without temporary paths, fabricated child exit codes, or output.
+  Continue later cases and return behavior exit 1, not setup exit 2.
+- Added real Unix installed-script/CLI continuation coverage and a portable
+  permission-error diagnostic bound test. Promoted package/runtime/self-contract
+  to 1.0.4 and updated public behavior documentation and stale product handoff.
+- Advance only WheelContract's public install pin after acceptance; other five
+  products keep their validated revisions.
 
 ## Changes since the prior run
 
-The prior patch rejected nonstandard constants. This patch makes an existing
-decoder limit a reported behavior failure rather than an exception escaping
-the complete-reporting contract. No limit is raised and no option/schema added.
+The morning correction contained decoder nesting failures. This independent
+patch contains operating-system launch failures for installed commands that
+exist but cannot execute. Manifest, build, and installation handling is unchanged.
 
 ## External-user value
 
-One deeply nested output can no longer hide results from later release checks.
-Users receive a concise reason and the complete suite summary without a traceback.
+A broken packaged script no longer hides other release-check results behind a
+traceback. Maintainers see which command could not start, an OS reason, results
+from later checks, and a complete failure summary.
 
 ## Known issues
 
-- The guide selects the v1.0.3 correction; other tools keep their pins.
-- Validation applies to cases declaring JSON expectations; decoder limits and
-  duplicate-name semantics remain defaults, not a general schema engine.
-- No tagged/package-index release is advertised; dependencies resolve separately.
-- Hosted checks are Ubuntu-only; Windows replay remains unverified.
+- Command launch may fail because of a packaged script or a host restriction;
+  the diagnostic reports the OS reason, not an inferred packaging root cause.
+- The real interpreter-launch fixture is Unix-only; portable error handling is
+  tested, but Windows execution and worked examples are not live-tested.
+- JSON decoder limits and duplicate-name semantics remain defaults.
+- No tagged/package-index release is advertised; build dependencies resolve separately.
 - Source distributions are not published or proven byte-reproducible.
 - Integrity/chaining are consistency evidence, not authentication.
 
 ## Decisions
 
-- Fix the demonstrated suite-abort defect rather than changing recursion limits.
-- Report this output failure as exit 1; preserve setup exit 2 and complete results.
-- Retain prior JSON compatibility and publish only after acceptance checks.
+- Repair reproduced complete-reporting defects, not hypothetical new policy.
+- Treat a failed case start as behavior failure; do not broaden the catch to
+  filesystem setup or arbitrary exceptions.
+- Keep missing-command behavior, timeout cleanup, JSON compatibility, schema,
+  and setup exit 2 unchanged.
+- Correct stale status references rather than beginning an already finished
+  ReleaseFact experiment or implying only three products are validated.
 
 ## Validation
 
-- Baseline had 135 tests and existing build/install/contracts.
-- New regression was red with an uncaught RecursionError before the patch.
-- Corrected portfolio: 136 tests with one expected skip, twelve reproducible
-  builds, six installs, release/behavior contracts, and integrity checks passed.
-- The published repair revision installed v1.0.3 and passed the deterministic
-  continuation regression. Hosted run 37947298474 passed Python 3.10–3.14.
-- Forty local links/anchors passed; older install section anchors remain usable.
+- New installed-script regression reproduced the uncaught launch error before
+  the patch; focused continuation and diagnostic tests pass afterward.
+- Warning-strict portfolio passed 138 tests with one expected optional skip,
+  twelve reproducible builds, six isolated installs, release/behavior contracts,
+  and complete wheel integrity. WheelContract's 15 tests also pass on Python 3.14.
+- Public installation pin must select an acceptance-tested revision.
 
 ## Recommended next steps
 
-1. Preserve complete suite reporting when considering any future decoder issue.
-2. Compare concrete user friction with independently reproduced correctness gaps.
+1. Preserve complete reporting and separate setup errors from case failures.
+2. Compare concrete first-user friction before reopening frozen runtime behavior.
 3. Follow the November 5 platform-policy review.
 
 No human input is required.

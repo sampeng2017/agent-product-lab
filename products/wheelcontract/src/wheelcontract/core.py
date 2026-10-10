@@ -265,14 +265,31 @@ def _run_case(
             process_options = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
         else:
             process_options = {"start_new_session": True}
-        process = subprocess.Popen(
-            argv,
-            cwd=work,
-            env=environment_variables,
-            stdout=stdout_file,
-            stderr=stderr_file,
-            **process_options,
-        )
+        try:
+            process = subprocess.Popen(
+                argv,
+                cwd=work,
+                env=environment_variables,
+                stdout=stdout_file,
+                stderr=stderr_file,
+                **process_options,
+            )
+        except OSError as exc:
+            # A packaged script can exist but have a missing interpreter,
+            # invalid executable format, or denied execution permission.
+            # This is installed behavior failure, not a suite setup failure.
+            detail = (exc.strerror or type(exc).__name__)[:240]
+            return CaseResult(
+                name=case.name,
+                passed=False,
+                errors=(
+                    f"could not start installed command {case.argv[0]!r}: "
+                    f"OS error {exc.errno} ({detail})",
+                ),
+                exit_code=None,
+                stdout="",
+                stderr="",
+            )
         try:
             exit_code = process.wait(timeout=contract.timeout_seconds)
         except subprocess.TimeoutExpired:

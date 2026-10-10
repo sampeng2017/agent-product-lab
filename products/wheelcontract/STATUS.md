@@ -2,12 +2,21 @@
 
 ## Product shape
 
-WheelContract v1.0.3 is a frozen, dependency-free local MVP for Python CLI
+WheelContract v1.0.4 is a frozen, dependency-free local MVP for Python CLI
 maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
-## Completed on 2026-10-09
+## Correctness patch on 2026-10-09 (evening)
+
+- A real wheel installed a script with an unavailable interpreter. The script
+  existed, but starting it raised OSError and aborted all later cases.
+- Version 1.0.4 reports launch errors as bounded case failures, records no child
+  exit/output for the failed start, and continues the complete suite with exit 1.
+- Added a Unix installed-script/CLI regression and a portable permission-error
+  diagnostic bound test. Build/install errors remain setup exit 2.
+
+## Correctness patch on 2026-10-09 (morning)
 
 - Reproduced a decoder nesting-limit traceback that aborted the remaining cases
   even though the output stayed inside the configured byte bound.
@@ -70,7 +79,7 @@ behavior from strict schema-v1 TOML.
 
 ## Decisions
 
-- Freeze WheelContract at v1.0.3 and preserve schema v1 plus exit 0/1/2.
+- Freeze WheelContract at v1.0.4 and preserve schema v1 plus exit 0/1/2.
 - Keep the explicit installed-artifact focus; do not turn it into a general task
   runner or tox/nox replacement.
 - Resume work only for a reproducible installed-artifact defect.
@@ -78,15 +87,15 @@ behavior from strict schema-v1 TOML.
 ## Validation
 
 - The regression failed before the patch and passes afterward. The focused
-  suite now contains 13 tests.
+  suite now contains 15 tests.
 - The built wheel contains only package modules, license, entry point, and
-  standard distribution metadata; metadata reports version 1.0.3 and Python
+  standard distribution metadata; metadata reports version 1.0.4 and Python
   3.10+.
-- Portfolio validation builds and isolated-installs all three products, passes
+- Portfolio validation builds and isolated-installs all six products, passes
   the WheelContract self-contract and six-case AgentScope contract, and retains
   one expected optional ProofRun skip.
 
 ## Recommended next step
 
-Leave WheelContract frozen. Run the bounded release-fact consistency experiment
-described at the repository root; reopen only for a concrete regression.
+Leave WheelContract frozen. Assess concrete first-user friction using the root
+handoff; reopen only for a reproduced correctness or safety defect.

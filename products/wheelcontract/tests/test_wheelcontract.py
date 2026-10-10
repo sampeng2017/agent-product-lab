@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import tempfile
 import time
 import unittest
@@ -107,6 +108,60 @@ ready = true
             self.assertEqual(main([str(manifest)]), 1)
         self.assertIn("PASS normal-output", output.getvalue())
         self.assertIn("Result: 1 passed, 1 failed, 2 total", output.getvalue())
+
+    @unittest.skipUnless(os.name == "posix", "Unix interpreter-launch fixture")
+    def test_broken_installed_script_fails_case_and_continues_suite(self) -> None:
+        # An installed file is not necessarily runnable. Preserve this raw
+        # script's missing interpreter instead of using pip's rewritten #!python.
+        with zipfile.ZipFile(self.wheel, "a") as archive:
+            script = zipfile.ZipInfo(
+                "fixture_cli-1.0.0.data/scripts/fixture-broken"
+            )
+            script.external_attr = 0o100755 << 16
+            archive.writestr(script, "#!/wheelcontract-missing-interpreter\n")
+        manifest = self.write_contract('''
+[[case]]
+name = "broken-launch"
+argv = ["fixture-broken"]
+
+[[case]]
+name = "normal-launch"
+argv = ["python", "-m", "fixture_cli"]
+stdout_contains = ["installed hello"]
+''')
+        results = run_contract(load_contract(manifest))
+        self.assertEqual([result.passed for result in results], [False, True])
+        self.assertIsNone(results[0].exit_code)
+        self.assertEqual(results[0].stdout, "")
+        self.assertEqual(results[0].stderr, "")
+        self.assertIn("could not start installed command 'fixture-broken'", results[0].errors[0])
+        self.assertNotIn(str(self.root), results[0].errors[0])
+        output = io.StringIO()
+        error = io.StringIO()
+        with redirect_stdout(output), redirect_stderr(error):
+            self.assertEqual(main([str(manifest)]), 1)
+        self.assertEqual(error.getvalue(), "")
+        self.assertIn("PASS normal-launch", output.getvalue())
+        self.assertIn("Result: 1 passed, 1 failed, 2 total", output.getvalue())
+
+    def test_launch_os_error_diagnostic_is_bounded(self) -> None:
+        manifest = self.write_contract('''
+[[case]]
+name = "denied-launch"
+argv = ["python"]
+''')
+        contract = load_contract(manifest)
+        with patch("wheelcontract.core.subprocess.Popen", side_effect=PermissionError(
+            13, "denied " * 1000, "/private/temporary-command"
+        )):
+            result = wheelcontract.core._run_case(
+                contract.cases[0], contract, self.root, self.root, self.root, 1
+            )
+        self.assertFalse(result.passed)
+        self.assertIsNone(result.exit_code)
+        self.assertIn("OS error 13", result.errors[0])
+        self.assertLess(len(result.errors[0]), 320)
+        self.assertNotIn("/private/temporary-command", result.errors[0])
 
     def test_nonstandard_json_constants_fail_even_in_unasserted_nested_values(self) -> None:
         tokens = ('NaN', 'Infinity', '-Infinity', '[NaN]', '{"value": Infinity}', '"NaN"', '{"text": "Infinity"}')
