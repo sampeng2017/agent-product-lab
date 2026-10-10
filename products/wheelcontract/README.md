@@ -11,7 +11,7 @@ policy exit has regressed.
 
 ## Install
 
-Use the [tested Git installation guide](../../docs/INSTALLATION.md#wheelcontract-103)
+Use the [tested Git installation guide](../../docs/INSTALLATION.md#wheelcontract-104)
 to install this package alone. Then create a contract like the one below and run
 `wheelcontract --wheel dist/example.whl wheelcontract.toml` with your wheel path.
 

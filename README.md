@@ -61,12 +61,10 @@ and correcting package metadata makes the unchanged release contract pass.
   behavior contracts. The v1.0.4 local MVP builds or accepts one wheel,
   isolated-installs it, and checks explicit exit, stdout, stderr, and top-level
   JSON behavior from strict TOML. Timed-out cases receive bounded process-tree
-  cleanup. Checked-in contracts cover AgentScope and WheelContract itself. It
-  was frozen on 2026-09-15; the v1.0.1 correctness patch distinguishes JSON
-  booleans from numeric values so type regressions cannot pass the contract.
-  Version 1.0.2 also rejects bare nonstandard JSON constants in assertion cases.
-  Version 1.0.3 reports decoder-depth failures and continues later cases.
-  Version 1.0.4 also reports installed-command launch errors per case.
+  cleanup. JSON checks distinguish booleans from numbers and reject bare
+  nonstandard constants. Decoder-depth and command-launch failures are reported
+  per case so later checks still run. Checked-in contracts cover AgentScope and
+  WheelContract itself; the schema remains frozen since 2026-09-15.
 - [ReleaseFact](products/releasefact/README.md) — explicit current release-
   version consistency. The v1.0.0 local MVP was frozen on 2026-09-17.
 - [ResidueCheck](products/residuecheck/README.md) — bounded before/after

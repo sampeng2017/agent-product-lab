@@ -32,8 +32,9 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Added real Unix installed-script/CLI continuation coverage and a portable
   permission-error diagnostic bound test. Promoted package/runtime/self-contract
   to 1.0.4 and updated public behavior documentation and stale product handoff.
-- Advance only WheelContract's public install pin after acceptance; other five
-  products keep their validated revisions.
+- Advanced only WheelContract's public install pin after acceptance; other five
+  products keep their validated revisions. Checkout instructions now choose its
+  correction revision rather than inadvertently installing 1.0.0.
 
 ## Changes since the prior run
 
@@ -75,7 +76,11 @@ from later checks, and a complete failure summary.
 - Warning-strict portfolio passed 138 tests with one expected optional skip,
   twelve reproducible builds, six isolated installs, release/behavior contracts,
   and complete wheel integrity. WheelContract's 15 tests also pass on Python 3.14.
-- Public installation pin must select an acceptance-tested revision.
+- Public run 38019317593 passed Python 3.10–3.14. Its exact Git install passed
+  both new regressions without checkout imports. Fresh public checkout install
+  also confirmed version 1.0.4; older section anchors remain available.
+- Forty local links/anchors passed. The installed missing-command replay still
+  passes its unchanged contract after correcting packaging in the temporary copy.
 
 ## Recommended next steps
 

@@ -10,7 +10,7 @@ metadata is corrected. No assertion is weakened to make the result pass.
 
 ## Replay the example
 
-[Install WheelContract](../../docs/INSTALLATION.md#wheelcontract-103) in a
+[Install WheelContract](../../docs/INSTALLATION.md#wheelcontract-104) in a
 Python 3.10+ environment and keep it active. This example builds a setuptools
 project, so also install its declared build backend into that environment:
 
@@ -38,10 +38,10 @@ cd agent-product-lab
 python examples/wheelcontract-entry-point/demo.py
 ```
 
-The example lives on current `main`; the pinned installed WheelContract
-revision predates it. The replay copies the project and contract to a temporary
-directory, builds and tests there, changes only that copy, and removes its
-wheels, build metadata, caches, and environments afterward.
+The replay lives in the lab checkout, not the installed package. Keep the
+pinned WheelContract environment active. It copies the project and contract to
+a temporary directory, builds and tests there, changes only that copy, and
+removes its wheels, build metadata, caches, and environments afterward.
 
 Successful replay exits 0, including its expected installed-command failure.
 Missing WheelContract or a suitable backend exits 2 with an installation hint.

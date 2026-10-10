@@ -2656,3 +2656,25 @@ skip, twelve reproducible builds, six installs, release/behavior contracts,
 and complete wheel integrity. The focused 15-test suite also passed on local
 Python 3.14. Diff checks passed. Public CI and the exact Git install must pass
 before the installation guide selects the correction revision.
+
+Correction revision `b33b3da3c8eaa22a374e1603f88b151dcc2ae418` passed hosted run
+38019317593 on Python 3.10–3.14. Its exact VCS install confirmed 1.0.4 and passed
+both new regressions without checkout imports. A fresh public checkout followed
+the corrected revision selection and also installed 1.0.4.
+
+The guide now pins that tested correction and retains old section anchors.
+The generic checkout route previously selected the baseline revision even for
+WheelContract, silently delivering 1.0.0; it now explicitly selects the patch
+revision. Removed the obsolete example claim that the installed revision
+predates the replay. Other five product pins are unchanged.
+
+Forty local links/anchors passed, including the current and retained installation
+anchors. The existing missing-command replay passed with installed 1.0.4: source
+tests pass, both installed commands fail as expected, and the unchanged contract
+passes after the temporary packaging correction. This adds acceptance evidence,
+not another mandatory portfolio gate.
+
+Repeated warning-strict portfolio validation after the installation/doc changes
+passed the same 138 tests and all build/install/contracts/integrity checks.
+The root product summary now describes current behavior rather than accumulating
+patch-by-patch history; detailed release evidence remains in this log.

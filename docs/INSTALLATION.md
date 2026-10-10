@@ -47,8 +47,9 @@ Run only the install command for the tool you choose. Most commands pin source
 to public commit `84e76faa7f837a858fe6b6efdea9da8c24856b99`, whose portfolio CI
 passed Python 3.10–3.14. The full revision keeps the source selection stable as
 `main` evolves; it is not a release tag or a pin of pip's build dependencies.
-WheelContract instead uses the validated v1.0.3 revision
-`9a0ca657e46df6e7401007bdc7520c0d73f08618` to include its JSON assertion fixes.
+WheelContract instead uses the validated v1.0.4 revision
+`b33b3da3c8eaa22a374e1603f88b151dcc2ae418` to include its assertion and
+launch-error fixes.
 
 ### ProofRun 1.8.1
 
@@ -103,11 +104,12 @@ after correcting its target pattern.
 <a id="wheelcontract-100"></a>
 <a id="wheelcontract-101"></a>
 <a id="wheelcontract-102"></a>
+<a id="wheelcontract-103"></a>
 
-### WheelContract 1.0.3
+### WheelContract 1.0.4
 
 ```sh
-python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@9a0ca657e46df6e7401007bdc7520c0d73f08618#subdirectory=products/wheelcontract"
+python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@b33b3da3c8eaa22a374e1603f88b151dcc2ae418#subdirectory=products/wheelcontract"
 wheelcontract --version
 ```
 
@@ -118,6 +120,8 @@ quoted strings remain compatible. Old section anchors remain available for
 links from previously installed documentation.
 Version 1.0.3 also reports decoder nesting failures per case and continues the
 remaining checks, without raising the interpreter's recursion limit.
+Version 1.0.4 also reports OS launch failures for installed commands that exist
+but cannot start. Later checks still run and the suite returns behavior exit 1.
 
 Create a contract using the [product example](../products/wheelcontract/README.md#contract),
 then name your existing wheel:
@@ -191,10 +195,21 @@ git checkout 84e76faa7f837a858fe6b6efdea9da8c24856b99
 python -m pip install ./products/proofrun
 ```
 
-Replace `proofrun` with another product directory from the table above. For
-development, use `python -m pip install -e ./products/proofrun` and follow its
-focused test instructions. Installing from the repository root fails because
-the root is a portfolio, not a Python package.
+That revision is the tested source for ProofRun and the other tools except
+WheelContract. For WheelContract 1.0.4, select its correction revision before
+installing; merely changing the product directory above would install 1.0.0:
+
+```sh
+git checkout b33b3da3c8eaa22a374e1603f88b151dcc2ae418
+python -m pip install ./products/wheelcontract
+wheelcontract --version
+```
+
+For the other tools, retain the first revision and replace `proofrun` with the
+chosen product directory. For development, use
+`python -m pip install -e ./products/proofrun` and follow its focused test
+instructions. Installing from the repository root fails because the root is a
+portfolio, not a Python package.
 
 ## Updates and troubleshooting
 
