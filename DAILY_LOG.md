@@ -2762,3 +2762,16 @@ policy checks, release claims, and diff checks. Full warning-strict portfolio
 revalidation passed 138 tests with one expected optional skip, twelve
 byte-reproducible builds, six installs, release/behavior contracts, and all six
 wheel integrity checks. No new gate or product behavior was added.
+
+Additional guard rehearsals substituted a controlled builder emitting zero or
+two wheel files. Both actual YAML shell runs printed the cardinality diagnostic
+and exited 2 before any checker invocation; temporary output was cleaned. The
+guide now distinguishes that pre-check failure and scopes its exit-trap claim to
+normal completion/ordinary failure, not a forcibly killed job.
+
+A controlled builder failure also preserved its exit 73 without invoking the
+checker and cleaned its temporary output. Published starter commit
+36cfcc09e088058911222c18f43987da445518e1 passed hosted portfolio run 38107471109
+on Python 3.10–3.14. This remains evidence for the lab/checker, not a hosted
+execution of the external starter. Release claims and diff checks passed after
+the final diagnostic clarification.

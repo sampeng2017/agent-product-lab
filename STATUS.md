@@ -85,6 +85,10 @@ The guide explains failure interpretation and what must change for a real projec
 - Forty-eight local links/anchors, release claims, workflow pin/policy checks,
   and diff checks passed. Warning-strict portfolio revalidation passed the same
   138 tests and all twelve builds / six installs / contracts / integrity checks.
+- Zero/multiple output guard rehearsals returned exit 2 before any checker
+  invocation and cleaned temporary output; forced-job cleanup is not promised.
+- A controlled builder failure retained its exit 73 without invoking the checker.
+  Hosted portfolio run 38107471109 passed Python 3.10–3.14 for the published starter.
 
 ## Recommended next steps
 

@@ -60,8 +60,10 @@ covers explicit failure exits, stderr, JSON fields, and `{manifest_dir}` fixture
   case commands run outside the checkout with Python import-leak variables
   removed. The source checkout is not the application import path.
 - A failed contract makes the step fail; there is no `continue-on-error` or
-  shell fallback that turns it into success. The temporary wheel is removed
-  when the step ends. Nothing is uploaded, published, or pushed.
+  shell fallback that turns it into success. The exit trap removes temporary
+  wheel output on normal completion and ordinary failure; a forcibly killed
+  job cannot guarantee that shell cleanup runs. Nothing is uploaded, published,
+  or pushed.
 
 The missing-command fixture produces:
 
@@ -77,6 +79,8 @@ After its packaging correction, the same workflow step and unchanged contract
 produce two passes. Exit 1 means behavior differed; exit 2 from WheelContract
 means invalid manifest or artifact setup. A failure from the preceding `pip
 wheel` command is a build failure, not a WheelContract case result.
+If the build succeeds but produces zero or multiple wheels, the starter reports
+`Expected exactly one built wheel.` and exits 2 before invoking the checker.
 
 ## Adapt the starter deliberately
 
