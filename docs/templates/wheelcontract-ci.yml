@@ -1,0 +1,42 @@
+# Copy to .github/workflows/wheelcontract.yml in your own project.
+# This starter is for a setuptools CLI with no runtime dependencies.
+name: Installed CLI contract
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  installed-cli:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.11"
+
+      - name: Install checker and build backend
+        run: |
+          python -m pip install "setuptools>=77"
+          python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@b33b3da3c8eaa22a374e1603f88b151dcc2ae418#subdirectory=products/wheelcontract"
+
+      - name: Build and check the installed wheel
+        shell: bash
+        run: |
+          set -eu
+          wheel_dir=$(mktemp -d "$RUNNER_TEMP/cli-wheel.XXXXXX")
+          trap 'rm -rf "$wheel_dir"' EXIT
+          python -m pip wheel --no-deps --no-build-isolation --wheel-dir "$wheel_dir" .
+          set -- "$wheel_dir"/*.whl
+          if [ "$#" -ne 1 ] || [ ! -f "$1" ]; then
+            echo "Expected exactly one built wheel." >&2
+            exit 2
+          fi
+          wheelcontract --wheel "$1" wheelcontract.toml

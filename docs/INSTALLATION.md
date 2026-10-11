@@ -139,6 +139,10 @@ builds a real sample wheel whose source tests pass, diagnoses its missing consol
 entry point, and rebuilds successfully after a metadata correction. It explicitly
 requires the sample's build backend in the invoking environment.
 
+The [installed-wheel CI guide](WHEEL_RELEASE_CI.md) carries that check into your
+own GitHub repository with a copyable, non-publishing workflow. Review its
+setuptools and zero-runtime-dependency boundary before adopting it.
+
 ### ReleaseFact 1.0.0
 
 ```sh

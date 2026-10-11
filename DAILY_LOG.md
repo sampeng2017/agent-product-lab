@@ -2684,3 +2684,81 @@ previous public 1.0.3 pin to 1.0.4, confirmed the new version and exact commit,
 and passed both installed regressions. Final status inspection found another
 obsolete pre-remote statement: Unix cleanup already runs in successful Ubuntu
 CI. Corrected that evidence claim while retaining the honest Windows limit.
+
+## 2026-10-10 19:59 PDT — take the installed-wheel check into an adopter's CI
+
+Started from clean synchronized bd76c8d. Inspected memory, Git/history, root and
+product handoffs, implementation/tests, active To-Sam, the workflow/validator,
+and the public GitHub surface. MIT was detected and baseline 38019846678 passed
+all Python 3.10–3.14 jobs. No active Sam communication existed. Warning-strict
+baseline passed 138 tests with one expected optional ProofRun skip and the full
+build/install/contracts/integrity checks.
+
+Compared a standalone CI handoff with speculative decoder policy and broader
+Windows evidence. The install/replay guides had useful local checks but no
+copyable external-repository job; the lab's workflow was portfolio-specific.
+Selected that adoption gap rather than reopening frozen behavior.
+
+Added docs/WHEEL_RELEASE_CI.md and docs/templates/wheelcontract-ci.yml. Users
+copy the YAML into their own workflow directory and customize a meaningful
+behavior contract. The starter builds a single wheel in fresh temporary output
+and passes that exact artifact through --wheel; it does not rebuild during the
+check, select stale dist/ output, upload, publish, or push. It is explicit about
+setuptools, Python 3.11, Ubuntu 24.04, and zero runtime dependencies. Outer-job
+dependencies do not leak into the target environment. Build failure and
+WheelContract exits 1/2 are explained separately; branch protections and any
+publication job are separate maintainer choices.
+
+The abandonment gate required the actual YAML shell block to fail the real
+missing-command fixture and pass after only its entry-point correction, using
+the unchanged contract and already-published installed checker. A fresh exact
+VCS installation selected 1.0.4. Source tests passed, the block failed both
+installed cases with exit 1, then passed both with exit 0 after adding only
+[project.scripts]. Contract SHA-256 stayed
+cc54d16b91800fca22e0a6eae044c102a7e4f0b03d0e340da7681ed62ca8d0e5.
+The rehearsal used paths with spaces, inherited source PYTHONPATH, an invalid
+stale dist/stale.whl, and verified temporary wheel cleanup. Ruby parsed the
+actual YAML and checked its shape; bash syntax passed. Ruby is a local
+maintenance validation aid, not a workflow or product dependency.
+
+Both official action commits were resolved from their v7 refs and matched to
+successful job 114118200939 in baseline 38019846678: checkout 3d3c42e5aac5ba805825da76410c181273ba90b1
+and setup-python 5fda3b95a4ea91299a34e894583c3862153e4b97. The starter pins these
+commits, uses contents-read permissions, drops retained checkout credentials,
+and avoids privileged pull_request_target. Code execution is not a sandbox.
+Build dependencies and runner patch levels remain unpinned. Source references
+are in the guide and opportunity comparison.
+
+Linked root README, WheelContract README, install guide, and existing replay to
+the new handoff. Product runtime, schemas, versions, install pins, and active lab
+workflow are unchanged. The shell block was locally rehearsed; a green lab
+matrix must not be presented as a hosted run of this external-project template.
+
+Inspection and run commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh run list --repo sampeng2017/agent-product-lab --limit 2 --json databaseId,headSha,status,conclusion
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+ruby -ryaml -e 'puts YAML.load_file(ARGV[0])["jobs"]["installed-cli"]["steps"].last["run"]' docs/templates/wheelcontract-ci.yml
+bash -n -c "$(ruby -ryaml -e 'puts YAML.load_file(ARGV[0])["jobs"]["installed-cli"]["steps"].last["run"]' docs/templates/wheelcontract-ci.yml)"
+git diff --check
+```
+
+To reproduce the behavioral rehearsal, install the guide's exact VCS requirement
+and setuptools in a fresh environment; copy the existing sample project and
+contract to a disposable directory. Set RUNNER_TEMP to another disposable
+directory, keep the installed environment on PATH, then use bash -c with the
+same Ruby-extracted block. Expect exit 1 before the existing example's packaging
+correction and exit 0 afterward. Do not edit the checked-in intentionally broken
+sample. This is acceptance evidence, not a new mandatory portfolio gate.
+
+Next: assess concrete adopter friction before another runtime change; use a
+dependency-aware runner for dependent CLIs and retain the November 5 review.
+
+Acceptance checks passed: 48 local links/anchors, exact action/checker pin and
+policy checks, release claims, and diff checks. Full warning-strict portfolio
+revalidation passed 138 tests with one expected optional skip, twelve
+byte-reproducible builds, six installs, release/behavior contracts, and all six
+wheel integrity checks. No new gate or product behavior was added.

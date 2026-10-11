@@ -43,6 +43,11 @@ scope, and confirm coverage of API and web targets in a temporary fixture.
 with WheelContract: source tests pass, a real wheel lacks its console command,
 and correcting package metadata makes the unchanged release contract pass.
 
+[Add an installed-wheel check to your CI](docs/WHEEL_RELEASE_CI.md) using a
+copyable GitHub Actions starter. It checks the artifact your build produced,
+fails on missing commands, and does not publish anything. The starter is scoped
+to setuptools CLIs without runtime dependencies.
+
 ## Portfolio
 
 - [ProofRun](products/proofrun/README.md) — local-first verification receipts

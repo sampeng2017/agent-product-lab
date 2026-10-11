@@ -7,6 +7,16 @@ maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
+## CI adoption guide on 2026-10-10
+
+- Added a standalone, non-publishing GitHub Actions starter and setup guide
+  outside the lab's active workflow directory. It checks the exact built wheel.
+- Rehearsed its unchanged shell block against the existing broken fixture and
+  the packaging-only correction with installed v1.0.4; the contract did not change.
+- The starter is explicitly setuptools/zero-runtime-dependency scoped. Action
+  commits match the successful Ubuntu baseline; external-template execution was
+  local, not a new hosted workflow claim. Runtime and installation pin unchanged.
+
 ## Correctness patch on 2026-10-09 (evening)
 
 - A real wheel installed a script with an unavailable interpreter. The script

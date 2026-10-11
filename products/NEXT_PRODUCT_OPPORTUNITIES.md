@@ -787,3 +787,39 @@ Version 1.0.3 catches the depth error per case, retains the decoder limit, and
 continues the suite with bounded diagnostics and ordinary behavior exit 1.
 The installed-fixture regression verifies both the failed first case and passing
 second case plus CLI totals. No new gate, dependency, or contract syntax is needed.
+
+## From local replay to external CI — 2026-10-10
+
+The public matrix is healthy and the last run fixed a real suite-abort defect.
+Compared three bounded opportunities before reopening any frozen behavior:
+
+- **External installed-wheel CI starter — selected:** installation and replay
+  guides stopped at a local `wheelcontract --wheel` command. The only active lab
+  workflow validates the whole portfolio; adopters must otherwise extract its
+  tooling/setup/build/artifact handoff to check their own CLI on pull requests.
+- **More decoder policy:** no independently reproduced defect was selected;
+  adding validation rules by hypothesis would expand a frozen product.
+- **Windows evidence:** valuable, but live hosted execution and platform-specific
+  fixture review are a broader change than this bounded first-user handoff.
+
+GitHub's established Python starter covers interpreter setup and testing. Keep
+that structure instead of adding an action, installer, or CI orchestration
+product. WheelContract's differentiated part is the explicit behavior contract
+against the exact prebuilt artifact, not general environment/dependency handling.
+
+Retention required executing the actual YAML shell block with the already
+published v1.0.4 checker: source tests pass, the wheel without its command fails
+both cases, then a packaging-only correction makes the unchanged contract and
+shell block pass. Paths with spaces, stale `dist/` output, and temporary cleanup
+were also rehearsed. The starter lives outside active workflows, has read-only
+permissions, pins official actions to verified commits, and never publishes.
+
+That gate passed. `docs/WHEEL_RELEASE_CI.md` now supplies setup, interpretation,
+adaptation, and a dependency boundary beside `docs/templates/wheelcontract-ci.yml`.
+Do not advertise it for third-party runtime dependencies, require it as another
+portfolio gate, or claim a hosted external-template run from the separate lab CI.
+No runtime version or installation pin changed.
+
+Sources: [GitHub Python workflows](https://docs.github.com/en/actions/tutorials/build-and-test-code/python),
+[pip wheel](https://pip.pypa.io/en/stable/cli/pip_wheel/), and
+[GitHub secure use](https://docs.github.com/en/actions/reference/security/secure-use).

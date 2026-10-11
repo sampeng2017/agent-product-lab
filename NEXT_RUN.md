@@ -34,6 +34,10 @@ decoder-depth errors per case while continuing the remaining suite.
 The October 9 evening run reproduced a separate installed-script launch error.
 Version 1.0.4 contains OSError from case process creation, reports the OS reason,
 and continues later checks. Build/install setup failures still return exit 2.
+On October 10, `docs/WHEEL_RELEASE_CI.md` and its copyable template bridged the
+local WheelContract replay to an external repository's CI. Its actual shell
+block failed the broken installed fixture and passed after a packaging-only
+correction with the unchanged contract. No runtime, pin, or active lab gate changed.
 
 ## Required starting inspection
 

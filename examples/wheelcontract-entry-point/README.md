@@ -142,3 +142,8 @@ This sample has no runtime dependencies. WheelContract installs with `--no-deps`
 and does not resolve application dependencies. See the
 [WheelContract README](../../products/wheelcontract/README.md) for timeout,
 output bounds, supported assertions, and the artifact's deliberate limits.
+
+To keep checking future builds, use the
+[GitHub Actions starter](../../docs/WHEEL_RELEASE_CI.md). It passes the exact
+prebuilt wheel into the same checker rather than relying on source tests or
+installing your project into the outer job environment.

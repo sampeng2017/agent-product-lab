@@ -19,6 +19,10 @@ to install this package alone. Then create a contract like the one below and run
 to see passing source tests, a wheel without its console entry point, and a
 metadata correction that makes the same installed-behavior contract pass.
 
+[Add the check to GitHub Actions](../../docs/WHEEL_RELEASE_CI.md) with a
+copyable workflow that builds one wheel and checks that exact artifact. The
+starter uses setuptools and no runtime dependencies; it does not publish.
+
 ## Contract
 
 ```toml
