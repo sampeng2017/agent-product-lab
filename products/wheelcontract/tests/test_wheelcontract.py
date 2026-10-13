@@ -40,6 +40,8 @@ class WheelContractTests(unittest.TestCase):
                 "    raise SystemExit(4)\n"
                 "elif '--json-deep' in sys.argv:\n"
                 "    print('{\"ready\": true, \"data\": ' + '[' * 5000 + '0' + ']' * 5000 + '}')\n"
+                "elif '--raw-output' in sys.argv:\n"
+                "    sys.stdout.buffer.write(bytes.fromhex(sys.argv[-1]))\n"
                 "elif '--json-token' in sys.argv:\n"
                 "    print('{\"ready\": true, \"unasserted\": ' + sys.argv[-1] + '}')\n"
                 "elif '--json-types' in sys.argv:\n"
@@ -108,6 +110,58 @@ ready = true
             self.assertEqual(main([str(manifest)]), 1)
         self.assertIn("PASS normal-output", output.getvalue())
         self.assertIn("Result: 1 passed, 1 failed, 2 total", output.getvalue())
+
+    def test_json_rejects_invalid_utf8_without_rejecting_real_replacement_character(self) -> None:
+        prefix = b'{"ready": true, "text": "'
+        suffix = b'"}\n'
+        samples = (
+            ("invalid-byte", b'\xff', True),
+            ("invalid-continuation", b'\xc3(', True),
+            ("encoded-surrogate", b'\xed\xa0\x80', True),
+            ("ascii", b'hello', True),
+            ("unicode", 'caf\u00e9'.encode('utf-8'), True),
+            ("replacement-character", '\ufffd'.encode('utf-8'), True),
+            ("human-output", b'\xff', False),
+        )
+        cases = []
+        for name, value, check_json in samples:
+            cases.append(
+                f'[[case]]\nname = "{name}"\n'
+                f'argv = ["python", "-m", "fixture_cli", "--raw-output", "{(prefix + value + suffix).hex()}"]\n'
+                'stdout_contains = ["ready"]\n'
+            )
+            if check_json:
+                cases.append('[case.json]\nready = true\n')
+                if name in ("invalid-byte", "replacement-character"):
+                    cases.append('text = "\ufffd"\n')
+            cases.append('\n')
+        manifest = self.write_contract(''.join(cases))
+        results = run_contract(load_contract(manifest))
+        self.assertEqual([result.passed for result in results], [False] * 3 + [True] * 4)
+        for result in results[:3]:
+            self.assertEqual(result.errors, ("stdout JSON is not valid UTF-8",))
+            self.assertEqual(result.exit_code, 0)
+        self.assertIn('\ufffd', results[0].stdout)
+        output = io.StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(main([str(manifest)]), 1)
+        self.assertIn("PASS replacement-character", output.getvalue())
+        self.assertIn("PASS human-output", output.getvalue())
+        self.assertIn("Result: 4 passed, 3 failed, 7 total", output.getvalue())
+
+    def test_output_limit_split_is_not_reported_as_invalid_utf8(self) -> None:
+        payload = b'{"ready": true, "text": "caf\xc3\xa9"}\n'
+        limit = payload.index(b'\xc3') + 1
+        manifest = self.write_contract(
+            '[[case]]\nname = "limited-unicode"\n'
+            f'argv = ["python", "-m", "fixture_cli", "--raw-output", "{payload.hex()}"]\n'
+            '[case.json]\nready = true\n',
+            limit=limit,
+        )
+        result = run_contract(load_contract(manifest))[0]
+        self.assertFalse(result.passed)
+        self.assertIn(f"stdout was {len(payload)} bytes; limit is {limit}", result.errors)
+        self.assertNotIn("stdout JSON is not valid UTF-8", result.errors)
 
     @unittest.skipUnless(os.name == "posix", "Unix interpreter-launch fixture")
     def test_broken_installed_script_fails_case_and_continues_suite(self) -> None:

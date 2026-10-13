@@ -295,8 +295,10 @@ def _run_case(
         except subprocess.TimeoutExpired:
             timed_out = True
             _terminate_process_tree(process)
-    stdout, stdout_size = _read_bounded(stdout_path, contract.max_output_bytes)
-    stderr, stderr_size = _read_bounded(stderr_path, contract.max_output_bytes)
+    stdout_data, stdout_size = _read_bounded(stdout_path, contract.max_output_bytes)
+    stderr_data, stderr_size = _read_bounded(stderr_path, contract.max_output_bytes)
+    stdout = stdout_data.decode("utf-8", errors="replace")
+    stderr = stderr_data.decode("utf-8", errors="replace")
     errors: list[str] = []
     if timed_out:
         errors.append(f"timed out after {contract.timeout_seconds}s")
@@ -318,7 +320,14 @@ def _run_case(
             errors.append(f"stderr missing {fragment!r}")
     if case.json_fields:
         try:
-            document = json.loads(stdout, parse_constant=_reject_json_constant)
+            document = json.loads(
+                stdout_data.decode("utf-8"), parse_constant=_reject_json_constant
+            )
+        except UnicodeDecodeError:
+            # Truncation can split a valid multibyte character. The existing
+            # byte-limit failure suffices; do not call that malformed output.
+            if stdout_size <= contract.max_output_bytes:
+                errors.append("stdout JSON is not valid UTF-8")
         except json.JSONDecodeError as exc:
             errors.append(f"stdout is not JSON: {exc.msg}")
         except RecursionError:
@@ -409,11 +418,11 @@ def _clean_environment() -> dict[str, str]:
     return environment
 
 
-def _read_bounded(path: Path, limit: int) -> tuple[str, int]:
+def _read_bounded(path: Path, limit: int) -> tuple[bytes, int]:
     size = path.stat().st_size
     with path.open("rb") as handle:
         data = handle.read(limit + 1)
-    return data[:limit].decode("utf-8", errors="replace"), size
+    return data[:limit], size
 
 
 def _require_table(value: object, label: str) -> dict[str, Any]:

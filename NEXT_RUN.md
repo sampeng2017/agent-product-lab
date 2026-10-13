@@ -38,6 +38,9 @@ On October 10, `docs/WHEEL_RELEASE_CI.md` and its copyable template bridged the
 local WheelContract replay to an external repository's CI. Its actual shell
 block failed the broken installed fixture and passed after a packaging-only
 correction with the unchanged contract. No runtime, pin, or active lab gate changed.
+The October 12 resumed run reproduced malformed UTF-8 JSON false passes caused
+by replacement decoding. Version 1.0.5 validates original bounded bytes before
+parsing, preserves display/non-JSON behavior, and distinguishes byte-limit cuts.
 
 ## Required starting inspection
 

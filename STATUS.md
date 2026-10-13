@@ -2,98 +2,89 @@
 
 ## Current direction
 
-Carry WheelContract's tested local release check into an adopter's GitHub CI.
-The new copyable starter builds one wheel and checks that exact artifact before
-any publication. Runtime versions, contract schemas, and public install pins
-remain unchanged; WheelContract is still v1.0.4.
+WheelContract v1.0.5 rejects malformed UTF-8 in JSON assertion output rather than
+silently replacing bytes and accepting altered data. Readable previews and
+non-JSON checks remain compatible. The CI starter and other maintained products
+retain their existing scope.
 
 ## Product shape
 
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
-- Six maintained tools retain source/build/install/contract validation.
-- GrammarCheck remains archived; no new product or active portfolio gate was added.
-- Public entry points include installation, three worked examples, and now a CI guide.
-- Root CI remains Ubuntu 24.04 / Python 3.10–3.14; review policy by November 5.
+- Six maintained products; GrammarCheck stays archived.
+- Root CI: Ubuntu 24.04 / Python 3.10–3.14, with the November 5 policy review.
+- Individual installation, three local replays, and an external CI starter remain
+  the public adoption surfaces. No new mandatory internal gate is added.
 
-## Completed today (2026-10-10, 19:59 PDT run)
+## Completed today (2026-10-12, resumed at 20:49 PDT)
 
-- Started clean at synchronized bd76c8d. Inspected memory, Git/history, root and
-  product docs, source/tests, active To-Sam, workflow/validator, and public GitHub.
-  MIT detection and baseline matrix 38019846678 were healthy; no active Sam note.
-- Warning-strict baseline passed 138 tests with one expected optional skip and
-  existing build/install/contracts/integrity checks.
-- Selected a concrete adoption handoff over speculative decoder rules or a
-  broader Windows validation change. Existing instructions stopped at local
-  invocation; the lab workflow was portfolio-specific.
-- Added docs/WHEEL_RELEASE_CI.md and docs/templates/wheelcontract-ci.yml for
-  setuptools CLIs without runtime dependencies. The template is not active here.
-- The exact YAML build/check block failed the existing broken wheel with two
-  missing-command cases, then passed after only adding its entry point. The
-  contract's SHA-256 stayed unchanged.
-- Rehearsed with a fresh pinned public checker, paths containing spaces, source
-  import variables present, and an invalid stale wheel in dist/. Temporary output
-  was cleaned and the stale artifact was not selected.
-- Verified both official action commits against v7 refs and the successful CI
-  job log. The starter uses read-only permissions and retains no checkout credentials.
-- Linked the guide from root/product/install/replay surfaces; kept product
-  implementation, versions, source pins, and active lab workflow unchanged.
+- Started clean at synchronized be4bde1. Inspected memory, Git/history, root and
+  product docs, implementation/tests, active To-Sam, workflow/validator, and GitHub.
+  Public MIT detection and baseline matrix 38107663882 were healthy.
+- Baseline warning-strict portfolio passed 138 tests with one expected optional
+  skip and all existing builds, installs, contracts, and integrity checks.
+- Compared another adoption handoff with a concrete output-validation defect.
+  Installed fixtures with an invalid byte, invalid continuation, and encoded
+  surrogate all passed JSON assertions after replacement decoding. One invalid
+  byte even falsely matched an expected literal U+FFFD.
+- Added the regression before the fix and observed all seven cases passing,
+  including the three malformed ones that should fail.
+- Preserve bounded raw bytes for JSON validation; decode strictly before parsing,
+  report a concise case error, and continue the remaining suite. Keep replacement
+  decoding solely for readable presentation and non-JSON matching.
+- Positive cases cover ASCII, valid Unicode, real U+FFFD, and unchanged human
+  output. A separate limit-split case preserves the byte-bound error without
+  falsely accusing a valid character of malformed encoding.
+- Updated runtime/package/self-contract/docs to 1.0.5. Refresh only WheelContract's
+  installation and CI starter revision after published acceptance.
 
 ## Changes since the prior run
 
-The prior run repaired case-launch failures and refreshed the runtime install
-pin. This run turns that accepted checker into a copyable CI configuration,
-without reopening runtime behavior or adding another mandatory internal gate.
+The prior run supplied a CI adoption starter without runtime changes. This run
+repairs an independently reproduced false pass in that checker's existing JSON
+surface. No schema, limits, options, dependencies, or generic Unicode policy added.
 
 ## External-user value
 
-Maintainers can add an artifact behavior check to their own pull requests
-without extracting the portfolio validator. Source tests cannot hide a missing
-installed command, and the check receives the exact wheel the build produced.
-The guide explains failure interpretation and what must change for a real project.
+A package cannot pass its JSON release contract by emitting corrupt bytes that
+the checker repairs into apparently valid values. Users retain readable failure
+previews, complete suite results, and valid Unicode compatibility.
 
 ## Known issues
 
-- The starter is setuptools / Python 3.11 / Ubuntu 24.04 scoped. It does not model
-  packages requiring third-party runtime dependencies; outer-job dependencies
-  are not inherited by WheelContract's isolated environment.
-- Its build/check shell was locally rehearsed. Root portfolio CI is not evidence
-  that the external-project template was hosted; no such claim is made.
-- Branch protections, publishing dependencies, and release jobs require the
-  adopting maintainer's separate configuration. This starter publishes nothing.
-- Action and checker sources are pinned; build dependencies and runner patch
-  levels are not. Disposable execution is not a sandbox or authenticity evidence.
-- Windows live execution, tagged releases, PyPI distribution, and reproducible
-  source distributions remain outside the demonstrated surfaces.
+- UTF-8 validation applies to stdout of cases declaring JSON expectations;
+  ordinary stdout/stderr presentation remains replacement-decoded.
+- Oversized output already fails its byte bound. A cut through a multibyte
+  character does not establish that the original stream was malformed.
+- Decoder depth and duplicate-name semantics remain interpreter defaults;
+  escaped Unicode values are not subject to a new schema policy.
+- CI starter still targets setuptools/no runtime dependencies and was locally
+  rehearsed, not hosted as a separate external-project workflow.
+- Windows live evidence and package-index/tagged distribution remain absent.
+- Source pins do not lock build dependencies; integrity is not authentication.
 
 ## Decisions
 
-- Retain only if the unchanged YAML shell block and contract diagnose the real
-  missing-command gap and pass after a packaging-only correction. That gate passed.
-- Prefer standard GitHub workflow structure over a custom action/installer.
-- Do not extend the product into dependency or environment orchestration.
-- Keep new adoption configuration outside active workflows; do not claim or
-  require another internal gate merely because a template exists.
+- Fix the demonstrated validation/presentation conflation instead of adding
+  a speculative decoder rule or another example for symmetry.
+- Retain human output compatibility and report output failure as exit 1, not
+  manifest/setup exit 2. Do not increase output or recursion limits.
+- Publish the correction only after full acceptance and update consumer pins
+  together, including the external starter.
 
 ## Validation
 
-- Baseline: 138 tests, one expected optional skip, twelve reproducible builds,
-  six installs, release/behavior contracts, and six wheel-integrity checks.
-- Fresh VCS installation selected the published WheelContract 1.0.4 code.
-- YAML parsing/policy shape and bash syntax passed. Source fixture tests passed.
-  Actual shell block returned exit 1 / two failed cases, then exit 0 / two passes.
-- Forty-eight local links/anchors, release claims, workflow pin/policy checks,
-  and diff checks passed. Warning-strict portfolio revalidation passed the same
-  138 tests and all twelve builds / six installs / contracts / integrity checks.
-- Zero/multiple output guard rehearsals returned exit 2 before any checker
-  invocation and cleaned temporary output; forced-job cleanup is not promised.
-- A controlled builder failure retained its exit 73 without invoking the checker.
-  Hosted portfolio run 38107471109 passed Python 3.10–3.14 for the published starter.
+- New installed-fixture regression was red before implementation.
+- Both UTF-8-focused tests pass after the fix, including CLI totals and the
+  byte-bound split, on local Python 3.11 and 3.14.
+- Corrected warning-strict portfolio passed 140 tests with one expected skip,
+  twelve reproducible builds, six installs, release/behavior contracts, and
+  complete wheel integrity. Public install/matrix acceptance precedes pin refresh.
 
 ## Recommended next steps
 
-1. Assess another concrete adopter handoff; do not expand frozen runtime by hypothesis.
-2. For a real dependent CLI, use a dependency-aware runner rather than misusing this starter.
-3. Follow the November 5 platform-policy review.
+1. Keep validation of original data separate from display normalization.
+2. Assess concrete adopter workflows before another frozen-runtime change.
+3. Retain the November 5 platform-policy review.
 
 No human input is required.

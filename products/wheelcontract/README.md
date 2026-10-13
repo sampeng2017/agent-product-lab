@@ -113,6 +113,15 @@ Output beyond the interpreter's JSON nesting limit fails that case with a
 bounded diagnostic. Later cases still run; WheelContract does not increase the
 decoder's recursion limit or abort the suite with a traceback.
 
+JSON assertion output must be valid UTF-8. Malformed byte sequences fail the
+case with a bounded diagnostic rather than being replaced before parsing.
+Valid Unicode, including an actual U+FFFD replacement character, still passes.
+Readable stdout/stderr previews and non-JSON checks retain replacement decoding.
+Output exceeding the byte limit fails that bound; a character split by the
+limit is not mislabeled as malformed UTF-8. This keeps presentation separate
+from validation, consistent with JSON's UTF-8 interchange encoding in
+[RFC 8259 section 8.1](https://www.rfc-editor.org/rfc/rfc8259#section-8.1).
+
 - One Python project or wheel and one disposable environment per contract.
 - No dependency resolution, environment matrix, shell, hooks, or arbitrary
   working-directory configuration.
@@ -129,7 +138,7 @@ directory.
 
 ## Maintenance status
 
-WheelContract v1.0.4 is a frozen local MVP. Its schema-v1 contract, exit
+WheelContract v1.0.5 is a frozen local MVP. Its schema-v1 contract, exit
 semantics, and synchronous process-lifecycle boundary remain stable. Resume
 feature work only for a reproduced installed-artifact defect; use the focused
 suite and portfolio validator as the release contract.

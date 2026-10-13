@@ -823,3 +823,23 @@ No runtime version or installation pin changed.
 Sources: [GitHub Python workflows](https://docs.github.com/en/actions/tutorials/build-and-test-code/python),
 [pip wheel](https://pip.pypa.io/en/stable/cli/pip_wheel/), and
 [GitHub secure use](https://docs.github.com/en/actions/reference/security/secure-use).
+
+## Validate original bytes, not repaired previews — 2026-10-12
+
+Selected a reproduced output-contract defect over another adoption example.
+The checker decoded stdout with replacement handling before parsing JSON, so
+invalid UTF-8 bytes became valid characters and all three malformed fixtures
+falsely passed. One invalid byte even satisfied an expected literal U+FFFD.
+
+Version 1.0.5 separates bounded original data from its readable presentation:
+strict UTF-8 decoding precedes JSON parsing, while human previews and non-JSON
+matches remain replacement-decoded. Installed regressions retain legitimate
+Unicode/U+FFFD, verify complete CLI results, and preserve byte-limit failure
+without calling a truncation-split character malformed. No general Unicode
+normalization, schema, dependency, or new gate was added.
+
+This clears the existing frozen-product exception through concrete evidence.
+Refresh the existing consumer pins after acceptance rather than adding another
+CI template or competing with general environment runners.
+
+Reference: [JSON character encoding, RFC 8259 section 8.1](https://www.rfc-editor.org/rfc/rfc8259#section-8.1).

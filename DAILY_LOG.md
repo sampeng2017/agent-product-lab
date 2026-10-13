@@ -2775,3 +2775,49 @@ checker and cleaned its temporary output. Published starter commit
 on Python 3.10–3.14. This remains evidence for the lab/checker, not a hosted
 execution of the external starter. Release claims and diff checks passed after
 the final diagnostic clarification.
+
+## 2026-10-12 20:49 PDT — do not repair malformed bytes before JSON validation
+
+The current scheduled run resumed at 20:49 PDT from clean synchronized be4bde1.
+Inspected memory, Git/history, root/product docs, tests/implementation, active
+To-Sam, the workflow/validator, and public GitHub. No active Sam note existed.
+MIT and baseline 38107663882 were healthy. Warning-strict baseline passed 138
+tests with one expected optional skip and all build/install/contracts/integrity.
+
+Compared further adoption guidance with a concrete correctness hypothesis:
+stdout was replacement-decoded before JSON parsing. A real installed wheel
+emitted an invalid byte, invalid continuation, and raw encoded surrogate in
+otherwise matching JSON. All three falsely passed; the invalid byte even matched
+an expected literal U+FFFD after silent repair. Added the regression first and
+observed all seven cases passing instead of three failures/four valid passes.
+
+Version 1.0.5 retains the bounded original bytes for strict UTF-8 decoding before
+JSON parsing. UnicodeDecodeError becomes a concise case failure and later cases
+continue. Readable previews, non-JSON checks, genuine U+FFFD, ASCII, and valid
+Unicode remain compatible. A valid multibyte character cut by the output limit
+retains the byte-bound failure without a misleading malformed-encoding claim.
+No schema, dependency, option, output bound, or recursion limit changed.
+
+Updated package/runtime/self-contract, product/portfolio docs, and handoffs.
+Only the checker installation and starter consumer pins advance after public
+acceptance; other five products remain on their existing tested revisions.
+
+Commands (UTF-8 tests from products/wheelcontract):
+
+```sh
+git status --short --branch
+git log -5 --oneline
+PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error python3.11 -m unittest discover -s tests -p test_wheelcontract.py -k utf8 -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Next: preserve the boundary between original-data validation and display
+normalization; assess real adopter workflows rather than inventing Unicode
+policy. Keep the November 5 platform review.
+
+Focused UTF-8 tests passed on Python 3.11 and 3.14. Corrected warning-strict
+portfolio passed 140 tests with one expected optional skip, twelve reproducible
+builds, six installs, all release/behavior contracts, and six integrity checks.
+Diff checks passed. Public installation and matrix acceptance precede updating
+the installation guide and CI starter pins to the correction commit.
