@@ -79,7 +79,14 @@ previews, complete suite results, and valid Unicode compatibility.
   byte-bound split, on local Python 3.11 and 3.14.
 - Corrected warning-strict portfolio passed 140 tests with one expected skip,
   twelve reproducible builds, six installs, release/behavior contracts, and
-  complete wheel integrity. Public install/matrix acceptance precedes pin refresh.
+  complete wheel integrity.
+- Published 73a5e14 passed CI 38344331849 on Python 3.10–3.14. Its fresh exact
+  VCS install passed both new regressions without checkout imports. Install and
+  starter pins now select that revision; older install anchors remain usable.
+- Consumer revalidation passed the full 140-test portfolio and all artifact
+  checks again. Forty-eight local links/anchors and the starter pin check passed;
+  the existing installed missing-command replay still diagnoses and corrects
+  its fixture without changing the contract.
 
 ## Recommended next steps
 

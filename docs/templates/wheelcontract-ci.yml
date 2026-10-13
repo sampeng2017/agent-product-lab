@@ -25,7 +25,7 @@ jobs:
       - name: Install checker and build backend
         run: |
           python -m pip install "setuptools>=77"
-          python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@b33b3da3c8eaa22a374e1603f88b151dcc2ae418#subdirectory=products/wheelcontract"
+          python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@73a5e143cf4f2a1840f40a55912afea866b8fdd6#subdirectory=products/wheelcontract"
 
       - name: Build and check the installed wheel
         shell: bash

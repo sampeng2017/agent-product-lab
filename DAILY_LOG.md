@@ -2821,3 +2821,17 @@ portfolio passed 140 tests with one expected optional skip, twelve reproducible
 builds, six installs, all release/behavior contracts, and six integrity checks.
 Diff checks passed. Public installation and matrix acceptance precede updating
 the installation guide and CI starter pins to the correction commit.
+
+Correction 73a5e143cf4f2a1840f40a55912afea866b8fdd6 passed hosted run 38344331849
+on Python 3.10–3.14. Its exact fresh VCS installation confirmed version 1.0.5,
+the commit metadata, isolated import path, and both UTF-8 regressions/CLI totals.
+The installation guide and external starter now select that tested revision;
+old 1.0.0–1.0.4 anchors remain available. Other product pins and action commits
+are unchanged.
+
+Consumer revalidation passed the full 140-test portfolio, twelve reproducible
+builds, six installs, release/behavior contracts, and complete integrity again.
+Forty-eight local links/anchors and the starter's exact correction pin passed.
+The existing missing-command replay with installed 1.0.5 still demonstrated
+passing source tests, both missing-command failures, and both corrected passes
+under the unchanged contract. This is acceptance evidence, not a new gate.

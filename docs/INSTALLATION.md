@@ -47,8 +47,8 @@ Run only the install command for the tool you choose. Most commands pin source
 to public commit `84e76faa7f837a858fe6b6efdea9da8c24856b99`, whose portfolio CI
 passed Python 3.10–3.14. The full revision keeps the source selection stable as
 `main` evolves; it is not a release tag or a pin of pip's build dependencies.
-WheelContract instead uses the validated v1.0.4 revision
-`b33b3da3c8eaa22a374e1603f88b151dcc2ae418` to include its assertion and
+WheelContract instead uses the validated v1.0.5 revision
+`73a5e143cf4f2a1840f40a55912afea866b8fdd6` to include its assertion and
 launch-error fixes.
 
 ### ProofRun 1.8.1
@@ -105,11 +105,12 @@ after correcting its target pattern.
 <a id="wheelcontract-101"></a>
 <a id="wheelcontract-102"></a>
 <a id="wheelcontract-103"></a>
+<a id="wheelcontract-104"></a>
 
-### WheelContract 1.0.4
+### WheelContract 1.0.5
 
 ```sh
-python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@b33b3da3c8eaa22a374e1603f88b151dcc2ae418#subdirectory=products/wheelcontract"
+python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@73a5e143cf4f2a1840f40a55912afea866b8fdd6#subdirectory=products/wheelcontract"
 wheelcontract --version
 ```
 
@@ -122,6 +123,8 @@ Version 1.0.3 also reports decoder nesting failures per case and continues the
 remaining checks, without raising the interpreter's recursion limit.
 Version 1.0.4 also reports OS launch failures for installed commands that exist
 but cannot start. Later checks still run and the suite returns behavior exit 1.
+Version 1.0.5 rejects malformed UTF-8 in JSON assertion output before parsing;
+valid Unicode, literal U+FFFD, and human-output previews remain compatible.
 
 Create a contract using the [product example](../products/wheelcontract/README.md#contract),
 then name your existing wheel:
@@ -200,11 +203,11 @@ python -m pip install ./products/proofrun
 ```
 
 That revision is the tested source for ProofRun and the other tools except
-WheelContract. For WheelContract 1.0.4, select its correction revision before
+WheelContract. For WheelContract 1.0.5, select its correction revision before
 installing; merely changing the product directory above would install 1.0.0:
 
 ```sh
-git checkout b33b3da3c8eaa22a374e1603f88b151dcc2ae418
+git checkout 73a5e143cf4f2a1840f40a55912afea866b8fdd6
 python -m pip install ./products/wheelcontract
 wheelcontract --version
 ```

@@ -52,7 +52,7 @@ covers explicit failure exits, stderr, JSON fields, and `{manifest_dir}` fixture
 ## What the workflow checks
 
 - The outer job installs setuptools and the tested
-  [WheelContract 1.0.4 revision](INSTALLATION.md#wheelcontract-104).
+  [WheelContract 1.0.5 revision](INSTALLATION.md#wheelcontract-105).
 - `pip wheel` builds the project into a fresh temporary directory. Exactly one
   `.whl` must exist, so a stale wheel in your repository's `dist/` cannot be
   selected accidentally.
