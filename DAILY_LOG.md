@@ -2835,3 +2835,49 @@ Forty-eight local links/anchors and the starter's exact correction pin passed.
 The existing missing-command replay with installed 1.0.5 still demonstrated
 passing source tests, both missing-command failures, and both corrected passes
 under the unchanged contract. This is acceptance evidence, not a new gate.
+
+## 2026-10-14 07:56 PDT — validate the newly stable Python interpreter
+
+The October 13 scheduled turn resumed October 14 morning from clean synchronized
+e362681. Inspected memory, Git/history, root/product handoffs, implementation and
+tests, active To-Sam, workflow/validator, and public GitHub. No active Sam note;
+MIT and baseline 38344939062 were healthy. Warning-strict Python 3.11 baseline
+passed 140 tests with one expected optional skip, twelve reproducible builds,
+six installs, release/behavior contracts, and six integrity checks.
+
+Python.org confirms stable Python 3.15.0 released October 9, 2026. All product
+metadata permits Python >=3.10, but the matrix ended at 3.14. Compared this
+concrete current-user compatibility gap with another adoption replay and
+speculative runtime edge policy. Selected a bounded extension of the existing
+validator, not another gate or product feature.
+
+The installed uv runtime manager's attempted remote catalog was unavailable
+(HTTP 404). No interpreter was installed globally and no defaults changed.
+GitHub's official actions/python-versions release 3.15.0-38076878863 includes
+the stable Ubuntu 24.04 x64 distribution. Use the existing hosted workflow as
+the actual interpreter trial; do not claim a local 3.15 success.
+
+Added only the 3.15 matrix entry; retained Ubuntu 24.04, all prior jobs, the
+warning-strict 3.10 floor, action versions, and complete validator. No product
+code, schema, version, dependency, or install pin changed. Retain only after
+the full hosted trial passes; update public guidance afterward, not in advance.
+Python.org also lists 3.10 as end-of-life: compatibility testing is not upstream
+security maintenance, and the package floor should not silently change.
+
+Sources: [Python 3.15.0](https://www.python.org/downloads/release/python-3150/),
+[Python lifecycle](https://devguide.python.org/versions/), and
+[official interpreter build](https://github.com/actions/python-versions/releases/tag/3.15.0-38076878863).
+
+Inspection/run commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh run list --repo sampeng2017/agent-product-lab --limit 2 --json databaseId,headSha,status,conclusion
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+ruby -ryaml -e 'p YAML.load_file(ARGV[0])["jobs"]["validate"]["strategy"]["matrix"]["python-version"]' .github/workflows/portfolio-ci.yml
+git diff --check
+```
+
+Next: inspect the new hosted job. If green, publish bounded compatibility and
+installation guidance; preserve the separate November 5 OS-platform review.
