@@ -7,6 +7,14 @@ maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
+## Interpreter compatibility on 2026-10-14
+
+- The unchanged runtime and build definitions passed the complete hosted
+  portfolio on stable CPython 3.15.0 alongside all prior interpreter jobs.
+- Retained version 1.0.5, schema, dependencies, source pin, and package minimum.
+  Python 3.10 remains a compatibility floor, not an upstream maintenance promise.
+- No local 3.15, free-threaded, or additional platform execution is inferred.
+
 ## Correctness patch on 2026-10-12
 
 - Reproduced three false JSON passes caused by replacement decoding of malformed

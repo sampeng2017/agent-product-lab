@@ -843,3 +843,23 @@ Refresh the existing consumer pins after acceptance rather than adding another
 CI template or competing with general environment runners.
 
 Reference: [JSON character encoding, RFC 8259 section 8.1](https://www.rfc-editor.org/rfc/rfc8259#section-8.1).
+
+## Current interpreter adoption evidence — 2026-10-14
+
+Selected the newly stable Python 3.15 compatibility gap over another replay or
+speculative runtime policy. Metadata already permits the interpreter, but the
+public matrix stopped at 3.14. The same validator is the established alternative
+to inventing another gate: extend its interpreter list, not its product scope.
+
+The official hosted CPython 3.15.0 distribution on Ubuntu 24.04 passed tests,
+builds, installs, contracts, and integrity. All previous jobs stayed green in
+trial 38585956760. Source comparisons confirmed runtime/build definitions match
+the existing installation revisions, so no product release or pin update is
+warranted. Local 3.15 provisioning was unavailable; no local success is claimed.
+
+Publish this coverage only after the trial, retain the OS baseline and package
+floor, and make compatibility distinct from upstream interpreter maintenance.
+This removes uncertainty for current Python users without reopening frozen code.
+
+Sources: [stable 3.15 release](https://www.python.org/downloads/release/python-3150/)
+and [Python lifecycle](https://devguide.python.org/versions/).

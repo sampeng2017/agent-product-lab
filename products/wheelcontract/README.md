@@ -23,6 +23,10 @@ metadata correction that makes the same installed-behavior contract pass.
 copyable workflow that builds one wheel and checks that exact artifact. The
 starter uses setuptools and no runtime dependencies; it does not publish.
 
+Current hosted compatibility evidence covers Python 3.10–3.15 on Ubuntu.
+See the [interpreter policy](../../docs/CI_PLATFORM.md#interpreter-coverage-and-lifecycle)
+for tested coverage versus upstream maintenance and other-platform limits.
+
 ## Contract
 
 ```toml

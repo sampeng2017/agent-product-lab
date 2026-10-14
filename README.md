@@ -5,6 +5,8 @@
 Small Python tools for checking agent instructions, keeping test evidence
 current, and verifying package releases. Install one tool and use it in your
 own project. Each tool requires Python 3.10+ and has no runtime dependencies.
+For a new environment, choose an upstream-maintained Python release; see the
+[interpreter guidance](docs/CI_PLATFORM.md#interpreter-coverage-and-lifecycle).
 
 ## Get started
 
@@ -98,8 +100,8 @@ replayable after installation.
 ## Portfolio validation
 
 The root [Portfolio CI](.github/workflows/portfolio-ci.yml) workflow validates
-all six frozen products on every supported stable Python line from 3.10 through
-3.14 on explicit `ubuntu-24.04` runners. The [CI platform policy](docs/CI_PLATFORM.md)
+all six frozen products across Python 3.10 through 3.15 on explicit
+`ubuntu-24.04` runners. The [CI platform policy](docs/CI_PLATFORM.md)
 explains image updates and upgrade validation. CI runs every maintained unit
 suite, promotes warnings to errors on the
 oldest supported version, compiles the sources, independently builds each wheel

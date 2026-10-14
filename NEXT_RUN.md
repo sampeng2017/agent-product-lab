@@ -41,6 +41,10 @@ correction with the unchanged contract. No runtime, pin, or active lab gate chan
 The October 12 resumed run reproduced malformed UTF-8 JSON false passes caused
 by replacement decoding. Version 1.0.5 validates original bounded bytes before
 parsing, preserves display/non-JSON behavior, and distinguishes byte-limit cuts.
+On October 14, stable CPython 3.15.0 passed the existing full hosted validator
+with all five previous jobs. The matrix now covers 3.10–3.15 on Ubuntu 24.04;
+3.10 is retained for compatibility, not upstream maintenance. Runtime versions,
+install pins, the external starter's Python 3.11, and OS baseline are unchanged.
 
 ## Required starting inspection
 

@@ -109,7 +109,7 @@ secrets to untrusted pull requests. These choices follow
 
 The exact build/check shell block was rehearsed locally with the pinned
 installed checker against the broken and corrected real fixture. The lab's
-separate portfolio CI verifies the checker on Python 3.10–3.14; it is not a
+separate portfolio CI verifies the checker on Python 3.10–3.15; it is not a
 hosted run of this external-project template. Windows and other backends are
 not claimed by this starter.
 

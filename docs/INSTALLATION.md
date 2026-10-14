@@ -9,6 +9,13 @@ and the Python package index for build dependencies. The tools have no runtime
 dependencies. There are no published lab releases or package-index distributions
 documented here; the commands below install directly from this public repository.
 
+For new environments, prefer an upstream-maintained interpreter. The current
+[coverage and lifecycle guidance](CI_PLATFORM.md#interpreter-coverage-and-lifecycle)
+distinguishes Python 3.11–3.15 from the retained 3.10 compatibility floor.
+Check the selected launcher with `python3 --version` on macOS/Linux or
+`py -3 --version` on Windows before creating an environment. The commands below
+use that launcher; they do not install or upgrade Python itself.
+
 ## Create an environment
 
 On macOS or Linux:
@@ -45,7 +52,9 @@ are measuring, or ignore/exclude it in your project as appropriate.
 
 Run only the install command for the tool you choose. Most commands pin source
 to public commit `84e76faa7f837a858fe6b6efdea9da8c24856b99`, whose portfolio CI
-passed Python 3.10–3.14. The full revision keeps the source selection stable as
+passed Python 3.10–3.14 when selected. Current compatibility coverage extends
+through 3.15, with unchanged runtime/build definitions at the pins below. The
+full revision keeps the source selection stable as
 `main` evolves; it is not a release tag or a pin of pip's build dependencies.
 WheelContract instead uses the validated v1.0.5 revision
 `73a5e143cf4f2a1840f40a55912afea866b8fdd6` to include its assertion and

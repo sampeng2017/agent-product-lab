@@ -2881,3 +2881,25 @@ git diff --check
 
 Next: inspect the new hosted job. If green, publish bounded compatibility and
 installation guidance; preserve the separate November 5 OS-platform review.
+
+Trial commit c016cdd8615d76b451c95f7c84410ea251cff83e passed hosted run
+38585956760 across all six interpreter jobs. Inspected new job 115927899150:
+every product explicitly used Python 3.15.0. Suites ran 8/9/5/17/48/53 tests,
+totaling 140 with one expected optional ProofRun skip. All twelve builds,
+six installs, release/behavior contracts, and integrity checks completed.
+No assertion, runtime, build requirement, or setup path needed a repair.
+
+Runtime/build-definition diffs against both public source pins were empty:
+84e76faa7f837a858fe6b6efdea9da8c24856b99 for the five unchanged tools and
+73a5e143cf4f2a1840f40a55912afea866b8fdd6 for WheelContract. Retained those pins
+and package versions. Updated current README, install/CI guidance, WheelContract
+product docs, opportunity comparison, and handoff after the green trial. Kept
+historical 3.10–3.14 evidence dated and the external starter on Python 3.11.
+The new lifecycle note prefers maintained interpreters for new environments
+without implying that a compatibility-floor test extends upstream maintenance.
+
+Documentation acceptance passed: 51 local links/anchors, the six-version matrix
+shape, root/product release claims, and diff checks. Full local warning-strict
+Python 3.11 revalidation passed 140 tests with one expected optional skip,
+twelve reproducible builds, six installs, contracts, and wheel integrity.
+The local command validates this host; only the hosted trial is 3.15 evidence.
