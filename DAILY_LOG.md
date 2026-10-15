@@ -2903,3 +2903,78 @@ shape, root/product release claims, and diff checks. Full local warning-strict
 Python 3.11 revalidation passed 140 tests with one expected optional skip,
 twelve reproducible builds, six installs, contracts, and wheel integrity.
 The local command validates this host; only the hosted trial is 3.15 evidence.
+
+## 2026-10-15 07:51 PDT — CLI apps outside per-project tool environments
+
+The October 14 scheduled turn resumed October 15 morning at clean synchronized
+81d66fd. Inspected memory, Git/history, root/product docs, source/tests, active
+To-Sam, workflow/validator, and public GitHub. No active Sam note; MIT and
+baseline 38587452858 were healthy. Warning-strict baseline passed 140 tests with
+one expected optional skip, twelve reproducible builds, six installs, contracts,
+and all wheel integrity checks.
+
+Compared standard app installation with another platform trial and speculative
+runtime changes. Existing installation required activation or manual app paths
+and warned against tool environments inside measured repositories. Selected a
+pipx route rather than another installer or replay fixture. Retention required
+exact public source identities and useful behavior across repositories without
+activating the tool environment.
+
+Existing pipx 1.7.1 installed all six pinned requirements under disposable
+PIPX_HOME/BIN/MAN and XDG cache/state/data/config locations with Python 3.11.
+Confirmed app names, package versions, actual direct_url commit IDs, and source
+subdirectories. All exposed command smokes passed. No real user app location,
+shell startup file, or global Python configuration was changed; ensurepath was
+deliberately not run. All source pins and product versions are unchanged.
+
+Exposed ProofRun previewed/created manifests, verified tests, passed the validity
+gate, and audited one independent receipt in each of two temporary Git projects
+with no tool venv activated. The explicit test command selected the project's
+interpreter, not a dependency injected into ProofRun. Exposed WheelContract
+passed its three-case self-contract against a prebuilt real wheel. After pip
+and setuptools injection into the checker environment, its source-build route
+also passed the same contract. This does not populate target runtime dependencies.
+
+Explicit same-source replacement with --force and a pip health check passed.
+The manager warned that --python is ignored with --force, so interpreter changes
+are directed to upstream reinstall guidance. Removing isolated WheelFact removed
+its exposed command and left ProofRun/WheelContract available. Package names for
+management are not always command names: the guide names all three differences.
+
+Added an optional section in docs/INSTALLATION.md plus root, ProofRun, and
+WheelContract entry links. Kept the original venv route for editable development,
+module imports, and Python-driven replays, which use their calling interpreter.
+No source/runtime/schema/dependency change or new mandatory gate was needed.
+Windows and newer pipx backend combinations are not claimed as live-tested.
+
+Inspection/run commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+pipx --version
+pipx install --help
+pipx list --json
+pipx inject wheelcontract-cli pip "setuptools>=77"
+pipx runpip wheelcontract-cli check
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Behavioral app-manager commands above were scoped with disposable PIPX/XDG
+locations, not the user's real installs. The guide contains exact pinned VCS
+requirements; use a fresh scoped manager directory to reproduce acceptance.
+Sources: [pipx overview](https://pipx.pypa.io/stable/),
+[CLI](https://pipx.pypa.io/stable/reference/cli.html), and
+[injection](https://pipx.pypa.io/stable/how-to/inject-packages.html).
+
+Next: assess concrete adopter friction; preserve tool/project/target dependency
+boundaries and the separate November 5 platform review.
+
+Acceptance passed: all six pinned app identities/commands, two-repository
+ProofRun behavior, WheelContract prebuilt/source contracts, explicit replacement,
+health, and app removal. Removing the checker also left the separate ProofRun
+receipt valid/auditable. Fifty-nine local links/anchors, release claims, and diff
+checks passed. Full warning-strict revalidation passed 140 tests with one
+expected optional skip, twelve reproducible builds, six installs, all contracts,
+and complete wheel integrity. No new mandatory gate was added.

@@ -16,6 +16,10 @@ Check the selected launcher with `python3 --version` on macOS/Linux or
 `py -3 --version` on Windows before creating an environment. The commands below
 use that launcher; they do not install or upgrade Python itself.
 
+Want the CLI available across repositories without activating its environment?
+Use the optional [pipx route](#install-cli-apps-with-pipx) instead of the tool
+environment below. Your project's own test/application environment is separate.
+
 ## Create an environment
 
 On macOS or Linux:
@@ -199,6 +203,92 @@ and supply the wheel you want to check:
 ```sh
 wheelfact wheelfact.toml dist/example-1.0.0-py3-none-any.whl
 ```
+
+## Install CLI apps with pipx
+
+Use this alternative for day-to-day command-line use, not project library
+imports or editable development. Install [pipx](https://pipx.pypa.io/stable/)
+first and make its app directory available on your PATH using its
+[path setup guide](https://pipx.pypa.io/stable/how-to/configure-paths.html).
+No project-local tool environment or lab checkout is needed. Do not use sudo.
+
+Check `pipx --version` and choose an installed, maintained Python interpreter.
+The examples use `python3.11`; replace that executable if needed. Keep the
+entire quoted source requirement from the chosen tool's section. For example,
+choose either of these, not a same-named package from an index:
+
+```sh
+pipx install --python python3.11 "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@84e76faa7f837a858fe6b6efdea9da8c24856b99#subdirectory=products/proofrun"
+proofrun --help
+```
+
+```sh
+pipx install --python python3.11 "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@73a5e143cf4f2a1840f40a55912afea866b8fdd6#subdirectory=products/wheelcontract"
+wheelcontract --version
+```
+
+The same prefix works with the other four quoted requirements above. All six
+were installed and their exposed commands checked using pipx 1.7.1 with Python
+3.11 on macOS. Windows pipx installation and newer backend combinations were
+not live-tested here. A source pin still does not pin build dependencies.
+
+### Use the app, not its environment as your project
+
+Run the exposed CLI from your own repository. ProofRun's verification command
+still needs your project's interpreter/dependencies, for example:
+
+```sh
+proofrun init --dry-run -- python3.11 -B -m unittest discover -s tests -v
+proofrun init -- python3.11 -B -m unittest discover -s tests -v
+proofrun verify
+proofrun status --require-valid
+```
+
+Substitute your real project command; review the preview first. pipx isolates
+ProofRun itself, not the commands it records. Activate your project's environment
+when its tests need one. Do not inject project test dependencies into ProofRun
+and assume its child commands will use them.
+
+For an existing wheel, WheelContract's normal `--wheel` command needs no source
+build backend in the tool environment. If asking it to build a setuptools
+project, install pip and that backend into the **checker** environment first:
+
+```sh
+pipx inject wheelcontract-cli pip "setuptools>=77"
+wheelcontract path/to/wheelcontract.toml
+```
+
+Use the project's declared backend instead of setuptools when appropriate.
+Installing these packages into an unrelated project environment is not enough.
+Injection does not add runtime dependencies to the isolated target wheel;
+WheelContract still installs that target with `--no-deps`.
+
+The Python-driven replay scripts use their calling interpreter's modules.
+For those replays, use the activated-environment route above; merely exposing
+a pipx command does not make `python -m TOOL` importable in another interpreter.
+
+### Inspect, replace, or remove an app
+
+```sh
+pipx list
+pipx runpip wheelcontract-cli check
+pipx uninstall wheelcontract-cli
+```
+
+Management uses the distribution name before `@` in the requirement, not always
+the CLI name: `wheelcontract-cli` exposes `wheelcontract`, `agentscope-cli`
+exposes `agentscope`, and `residuecheck-cli` exposes `residuecheck`.
+Uninstall removes the managed app, not your repository or ProofRun receipts.
+
+To select a different source revision, edit the full hash in the quoted
+requirement and use `pipx install --force` with that full requirement. This
+updates the selected managed app and exposed commands; inspect `pipx list`
+first. Keep the full hash unless you deliberately intend development tracking.
+For interpreter changes, consult pipx's reinstall options rather than assuming
+an install will switch an existing environment's Python.
+
+References: [pipx CLI](https://pipx.pypa.io/stable/reference/cli.html) and
+[injecting packages](https://pipx.pypa.io/stable/how-to/inject-packages.html).
 
 ## Install from a checkout instead
 

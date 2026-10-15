@@ -17,6 +17,9 @@ inside the repository under `.proofrun/` and are ignored by Git.
 ProofRun requires Python 3.10 or newer.
 
 Install it using the [tested Git installation guide](../../docs/INSTALLATION.md#proofrun-181).
+The optional [pipx route](../../docs/INSTALLATION.md#install-cli-apps-with-pipx)
+keeps the tool outside your repositories; verification still uses your project's
+chosen command and environment.
 In your own Git repository, preview the detected verification command and then
 create evidence:
 

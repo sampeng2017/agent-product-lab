@@ -2,90 +2,91 @@
 
 ## Current direction
 
-The unchanged portfolio now has hosted compatibility evidence on Python 3.15
-alongside all previous interpreter jobs. The package floor remains Python 3.10;
-versions, schemas, runtime code, source pins, and Ubuntu 24.04 are unchanged.
+Offer a tested, optional pipx installation route for CLI use across repositories.
+Keep the project-venv route for development, imports, and Python-driven replays.
+All six product runtimes, versions, dependencies, and source pins remain unchanged.
 
 ## Product shape
 
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
-- Six maintained products; GrammarCheck remains archived.
-- Accepted hosted evidence now covers Python 3.10–3.15.
-- The existing validator now has a sixth interpreter job, not a new
-  validator or duplicated release gate.
-- Installation, three replays, and the external wheel-CI starter remain the
-  public adoption surfaces. November 5 platform review is retained.
+- Six maintained products; GrammarCheck stays archived.
+- Hosted compatibility remains Python 3.10–3.15 on Ubuntu 24.04.
+- Installation, existing replays, and the external CI starter remain the public
+  entry points. No custom installer or mandatory release gate was added.
+- The separate November 5 platform review is unchanged.
 
-## Work today (2026-10-14, resumed 07:56 PDT)
+## Work today (2026-10-15, resumed 07:51 PDT)
 
-- Started clean at synchronized e362681. Inspected memory, Git/history,
-  root/product docs, implementation/tests, active To-Sam, workflow/validator,
-  and public GitHub. MIT detection and matrix 38344939062 were healthy.
-- Baseline warning-strict portfolio passed 140 tests with one expected optional
-  skip, twelve reproducible builds, six installs, release/behavior contracts,
-  and six integrity checks. No active Sam note existed.
-- Python.org identifies 3.15.0 as stable since October 9. GitHub's official
-  interpreter repository provides a non-prerelease 3.15.0 Ubuntu 24.04 x64 build.
-- Selected current-interpreter compatibility over speculative runtime changes
-  or another documentation replay. Package metadata already permits this interpreter,
-  but the CI matrix stopped at 3.14.
-- Added 3.15 to the existing workflow, retaining all previous jobs and the
-  warning-strict 3.10 floor. Local runtime catalog provisioning was unavailable;
-  hosted execution is the trial, not an inferred local success.
-- Trial 38585956760 passed all six jobs. The new job explicitly used 3.15.0 and
-  completed all 140 tests (one expected skip), builds, installs, contracts, and
-  integrity checks. No runtime fixes or weakened tests were necessary.
-- Updated current README/install/CI guidance and the WheelContract product
-  surface after acceptance. Distinguished compatibility from upstream support;
-  historical source-pin evidence and the external starter's 3.11 remain intact.
-- Compared runtime/build definitions against every published pin: unchanged.
+- Started clean at synchronized 81d66fd. Inspected memory, Git/history, root and
+  product docs, source/tests, active To-Sam, workflow/validator, and public GitHub.
+  MIT and baseline matrix 38587452858 were healthy; no active Sam note existed.
+- Local warning-strict baseline passed 140 tests with one expected optional skip,
+  twelve reproducible builds, six installs, contracts, and integrity.
+- Selected concrete installation friction over another platform trial or
+  speculative runtime policy. The guide required activation/manual app paths
+  and cautioned against tool environments inside measured trees.
+- Used existing pipx 1.7.1 and Python 3.11 with disposable app/home/cache/log/man
+  locations. All six published requirements installed; app names, versions,
+  subdirectories, and resolved commits matched expectations.
+- With no tool environment activated, exposed ProofRun completed preview, init,
+  verification, validity, and audit in two separate disposable Git repositories.
+- Exposed WheelContract passed its existing three-case prebuilt-wheel contract.
+  After injecting pip/setuptools into its own app environment, source build and
+  the same contract passed. Project dependencies and target dependencies remain separate.
+- Explicit same-source replacement and pip check passed; removing one isolated
+  app left the other commands available. No user installation or startup file changed.
+- Added the optional route, distribution-versus-command names, lifecycle guidance,
+  and replay/import caveats to existing public docs; no new replay fixture added.
 
 ## Changes since the prior run
 
-The prior run repaired malformed UTF-8 JSON false passes in WheelContract 1.0.5.
-This run changes compatibility evidence only; no product is reopened or version bumped.
+The prior run verified Python 3.15. This run removes per-project tool activation
+friction through a standard existing app manager, without reopening frozen code
+or altering the supported interpreter/platform matrix.
 
 ## External-user value
 
-Users choosing the newly stable interpreter need actual build, install, CLI,
-and contract evidence, not an assumption based only on Requires-Python metadata.
-The existing complete validator checks that workflow without inventing another tool.
+Users can install a CLI once and use it in multiple repositories, keeping its
+environment outside measured project trees. The guide explains which environment
+owns project tests and checker build backends, preventing misleading dependency fixes.
 
 ## Known issues
 
-- The 3.15 trial was hosted; no local 3.15 run is claimed.
-- Python.org now lists 3.10 as end-of-life. Retaining compatibility does not
-  provide upstream security maintenance; prefer maintained interpreters for new use.
-- Test coverage does not promise compatibility with unreleased interpreters,
-  every implementation, free-threaded builds, or untested platforms.
-- Ubuntu image patches and build dependencies remain floating. Windows live
-  execution, tagged releases, and package-index publication remain absent.
-- The external CI starter still chooses Python 3.11 and its own documented scope.
+- Live app-manager evidence is pipx 1.7.1 / Python 3.11 / macOS. Windows and newer
+  backend combinations were not executed here; use upstream installation guidance.
+- The pipx app directory must be on PATH. This run did not call ensurepath or
+  edit user shell configuration; test commands used a disposable command directory.
+- Exposing an app does not make its module importable in another Python. Existing
+  Python-driven replay scripts still use the original activated-environment route.
+- WheelContract still isolated-installs target wheels without runtime dependencies.
+  Injecting a build backend into the checker does not change that target boundary.
+- Source revisions select code, not build dependency locks. No PyPI/tag release
+  or new authentication/integrity guarantee is advertised.
 
 ## Decisions
 
-- Extend interpreter coverage without mixing in the upcoming Ubuntu alias change.
-- Keep the compatibility floor and its strict fallback tests; do not silently
-  convert an upstream support change into a package minimum-version change.
-- Retained the extension only after the same full validator passed the trial.
-  Do not infer untested modes or platforms from this success.
+- Reuse pipx rather than create an installer or silently mutate user PATH.
+- Keep the original environment route and all current source pins.
+- Retain only after exact-source installs and useful multi-repository behavior
+  pass without an activated tool environment. That acceptance gate passed.
+- Document package names for management and separate tool/project/target environments.
 
 ## Validation
 
-- Warning-strict local Python 3.11 baseline passed the complete portfolio.
-- Workflow syntax/matrix shape, root release claims, and diff checks passed.
-- Hosted six-job trial 38585956760 passed. The 3.15.0 job ran all existing checks;
-  its suites totaled 140 tests with one optional ProofRun skip.
-- Current public compatibility guidance was updated only after that acceptance.
-- Local warning-strict revalidation passed all 140 tests (one expected skip),
-  twelve reproducible builds, six installs, contracts, and integrity checks.
-  Fifty-one local links/anchors, matrix shape, and diff checks passed.
+- All six pipx app/version/source identities and exposed command smokes passed.
+- ProofRun two-repository behavior, WheelContract prebuilt/source contracts,
+  explicit replacement, health check, and isolated removal passed.
+- Fifty-nine local links/anchors, frozen release claims, and diff checks passed.
+- Warning-strict portfolio revalidation passed 140 tests (one expected skip),
+  twelve reproducible builds, six installs, contracts, and wheel integrity.
+- Removing the disposable checker app also left the independent ProofRun
+  receipt valid and auditable; repository evidence was not removed with the app.
 
 ## Recommended next steps
 
-1. Review new stable interpreter releases against the same full validator.
-2. Keep interpreter lifecycle and package compatibility statements distinct.
-3. Retain the November 5 platform review; do not infer a platform upgrade from this trial.
+1. Assess concrete first-use friction before expanding frozen runtime behavior.
+2. Keep app-manager assumptions and project/target dependency boundaries explicit.
+3. Retain the November 5 platform-policy review.
 
 No human input is required.

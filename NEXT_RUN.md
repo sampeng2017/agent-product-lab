@@ -45,6 +45,10 @@ On October 14, stable CPython 3.15.0 passed the existing full hosted validator
 with all five previous jobs. The matrix now covers 3.10–3.15 on Ubuntu 24.04;
 3.10 is retained for compatibility, not upstream maintenance. Runtime versions,
 install pins, the external starter's Python 3.11, and OS baseline are unchanged.
+On October 15, all six existing source pins installed through pipx in disposable
+locations. The shared guide now offers optional app commands across repositories,
+with explicit project-test, checker-backend, and Python-driven replay boundaries.
+No runtime, source pin, user PATH/startup file, or active release gate changed.
 
 ## Required starting inspection
 

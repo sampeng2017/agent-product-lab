@@ -7,6 +7,15 @@ maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
 
+## CLI installation adoption on 2026-10-15
+
+- Added an optional tested pipx route to the shared guide without changing
+  runtime, dependencies, source pins, or the existing project-venv route.
+- The exposed 1.0.5 command passed a prebuilt-wheel contract and a source build
+  after pip/backend injection into its own app environment.
+- Keep target dependency isolation and Python-driven replay prerequisites
+  explicit; app availability does not imply imports in another interpreter.
+
 ## Interpreter compatibility on 2026-10-14
 
 - The unchanged runtime and build definitions passed the complete hosted

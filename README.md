@@ -14,6 +14,10 @@ For a new environment, choose an upstream-maintained Python release; see the
 includes commands for all six maintained tools, environment setup on
 macOS/Linux and Windows, and examples that run outside this repository.
 
+For commands reused across repositories, the guide also offers a tested
+[pipx installation route](docs/INSTALLATION.md#install-cli-apps-with-pipx).
+The tool stays outside your project; your project's test environment remains yours.
+
 For example, install ProofRun from a tested public revision:
 
 ```sh

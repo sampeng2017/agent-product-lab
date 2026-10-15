@@ -863,3 +863,28 @@ This removes uncertainty for current Python users without reopening frozen code.
 
 Sources: [stable 3.15 release](https://www.python.org/downloads/release/python-3150/)
 and [Python lifecycle](https://devguide.python.org/versions/).
+
+## Reuse installed CLI apps without a per-project tool environment — 2026-10-15
+
+The install guide required activation or a manual command path and warned that
+tool environments inside measured repositories can need exclusions. Compared a
+standard app-manager route, another hosted platform trial, and speculative
+runtime changes. Selected the installation friction: the existing six console
+entry points already fit pipx, so no custom installer or new product is needed.
+
+Retention required exact pinned VCS installs, app/version/commit identity,
+and useful behavior without an activated tool environment. All six packages
+installed with pipx 1.7.1 / Python 3.11 on macOS. ProofRun completed preview,
+initialization, verification, validity, and audit in two disposable repositories.
+WheelContract passed both prebuilt and source-build contracts; its source backend
+belongs in the checker's pipx environment, not an unrelated project environment.
+
+Keep project virtual environments as the default for development, imports, and
+Python-driven replays. The optional app route is for CLIs; it does not provide
+project test dependencies or inject dependencies into WheelContract's target.
+Package names and exposed command names differ for three tools, so management
+uses the distribution name. Explicit replacement/health and isolated removal
+were rehearsed. No source pin, runtime, or mandatory portfolio gate changed.
+
+References: [pipx overview](https://pipx.pypa.io/stable/) and
+[pipx CLI](https://pipx.pypa.io/stable/reference/cli.html).
