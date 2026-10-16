@@ -18,6 +18,29 @@ the example files. From the lab root:
 python examples/proofrun-stale-proof/demo.py
 ```
 
+### Use a command installed by pipx
+
+If ProofRun is installed as an app rather than a module in the Python running
+the demo, opt in to its command on PATH:
+
+```sh
+python3 examples/proofrun-stale-proof/demo.py --installed-command
+```
+
+You still need Git and Python 3.10+ for the fixture's standard-library tests.
+The calling Python does not need to import ProofRun. The script prints the
+selected executable, captures its absolute path before moving into the
+temporary repository, and uses it for every ProofRun operation. Its test
+command still uses the calling Python, not the app's private environment.
+
+This option works with the [pipx route](../../docs/INSTALLATION.md#install-cli-apps-with-pipx)
+or another command-only installation. A missing/unusable command exits 2 with
+a setup hint. Without the flag, the original calling-Python module route stays
+unchanged; the script does not silently choose another global installation.
+The new route was live-tested on macOS with pipx 1.7.1 and Python 3.11, not Windows.
+
+### Get the example files
+
 If you installed through pip and do not have the example files, keep your
 environment active and clone the current lab:
 
@@ -41,6 +64,15 @@ The script checks the command exits and JSON status, including the changed
 `calculator.py` path. An expected stale status is part of a successful demo.
 The script exits 0 after the complete sequence, 2 if Git or installed ProofRun
 is missing, and 1 if a step gives an unexpected result.
+
+Maintainers can check launcher and setup behavior independently:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s examples/proofrun-stale-proof -p test_demo.py -v
+```
+
+These focused tests do not replace the installed end-to-end replay and are not
+a new mandatory portfolio release gate.
 
 ## Read the results
 

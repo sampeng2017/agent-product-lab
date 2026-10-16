@@ -40,6 +40,8 @@ Development tracking and checkout installation are also covered in the guide.
 why passing tests become stale after a code edit, which file caused the gate
 to fail, and how fresh verification restores valid evidence. The demo runs
 installed ProofRun in a temporary project and leaves your checkout unchanged.
+Pipx users can opt into the replay's `--installed-command` mode without adding
+ProofRun to the Python environment that runs the example.
 
 [Debug a missed instruction rule](examples/agentscope-rule-scope/README.md)
 with installed AgentScope: identify an ignored `applyTo` pattern, correct its

@@ -263,9 +263,11 @@ Installing these packages into an unrelated project environment is not enough.
 Injection does not add runtime dependencies to the isolated target wheel;
 WheelContract still installs that target with `--no-deps`.
 
-The Python-driven replay scripts use their calling interpreter's modules.
-For those replays, use the activated-environment route above; merely exposing
-a pipx command does not make `python -m TOOL` importable in another interpreter.
+Python-driven replay scripts use their calling interpreter's modules by default.
+The [ProofRun stale-proof replay](../examples/proofrun-stale-proof/README.md#use-a-command-installed-by-pipx)
+also offers `--installed-command`, so it can use the exposed app without importing
+it into the caller's Python. Other replays retain the activated-environment route;
+merely exposing a command does not make `python -m TOOL` importable elsewhere.
 
 ### Inspect, replace, or remove an app
 

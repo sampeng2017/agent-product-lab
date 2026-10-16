@@ -888,3 +888,23 @@ were rehearsed. No source pin, runtime, or mandatory portfolio gate changed.
 
 References: [pipx overview](https://pipx.pypa.io/stable/) and
 [pipx CLI](https://pipx.pypa.io/stable/reference/cli.html).
+
+## Let command-only users replay stale evidence — 2026-10-16
+
+The prior installation work exposed a concrete first-use gap: the stale-proof
+replay always used the calling Python's ProofRun module, while pipx intentionally
+keeps that module in a different app environment. The documented workaround
+required a second installation just to experience the existing workflow.
+
+Selected an explicit command mode over silently preferring global executables,
+modifying frozen product code, or adding another replay for symmetry. Default
+module selection remains unchanged; --installed-command resolves the user's
+PATH selection before temporary-directory/PATH setup and reuses that absolute
+command. The caller still supplies the fixture's test Python.
+
+Retention requires the unchanged valid/stale/valid JSON, changed-path, exit,
+and audit checks to pass with a caller unable to import ProofRun. Separate
+environments and an actual scoped pipx install passed; default mode also passed.
+Five focused tests cover selection, space-containing paths, and setup failures.
+No runtime/source pin or mandatory release gate changed. Other Python-driven
+replays retain their own environment requirements.

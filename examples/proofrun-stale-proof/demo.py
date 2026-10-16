@@ -1,6 +1,7 @@
 """Replay a stale-proof workflow in a disposable repository using installed ProofRun."""
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import shutil
@@ -27,16 +28,39 @@ def run(command: list[str], root: Path, environment: dict[str, str], expected: i
     return result
 
 
-def main() -> int:
+def _proofrun_launcher(installed_command: bool) -> list[str]:
+    if not installed_command:
+        return [sys.executable, "-B", "-m", "proofrun"]
+    command = shutil.which("proofrun")
+    if command is None:
+        raise DemoError("ProofRun command not found on PATH; install it or use the default Python-environment route.")
+    # Capture the selected command before changing the working directory or
+    # putting the caller's Python first on PATH for the fixture's test command.
+    return [str(Path(command).resolve())]
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--installed-command", action="store_true",
+        help="use the proofrun command on PATH instead of this Python's proofrun module",
+    )
+    args = parser.parse_args(argv)
     if shutil.which("git") is None:
         print("Install Git and put it on PATH before running this example.", file=sys.stderr)
         return 2
+    try:
+        launcher = _proofrun_launcher(args.installed_command)
+    except DemoError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    if args.installed_command:
+        print(f"Using ProofRun command: {launcher[0]}", flush=True)
     environment = dict(os.environ)
     for key in list(environment):
         if key in ("PYTHONPATH", "PYTHONHOME") or key.startswith("GIT_"):
             environment.pop(key, None)
     environment["PATH"] = str(Path(sys.executable).parent) + os.pathsep + environment.get("PATH", "")
-    launcher = [sys.executable, "-B", "-m", "proofrun"]
     try:
         with tempfile.TemporaryDirectory(prefix="proofrun-example-") as temporary:
             base = Path(temporary)
@@ -45,15 +69,21 @@ def main() -> int:
                 Path(__file__).resolve().parent / "project", root,
                 ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
             )
-            prerequisite = subprocess.run(
-                [*launcher, "--help"], cwd=root, env=environment,
-                capture_output=True, timeout=60,
+            hint = (
+                "The selected ProofRun command could not run; check its installation."
+                if args.installed_command else
+                "Install ProofRun in this Python environment first; see docs/INSTALLATION.md."
             )
-            if prerequisite.returncode:
-                print(
-                    "Install ProofRun in this Python environment first; see docs/INSTALLATION.md.",
-                    file=sys.stderr,
+            try:
+                prerequisite = subprocess.run(
+                    [*launcher, "--help"], cwd=root, env=environment,
+                    capture_output=True, timeout=60,
                 )
+            except (OSError, subprocess.TimeoutExpired):
+                print(hint, file=sys.stderr)
+                return 2
+            if prerequisite.returncode:
+                print(hint, file=sys.stderr)
                 return 2
             run(["git", "init", "-q"], root, environment)
             run(["git", "add", "."], root, environment)

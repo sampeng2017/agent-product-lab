@@ -37,6 +37,8 @@ If your layout is not detected, provide the test command explicitly with
 For a complete demonstration, [replay the stale-proof example](../../examples/proofrun-stale-proof/README.md).
 It shows `VALID`, then `STALE` after a source edit, then `VALID` after another
 verification. The demo uses installed ProofRun in a disposable Git repository.
+For a pipx/command-only installation, pass `--installed-command` to that replay;
+its default still uses ProofRun from the calling Python environment.
 
 ### Develop from this checkout
 

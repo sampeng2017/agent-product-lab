@@ -2978,3 +2978,74 @@ receipt valid/auditable. Fifty-nine local links/anchors, release claims, and dif
 checks passed. Full warning-strict revalidation passed 140 tests with one
 expected optional skip, twelve reproducible builds, six installs, all contracts,
 and complete wheel integrity. No new mandatory gate was added.
+
+## 2026-10-16 08:14 PDT — run the stale-proof replay with an installed CLI
+
+Started clean at synchronized 4f90609. Inspected memory, Git/history, root and
+product docs, implementation/tests, active To-Sam, workflow/validator, and public
+GitHub. MIT and baseline 38757778158 were healthy; no active Sam note existed.
+Warning-strict baseline passed 140 tests with one expected optional skip,
+twelve reproducible builds, six installs, contracts, and integrity checks.
+
+Selected a concrete gap documented by the prior pipx run: the useful stale-proof
+replay always invoked the calling Python's ProofRun module. Command-only users
+had to install the same tool again in the example's Python. Compared explicit
+CLI selection with silent PATH fallback and another replay/product change.
+Retain only if the existing complete assertions pass with a caller unable to
+import ProofRun, while default module behavior remains unchanged.
+
+Added --installed-command to the existing demo. It captures the PATH-selected
+command as an absolute executable before changing cwd or prepending the caller's
+Python to the fixture-test PATH. Prints that selection and uses shell-free argv
+for every tool operation. The caller still supplies test execution. Missing
+selection fails with setup exit 2 before creating a fixture; unusable selected
+commands have an appropriate setup hint. No silent fallback or custom installer.
+
+Five focused tests cover default caller binding, explicit absolute selection
+with spaces, missing-command no-write setup, and preflight failure/selection
+before PATH modification, plus launch errors/timeouts. Python 3.11 and 3.14
+passed warning-strict; both replay/test files
+parse with Python 3.10 grammar. These tests are separate from product suites,
+not a new mandatory portfolio release gate.
+
+A fresh caller environment explicitly could not import ProofRun. The existing
+public 1.8.1 source pin was installed in a separate space-containing tool
+environment; explicit mode passed VALID/STALE/VALID, named calculator.py in JSON,
+honored expected exit 1, and audited both receipts. Default mode using the tool
+Python also passed. An actual pipx 1.7.1 install in disposable PIPX/XDG locations
+with a space-containing exposure directory passed explicit mode from the empty
+caller. No real user app directory, Python defaults, PATH startup file, or Git
+identity configuration was changed. The checked-in fixture was unchanged.
+
+Updated replay, installation, root/product README, opportunity, and next-run
+guidance. Other Python-driven replays retain their original prerequisites.
+Frozen product runtime/version/schema/dependencies/source pins are unchanged.
+No Windows or separately hosted command-replay success is inferred.
+
+Commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error python3.11 -m unittest discover -s examples/proofrun-stale-proof -p test_demo.py -v
+python examples/proofrun-stale-proof/demo.py
+python3 examples/proofrun-stale-proof/demo.py --installed-command
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Real replay commands used disposable caller/tool environments and the exact
+published ProofRun requirement in the install guide; explicit mode used the
+exposed command directory on PATH without making the module available to the
+caller. Repeat with fresh scoped app-manager locations, not existing user apps.
+
+Next: keep app selection explicit and project test execution caller-owned;
+assess another concrete adopter workflow and retain the November 5 review.
+
+Post-change full warning-strict portfolio validation passed 140 product tests
+with one expected optional skip, twelve reproducible builds, six isolated
+installs, all release/behavior contracts, and complete wheel integrity. Default
+and actual pipx replays passed again after preflight exception handling was added.
+Inherited Git overrides were also exercised against an unrelated disposable
+repository: its HEAD, index hash, file hash, and clean status were unchanged.
+Documentation links/anchors, Python 3.10 syntax, and diff checks passed.

@@ -49,6 +49,11 @@ On October 15, all six existing source pins installed through pipx in disposable
 locations. The shared guide now offers optional app commands across repositories,
 with explicit project-test, checker-backend, and Python-driven replay boundaries.
 No runtime, source pin, user PATH/startup file, or active release gate changed.
+On October 16, the existing ProofRun replay gained explicit `--installed-command`
+selection for pipx/command-only installs. Default module selection, caller-owned
+test execution, disposable Git behavior, and the full stale-proof sequence remain.
+Focused launcher tests and real separate-environment/pipx replays passed; no
+frozen product runtime, pin, or mandatory portfolio gate changed.
 
 ## Required starting inspection
 
