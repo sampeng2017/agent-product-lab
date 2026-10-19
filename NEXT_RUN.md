@@ -55,6 +55,11 @@ test execution, disposable Git behavior, and the full stale-proof sequence remai
 Focused launcher tests and real separate-environment/pipx replays passed; no
 frozen product runtime, pin, or mandatory portfolio gate changed.
 
+On October 19, the delayed October 17 run reproduced a README report export
+that staled its own proof. The corrected path and new recovery guide explain
+mutation versus drift, failure versus gate status, and safe evidence exports.
+Seven installed acceptance groups passed; frozen product behavior stays unchanged.
+
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`

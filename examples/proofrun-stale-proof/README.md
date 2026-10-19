@@ -120,5 +120,8 @@ current inputs. Substitute your check's name for `unit`. Adding only the status
 gate does not run tests. A verifier must leave Git-visible inputs unchanged;
 this demo disables bytecode with `python -B` and ignores `.proofrun/`.
 
+If a passing command is rejected or saving a report changes validity, use the
+[diagnosis and recovery guide](../../docs/PROOFRUN_TROUBLESHOOTING.md).
+
 See the [ProofRun README](../../products/proofrun/README.md) for named checks,
 age limits, JSON output, manifest contexts, and the receipt threat boundary.

@@ -908,3 +908,24 @@ environments and an actual scoped pipx install passed; default mode also passed.
 Five focused tests cover selection, space-containing paths, and setup failures.
 No runtime/source pin or mandatory release gate changed. Other Python-driven
 replays retain their own environment requirements.
+
+## Diagnose rejection before changing the evidence boundary — 2026-10-19
+
+The prior replay work made the success path accessible, but a concrete README
+command wrote a root report that made its own proof stale. Compared another
+launcher option for symmetry, speculative runtime changes, and recovery guidance.
+Selected the reproduced first-user trap and its missing diagnostic handoff.
+
+The existing runtime already distinguishes child failure, mutation rejection,
+later drift, expiry, and integrity. Reuse those diagnostics plus direct Git
+inspection rather than adding an automatic fixer or another gate. A report's
+successful export is not evidence acceptance; keep --require-valid explicit.
+
+Retention required installed pinned commands to reproduce report-induced drift
+and preserve validity through reviewed output relocation/ignored exports. That
+passed alongside real test failure/repair, mutation versus later-drift paths,
+age/commit changes, damaged chains, and a separate project pytest environment.
+
+The public guide and corrected README path preserve source visibility and
+original receipts. Do not suggest blanket ignores, deleting chain entries,
+or widening frozen runtime scope. No new fixture or mandatory gate was added.

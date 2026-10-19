@@ -3049,3 +3049,96 @@ and actual pipx replays passed again after preflight exception handling was adde
 Inherited Git overrides were also exercised against an unrelated disposable
 repository: its HEAD, index hash, file hash, and clean status were unchanged.
 Documentation links/anchors, Python 3.10 syntax, and diff checks passed.
+
+## 2026-10-19 07:50 PDT — recover from rejected proof and export-induced drift
+
+Resumed the delayed October 17 heartbeat using actual local October 19 time.
+Started clean at synchronized 5208614. Inspected Git/history, automation memory,
+root/product docs, source/tests, active To-Sam, workflow/validator, public CI and
+license. No active Sam note; MIT detected and matrix 38924146508 green.
+Warning-strict baseline passed 140 product tests with one expected optional
+skip, twelve reproducible builds, six installs, all contracts, and integrity.
+
+Compared another command-launcher option, speculative runtime changes, and
+existing ProofRun recovery friction. Selected the concrete public example trap:
+the README's report command wrote proofrun-report.md in the measured root.
+The command exited 0 but its new untracked file made valid proof stale.
+Scattered reference descriptions did not provide a short recovery path or
+clearly connect report exit status to the separate validity gate.
+
+Installed the unchanged published ProofRun 1.8.1 source pin in a disposable
+Python 3.11 environment outside measured trees. Reused the existing stale-proof
+fixture in temporary copies, including a space-containing project path. A
+temporary acceptance harness asserted seven groups with real installed commands:
+
+- missing named receipt -> verify -> valid gate;
+- root report exit 0 -> stale with the exact untracked report path -> reviewed
+  relocation restores validity; repeated ignored report/JSON exports preserve it;
+- successful mutator -> proof exit 1 with command_exit_code 0, exact mutation
+  path, empty later-drift paths -> a separate test-only verifier restores validity;
+- real failing unittest -> failed reason -> repaired code and verification pass;
+- history, expired-age policy, commit-change reason, and fresh verification;
+- readable damaged sealed chain -> status/audit/report reject; new verification
+  does not repair that earlier damage;
+- separate project pytest 9.1.1 environment -> -B / no:cacheprovider check passes,
+  creates no bytecode/cache directory, and leaves proof valid.
+
+Added docs/PROOFRUN_TROUBLESHOOTING.md. It covers named/default-store triage,
+reason/action mapping, mutation versus later-drift JSON paths, explicit
+generator/test separation, safe output placement, report versus gate exits,
+and evidence-preserving integrity diagnosis. It warns about tracked ignores,
+ignored/transient mutation limits, project dependencies, and sharing environment
+values. Corrected the product README report path to .proofrun/report.md with an
+ignore/tracking caveat. Linked from root, install, product, and replay entry points.
+
+No product runtime, schema, version, dependency, source pin, supported platform,
+workflow, or mandatory gate changed. No new replay fixture was added. Live
+recovery evidence is local macOS/Python 3.11, not hosted or Windows adoption.
+
+Inspection and validation commands included:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+git ls-remote origin refs/heads/main
+gh run list --repo sampeng2017/agent-product-lab --limit 2 --json databaseId,headSha,status,conclusion,url
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+proofrun status --require-valid unit
+proofrun status --json unit
+proofrun verify --jobs 1 unit
+proofrun report --output .proofrun/report.md
+proofrun history --json --limit 5
+proofrun audit
+git diff --check
+```
+
+Behavior commands ran in owned temporary fixture copies with exact expected
+exits/JSON assertions; the guide documents the user-facing diagnostic/recovery
+sequence. Intentional mutations and chain damage affected only those copies.
+The harness was not installed as another release gate. The original fixture
+and product source are unchanged.
+
+Sources: [pytest cache plugin](https://docs.pytest.org/en/stable/how-to/cache.html)
+and [Git ignore semantics](https://git-scm.com/docs/gitignore).
+
+Post-change warning-strict revalidation passed the same 140 product tests with
+one optional skip and all builds/installs/contracts/integrity. All 71 local
+links/anchors, release claims, and diff checks passed. Existing replay passed
+both default module mode and explicit-command mode (Python 3.14 caller with
+the pinned app). Five existing launcher tests passed.
+
+Also exercised the existing optional real-pytest scaffold regression using the
+separate project environment. Its first invocation without that environment on
+PATH failed with child exit 127: starting an absolute venv Python does not
+activate the manifest's bare python command. Repeating with project bin on
+PATH passed, including no bytecode/cache writes. The guide now states that
+resolution boundary explicitly. No product change or unresolved test failure
+was needed. That optional test is separate from the baseline's expected skip.
+
+An additional complete warning-strict portfolio run passed using that project
+Python with pytest available and its bin directory on PATH. It exercised the
+optional scaffold test inside the full validator, not only the isolated case;
+all builds, installs, contracts, and wheel-integrity checks stayed green.
+
+Next: assess concrete adopter friction, keep environment/evidence boundaries
+explicit, and retain the separate November 5 platform review.

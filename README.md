@@ -42,6 +42,8 @@ to fail, and how fresh verification restores valid evidence. The demo runs
 installed ProofRun in a temporary project and leaves your checkout unchanged.
 Pipx users can opt into the replay's `--installed-command` mode without adding
 ProofRun to the Python environment that runs the example.
+If tests pass but proof does not, [diagnose the recorded reason](docs/PROOFRUN_TROUBLESHOOTING.md)
+and recover without hiding source changes or deleting evidence.
 
 [Debug a missed instruction rule](examples/agentscope-rule-scope/README.md)
 with installed AgentScope: identify an ignored `applyTo` pattern, correct its

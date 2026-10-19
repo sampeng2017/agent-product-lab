@@ -40,6 +40,9 @@ verification. The demo uses installed ProofRun in a disposable Git repository.
 For a pipx/command-only installation, pass `--installed-command` to that replay;
 its default still uses ProofRun from the calling Python environment.
 
+If tests pass but proof is rejected, or an export makes proof stale, use the
+[diagnosis and recovery guide](../../docs/PROOFRUN_TROUBLESHOOTING.md).
+
 ### Develop from this checkout
 
 ```bash
@@ -51,9 +54,13 @@ EOF
 PYTHONPATH=src python3 -m proofrun verify
 PYTHONPATH=src python3 -m proofrun status
 PYTHONPATH=src python3 -m proofrun audit
-PYTHONPATH=src python3 -m proofrun report --output proofrun-report.md
+PYTHONPATH=src python3 -m proofrun report --output .proofrun/report.md
 PYTHONPATH=src python3 -m proofrun history
 ```
+
+The report path above uses the default ignored evidence directory after
+verification. A Git-visible report in the project root can itself stale proof;
+confirm ignore/tracking state as described in the recovery guide.
 
 For development from this checkout, either install it in editable mode or set
 `PYTHONPATH`:
