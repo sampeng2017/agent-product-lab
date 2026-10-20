@@ -1,0 +1,8 @@
+schema_version = true
+
+[artifact]
+source = "must-not-be-built"
+
+[[case]]
+name = "must-not-run"
+argv = ["python", "-c", "raise SystemExit(99)"]

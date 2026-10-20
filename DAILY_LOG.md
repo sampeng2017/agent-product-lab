@@ -3140,5 +3140,60 @@ Python with pytest available and its bin directory on PATH. It exercised the
 optional scaffold test inside the full validator, not only the isolated case;
 all builds, installs, contracts, and wheel-integrity checks stayed green.
 
+## 2026-10-20 08:23 PDT — reject coerced WheelContract schema versions
+
+Started clean at synchronized ab20a6a. Inspected memory, Git/history,
+root/product docs, tests/implementation, active To-Sam, workflow/validator,
+and public GitHub. No active Sam note; MIT detected and baseline 39274392555
+green. Warning-strict baseline passed 140 tests (one optional skip), twelve
+reproducible builds, six installs, release/behavior contracts, and integrity.
+
+Selected a reproduced discriminator defect over another guide or speculative
+runtime expansion. schema_version = true and 1.0 each passed a full installed
+fixture contract with CLI exit 0. Both parser routes also accepted 1e0. TOML
+preserves these types; Python equality erased their distinction from integer 1.
+
+Added a failing regression first. It covers true, false, 1.0, 1e0, string 1,
+zero, and unsupported integer 2 in standard/fallback routes; asserts setup exit
+2, empty stdout, precise diagnostic, and no artifact runner. Integer forms 1,
++1, and 0x1 remain accepted. Fixed only exact type/value selection before
+artifact settings; schema v1 and JSON numeric case equality are unchanged.
+
+Promoted WheelContract to 1.0.6. Added boolean/float fixtures to the existing
+installed self-contract: their unavailable artifact paths must not be reached.
+Updated runtime/package version, self-contract version output, product
+README/status, root README/index, and handoffs. Other product runtimes,
+dependencies, platform baseline, and active workflow remain unchanged.
+No new mandatory gate or replay was added. Consumer pins are refreshed only
+after the correction commit exists publicly and exact-source installation passes.
+
+Commands include:
+
+```sh
+git status --short --branch
+git log -3 --oneline
+git ls-remote origin refs/heads/main
+gh run list --repo sampeng2017/agent-product-lab --limit 2 --json databaseId,headSha,status,conclusion,url
+PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error PYTHONPATH=products/wheelcontract/src python3.11 -m unittest discover -s products/wheelcontract/tests -k schema_version -v
+PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error PYTHONPATH=products/wheelcontract/src python3.14 -m unittest discover -s products/wheelcontract/tests -k schema_version -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Regression passed on 3.11/3.14 after the correction; modified source/test parse
+with Python 3.10 grammar. Real fixtures and intentional invalid inputs ran in
+disposable directories, not user projects. Reference:
+[TOML types](https://toml.io/en/v1.0.0#integer).
+
+Next: finish exact public-source acceptance and refresh existing pins. Reproduce
+other discriminator issues independently before changing another frozen product.
+Keep the separate November 5 platform review.
+
+Post-fix full warning-strict validation passed 141 product tests (one optional
+skip), twelve reproducible builds, six isolated installs, the five-case installed
+self-contract, AgentScope behavior, release claims, and complete wheel integrity.
+This is one added unit method and two added cases in existing coverage, not a
+new gate. Public exact-source installation and consumer-pin refresh follow.
+
 Next: assess concrete adopter friction, keep environment/evidence boundaries
 explicit, and retain the separate November 5 platform review.

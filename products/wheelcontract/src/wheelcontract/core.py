@@ -66,8 +66,9 @@ def load_contract(path: Path) -> Contract:
     if not isinstance(data, dict):
         raise ContractError("contract must be a TOML document")
     _reject_unknown(data, {"schema_version", "artifact", "run", "case"}, "contract")
-    if data.get("schema_version") != 1:
-        raise ContractError("schema_version must be 1")
+    schema_version = data.get("schema_version")
+    if type(schema_version) is not int or schema_version != 1:
+        raise ContractError("schema_version must be the integer 1")
 
     artifact = _require_table(data.get("artifact"), "[artifact]")
     _reject_unknown(artifact, {"source"}, "[artifact]")

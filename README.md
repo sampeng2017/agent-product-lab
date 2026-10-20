@@ -73,13 +73,14 @@ to setuptools CLIs without runtime dependencies.
   matrix with deterministic column chunking and display-only source-path and
   occurrence-state filtering for larger reviews. It was frozen on 2026-09-11.
 - [WheelContract](products/wheelcontract/README.md) — installed Python CLI wheel
-  behavior contracts. The v1.0.5 local MVP builds or accepts one wheel,
+  behavior contracts. The v1.0.6 local MVP builds or accepts one wheel,
   isolated-installs it, and checks explicit exit, stdout, stderr, and top-level
   JSON behavior from strict TOML. Timed-out cases receive bounded process-tree
   cleanup. JSON checks distinguish booleans from numbers and reject bare
   nonstandard constants. Decoder-depth and command-launch failures are reported
   per case so later checks still run. JSON checks reject malformed UTF-8 without
-  changing readable previews. Checked-in contracts cover AgentScope and
+  changing readable previews. Schema version declarations must be the integer 1,
+  not boolean or float lookalikes. Checked-in contracts cover AgentScope and
   WheelContract itself; the schema remains frozen since 2026-09-15.
 - [ReleaseFact](products/releasefact/README.md) — explicit current release-
   version consistency. The v1.0.0 local MVP was frozen on 2026-09-17.

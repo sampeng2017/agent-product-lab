@@ -33,6 +33,12 @@ for tested coverage versus upstream maintenance and other-platform limits.
 
 ## Contract
 
+`schema_version` must be the TOML integer `1`. Boolean `true`, float `1.0`,
+and string `"1"` are invalid version declarations; no coercion is performed.
+Version 1.0.6 rejects these as setup errors (exit 2)
+before building or installing the artifact. Both Python parser routes enforce
+the same type requirement; the schema itself remains v1.
+
 ```toml
 schema_version = 1
 
@@ -141,12 +147,12 @@ from validation, consistent with JSON's UTF-8 interchange encoding in
 
 These boundaries keep WheelContract an artifact behavior check rather than a
 tox/nox replacement. This repository exercises both the six-case AgentScope
-contract at the portfolio root and the compact three-case self-contract in this
+contract at the portfolio root and the compact five-case self-contract in this
 directory.
 
 ## Maintenance status
 
-WheelContract v1.0.5 is a frozen local MVP. Its schema-v1 contract, exit
+WheelContract v1.0.6 is a frozen local MVP. Its schema-v1 contract, exit
 semantics, and synchronous process-lifecycle boundary remain stable. Resume
 feature work only for a reproduced installed-artifact defect; use the focused
 suite and portfolio validator as the release contract.

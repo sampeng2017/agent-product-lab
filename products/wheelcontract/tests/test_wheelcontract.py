@@ -79,6 +79,40 @@ class WheelContractTests(unittest.TestCase):
         )
         return manifest
 
+    def test_schema_version_requires_integer_one_before_artifact_work(self) -> None:
+        manifest = self.write_contract('''
+[[case]]
+name = "hello"
+argv = ["python", "-m", "fixture_cli"]
+stdout_contains = ["installed hello"]
+''')
+        original = manifest.read_text(encoding="utf-8")
+        for parser in (wheelcontract.core.tomllib, None):
+            for version in ("true", "false", "1.0", "1e0", '"1"', "0", "2"):
+                with self.subTest(parser=parser is not None, version=version):
+                    manifest.write_text(
+                        original.replace("schema_version = 1", f"schema_version = {version}", 1),
+                        encoding="utf-8",
+                    )
+                    output, errors = io.StringIO(), io.StringIO()
+                    with (
+                        patch.object(wheelcontract.core, "tomllib", parser),
+                        patch("wheelcontract.cli.run_contract") as run,
+                        redirect_stdout(output), redirect_stderr(errors),
+                    ):
+                        self.assertEqual(main([str(manifest)]), 2)
+                    run.assert_not_called()
+                    self.assertEqual(output.getvalue(), "")
+                    self.assertIn("schema_version must be the integer 1", errors.getvalue())
+            for version in ("1", "+1", "0x1"):
+                with self.subTest(parser=parser is not None, valid_version=version):
+                    manifest.write_text(
+                        original.replace("schema_version = 1", f"schema_version = {version}", 1),
+                        encoding="utf-8",
+                    )
+                    with patch.object(wheelcontract.core, "tomllib", parser):
+                        self.assertEqual(load_contract(manifest).cases[0].name, "hello")
+
     def test_json_decoder_nesting_limit_fails_case_and_continues_suite(self) -> None:
         manifest = self.write_contract('''
 [[case]]

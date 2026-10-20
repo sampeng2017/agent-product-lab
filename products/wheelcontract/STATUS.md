@@ -2,10 +2,22 @@
 
 ## Product shape
 
-WheelContract v1.0.5 is a frozen, dependency-free local MVP for Python CLI
+WheelContract v1.0.6 is a frozen, dependency-free local MVP for Python CLI
 maintainers. It builds or accepts one wheel, installs it without dependencies in
 a disposable virtual environment, and checks explicit installed command
 behavior from strict schema-v1 TOML.
+
+## Correctness patch on 2026-10-20
+
+- Reproduced full installed-fixture false passes with schema_version = true
+  and 1.0. Both parser routes also accepted equivalent exponent-form floats.
+- Require the actual TOML integer 1 before artifact work. Invalid types return
+  setup exit 2 with an explicit diagnostic; no build, install, or case starts.
+- Added standard/fallback negative cases and positive integer spelling checks.
+  Preserve valid schema-v1 contracts, case assertion semantics, and exits 0/1/2.
+- Extended the existing installed self-contract with boolean/float rejection
+  fixtures that must fail schema validation before their invalid artifact path.
+- Promoted the bounded correctness fix to 1.0.6; no schema or dependency expansion.
 
 ## CLI installation adoption on 2026-10-15
 
@@ -116,7 +128,7 @@ behavior from strict schema-v1 TOML.
 
 ## Decisions
 
-- Freeze WheelContract at v1.0.5 and preserve schema v1 plus exit 0/1/2.
+- Freeze WheelContract at v1.0.6 and preserve schema v1 plus exit 0/1/2.
 - Keep the explicit installed-artifact focus; do not turn it into a general task
   runner or tox/nox replacement.
 - Resume work only for a reproducible installed-artifact defect.
@@ -124,9 +136,9 @@ behavior from strict schema-v1 TOML.
 ## Validation
 
 - The regression failed before the patch and passes afterward. The focused
-  suite now contains 17 tests.
+  suite now contains 18 tests.
 - The built wheel contains only package modules, license, entry point, and
-  standard distribution metadata; metadata reports version 1.0.5 and Python
+  standard distribution metadata; metadata reports version 1.0.6 and Python
   3.10+.
 - Portfolio validation builds and isolated-installs all six products, passes
   the WheelContract self-contract and six-case AgentScope contract, and retains

@@ -10,7 +10,7 @@ max_output_bytes = 65536
 [[case]]
 name = "version"
 argv = ["wheelcontract", "--version"]
-stdout_contains = ["wheelcontract 1.0.5"]
+stdout_contains = ["wheelcontract 1.0.6"]
 
 [[case]]
 name = "missing-contract-error"
@@ -22,3 +22,15 @@ stderr_contains = ["wheelcontract: error: contract not found: missing.toml"]
 name = "help"
 argv = ["wheelcontract", "--help"]
 stdout_contains = ["Verify installed Python CLI wheel behavior from TOML.", "contract path (default: wheelcontract.toml)"]
+
+[[case]]
+name = "boolean-schema-error"
+argv = ["wheelcontract", "{manifest_dir}/tests/fixtures/schema-boolean.toml"]
+exit = 2
+stderr_contains = ["schema_version must be the integer 1"]
+
+[[case]]
+name = "float-schema-error"
+argv = ["wheelcontract", "{manifest_dir}/tests/fixtures/schema-float.toml"]
+exit = 2
+stderr_contains = ["schema_version must be the integer 1"]

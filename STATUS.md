@@ -2,10 +2,10 @@
 
 ## Current direction
 
-Help users recover from rejected/stale ProofRun evidence without hiding source
-changes or deleting receipts. A tested recovery guide distinguishes failures,
-changes during verification, later drift, and safe evidence exports.
-All six frozen product runtimes, versions, and source pins remain unchanged.
+Ship a narrow WheelContract correctness patch: schema_version must be the
+actual TOML integer 1, not a boolean or float that Python compares equal to 1.
+Invalid declarations fail before artifact work. Other product runtimes and
+WheelContract's schema-v1/target-dependency boundaries remain unchanged.
 
 ## Product shape
 
@@ -13,85 +13,77 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
 - Six maintained products; GrammarCheck remains archived.
 - Hosted compatibility remains Python 3.10–3.15 on Ubuntu 24.04.
-- Existing installation paths, replays, and the external wheel-CI starter remain.
-  No product, replay fixture, installer, or mandatory release gate was added.
+- WheelContract advances from 1.0.5 to 1.0.6 for a reproduced validation defect.
+- Existing unit/self-contract suites gain focused regressions. No new schema,
+  dependency resolver, replay, or mandatory release gate was added.
 - The November 5 platform-policy review remains separate.
 
-## Work today (2026-10-19, started 07:50 PDT)
+## Work today (2026-10-20, started 08:23 PDT)
 
-- Resumed the delayed October 17 heartbeat. Started clean at synchronized
-  5208614. Inspected memory, Git/history, root/product docs, source/tests,
+- Started clean at synchronized ab20a6a. Inspected memory, Git/history,
+  root/product docs, source/tests,
   active To-Sam, workflow/validator, and public GitHub. No active Sam note;
-  MIT detected and baseline matrix 38924146508 green.
+  MIT detected and baseline matrix 39274392555 green.
 - Warning-strict baseline passed 140 product tests with one expected optional
   skip, reproducible builds, isolated installs, contracts, and wheel integrity.
-- Selected a concrete documentation trap over launcher symmetry or speculative
-  runtime changes: the product README exported a root report that itself made
-  a valid receipt stale. Reproduced this with the published ProofRun source pin.
-- Added docs/PROOFRUN_TROUBLESHOOTING.md with read-only triage, reason/action
-  mapping, exact mutation JSON fields, generator/test separation, safe exports,
-  age/commit explanations, and evidence-preserving integrity guidance.
-- Corrected the README export to the default ignored evidence directory and
-  linked recovery from root, installation, product, and existing replay docs.
-- Exercised seven acceptance groups in disposable copies of the existing
-  fixture: missing proof, report-induced drift/recovery, mutation rejection,
-  real test failure/repair, history/age/new commit, damaged chain, and pytest
-  from a separate project environment. No user files or settings were changed.
+- Reproduced full installed-fixture CLI false passes for schema_version = true
+  and 1.0. Both parsers also accepted exponent 1e0 through numeric equality.
+- Added a failing regression first, then required exact integer type/value
+  before artifact settings. Invalid declarations get a precise setup error.
+- Regression covers seven invalid values across standard/fallback parsers,
+  positive integer forms, exit 2, empty stdout, and no artifact runner.
+- Added boolean/float fixtures to the existing installed self-contract. Their
+  invalid artifact paths must not be reached by the packaged checker.
+- Updated runtime/package version, product/current release claims, root README
+  and product index. Consumer pins await exact public-source installation.
 
 ## Changes since the prior run
 
-The prior run removed pipx replay friction. This run addresses the next failure
-interpretation gap: a successful child command or report export is not the same
-as a valid evidence gate. The existing CLI already exposes the needed diagnosis;
-the public handoff now explains how to use it.
+The prior run improved ProofRun diagnosis and exports. This run uses the frozen
+product correctness exception for a reproduced WheelContract validation defect;
+it does not add another example or guide for symmetry.
 
 ## External-user value
 
-Users can distinguish a failed test from rejected proof, locate the correct
-mutation/drift paths, and save reports without accidentally invalidating proof.
-Recovery keeps source and integrity boundaries explicit instead of offering
-blanket ignores, receipt deletion, or a misleading report-exit success.
+Malformed version declarations no longer silently select schema v1 or trigger
+artifact build/install/case execution. Valid integer-v1 contracts retain their
+existing behavior, and invalid declarations receive an actionable setup error.
 
 ## Known issues
 
-- Live recovery acceptance used macOS / Python 3.11 / pinned ProofRun 1.8.1.
-  The separate project environment used pytest 9.1.1; Windows was not exercised.
-- Ignore checks assume the default evidence directory after verification.
-  Custom stores or already-tracked exports need explicit user review.
-- Ignored mutations and transient writes restored before command completion
-  remain outside ProofRun's Git boundary. Hash consistency is not authentication.
-- Project test dependencies remain separate from an installed/pipx tool.
-  Disabling pytest's cache may not fit tests/plugins that depend on it.
-- No runtime/schema/version/source-pin change, package-index release, or new
-  hosted recovery-example claim is made. Existing build/lifecycle limits remain.
+- This patch changes only WheelContract's version discriminator, not general
+  TOML validation across other frozen products.
+- Python 3.10's dependency-free parser retains its documented subset.
+- Target dependencies remain unresolved; checker/project/target environments
+  remain separate. Existing process and output bounds stay unchanged.
+- Local focused evidence is Python 3.11/3.14 and Python 3.10 grammar. Hosted
+  interpreter coverage must still be checked before publishing final claims.
+- Consumer pins remain at the previous tested revision until exact-source
+  public installation acceptance; no package-index release is advertised.
 
 ## Decisions
 
-- Fix the actual root-report example and explain existing behavior; do not
-  change a frozen product just to suppress a useful rejection.
-- Keep diagnostics read-only; verification intentionally runs project commands.
-- Preserve original evidence on integrity failure. New verification cannot
-  repair earlier chain damage, and no automatic repair is advertised.
-- Retain only after installed commands reproduce the problems and safe recovery.
-  That acceptance gate passed without adding a mandatory portfolio gate.
+- Apply the correctness exception only after real false-pass reproduction.
+- Check type plus value; do not coerce malformed declarations or change schema.
+- Keep JSON case numeric 1/1.0 equality intact: a version discriminator has a
+  different type contract from asserted numeric output.
+- Reuse existing tests/self-contract rather than add another release gate.
 
 ## Validation
 
-- Seven installed acceptance groups passed, including exact JSON fields/exits,
-  report relocation, repeated ignored exports, and validity/audit after recovery.
-- Full warning-strict portfolio baseline and revalidation passed 140 product
-  tests (one expected optional skip), twelve reproducible builds, six installs,
-  all release/behavior contracts, and complete wheel integrity. An additional
-  full warning-strict run passed with project pytest available, exercising the
-  optional scaffold test. All 71 local links/anchors passed.
-- Existing replay passed both module and explicit-command routes; five focused
-  launcher tests passed. The optional real-pytest scaffold test also passed in
-  the separate project environment on PATH.
+- Regression failed before the fix and passed on Python 3.11/3.14 afterward.
+- Modified source/test parse with Python 3.10 grammar. Full warning-strict
+  revalidation passed 141 product tests (one expected optional skip), twelve
+  reproducible builds, six installs, five installed self-contract cases,
+  AgentScope behavior, release claims, and complete wheel integrity.
+- Exact public-source installation and consumer-pin acceptance remain before
+  final publication. Other products' runtime sources are unchanged.
 
 ## Recommended next steps
 
-1. Prefer another demonstrated adopter obstacle over more replay/gate symmetry.
-2. Preserve tool/project/target dependency and evidence boundaries.
+1. Complete exact-source installation and consumer-pin acceptance for 1.0.6.
+2. Reproduce similar discriminator issues independently before changing another
+   frozen product; do not infer correctness from this patch.
 3. Retain the November 5 platform-policy review.
 
 No human input is required.

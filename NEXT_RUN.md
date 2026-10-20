@@ -60,6 +60,12 @@ that staled its own proof. The corrected path and new recovery guide explain
 mutation versus drift, failure versus gate status, and safe evidence exports.
 Seven installed acceptance groups passed; frozen product behavior stays unchanged.
 
+On October 20, WheelContract 1.0.6 corrected reproduced acceptance of boolean
+and float schema versions. Require the actual integer 1 before artifact work;
+preserve JSON numeric assertions and valid schema-v1 contracts. Standard/fallback
+regressions and the existing installed self-contract cover the correction.
+Refresh consumer pins only after exact-source public installation succeeds.
+
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`

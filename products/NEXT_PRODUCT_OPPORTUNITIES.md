@@ -929,3 +929,21 @@ age/commit changes, damaged chains, and a separate project pytest environment.
 The public guide and corrected README path preserve source visibility and
 original receipts. Do not suggest blanket ignores, deleting chain entries,
 or widening frozen runtime scope. No new fixture or mandatory gate was added.
+
+## Preserve protocol types before artifact work — 2026-10-20
+
+Reproduced WheelContract false acceptance: boolean true and float 1.0 selected
+schema v1 and passed the installed-fixture CLI. Exponent 1e0 also passed both
+parsers. TOML preserves the types; Python value equality erased the distinction.
+
+Selected the bounded correctness fix over more replay/documentation symmetry
+or broad frozen-runtime expansion. Require type int and value 1 before artifact
+setup; retain schema v1. Do not conflate a typed protocol version with JSON
+case assertions where numeric value equality is intentional.
+
+Retention requires standard/fallback rejection without artifact work, valid
+integer forms, installed CLI fixtures, the full portfolio, and exact public-source
+installation before updating pins. Other products need their own reproduction
+before reopening frozen contracts. No dependency or separate gate is added.
+
+Reference: [TOML types](https://toml.io/en/v1.0.0#integer).
