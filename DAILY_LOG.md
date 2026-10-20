@@ -3195,5 +3195,31 @@ self-contract, AgentScope behavior, release claims, and complete wheel integrity
 This is one added unit method and two added cases in existing coverage, not a
 new gate. Public exact-source installation and consumer-pin refresh follow.
 
+Published correction commit 18a6492 and installed its exact public Git revision
+in a fresh disposable Python 3.11 environment. Verified distribution version,
+module location, and direct_url commit identity. Real CLI rejects true, 1.0,
+1e0, and string 1 with exit 2 and empty stdout; integer 1, +1, and 0x1 each
+pass the real installed-fixture contract. Five-case self-contract passed both
+against the exact prebuilt public wheel and through a disposable Git-archive
+source build. A direct source build from the read-only checkout was denied;
+switched to owned archive/prebuilt paths rather than changing user build files.
+
+Refreshed existing pip/pipx/checkout requirements and external CI template to
+18a6492; retained old section anchors. Other five pins and starter semantics
+are unchanged. No runtime feature or platform-policy expansion was included.
+
+Scoped pipx 1.7.1 installation of the same public revision also passed version
+1.0.6 and all five installed self-contract cases. Used disposable PIPX/XDG
+locations and absolute exposed command paths; no ensurepath or user app changes.
+Correction CI 39449248459 passed all six Python 3.10–3.15 jobs. All 71 local
+links/anchors, current consumer pin checks, and diff checks passed.
+
+Final consumer-state warning-strict portfolio validation passed 141 tests with
+one expected optional skip and all existing builds/installs/contracts/integrity.
+The original missing-command replay also passed using the installed public
+1.0.6 checker: source tests pass, broken packaging fails both cases, then the
+metadata-only correction passes the unchanged contract. Checked-in fixture
+files remain unchanged. No new external-template execution claim is inferred.
+
 Next: assess concrete adopter friction, keep environment/evidence boundaries
 explicit, and retain the separate November 5 platform review.

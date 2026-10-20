@@ -64,7 +64,8 @@ On October 20, WheelContract 1.0.6 corrected reproduced acceptance of boolean
 and float schema versions. Require the actual integer 1 before artifact work;
 preserve JSON numeric assertions and valid schema-v1 contracts. Standard/fallback
 regressions and the existing installed self-contract cover the correction.
-Refresh consumer pins only after exact-source public installation succeeds.
+Exact-source public installation succeeded; install/pipx/checkout/CI starter
+pins now select 18a6492, preserving the other five product source selections.
 
 ## Required starting inspection
 

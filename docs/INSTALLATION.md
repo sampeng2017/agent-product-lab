@@ -60,9 +60,9 @@ passed Python 3.10–3.14 when selected. Current compatibility coverage extends
 through 3.15, with unchanged runtime/build definitions at the pins below. The
 full revision keeps the source selection stable as
 `main` evolves; it is not a release tag or a pin of pip's build dependencies.
-WheelContract instead uses the validated v1.0.5 revision
-`73a5e143cf4f2a1840f40a55912afea866b8fdd6` to include its assertion and
-launch-error fixes.
+WheelContract instead uses the validated v1.0.6 revision
+`18a6492fd55d66f77095d95475fbb8f6789fd291` to include its assertion,
+launch-error, and schema-version type fixes.
 
 ### ProofRun 1.8.1
 
@@ -122,11 +122,12 @@ after correcting its target pattern.
 <a id="wheelcontract-102"></a>
 <a id="wheelcontract-103"></a>
 <a id="wheelcontract-104"></a>
+<a id="wheelcontract-105"></a>
 
-### WheelContract 1.0.5
+### WheelContract 1.0.6
 
 ```sh
-python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@73a5e143cf4f2a1840f40a55912afea866b8fdd6#subdirectory=products/wheelcontract"
+python -m pip install "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@18a6492fd55d66f77095d95475fbb8f6789fd291#subdirectory=products/wheelcontract"
 wheelcontract --version
 ```
 
@@ -141,6 +142,10 @@ Version 1.0.4 also reports OS launch failures for installed commands that exist
 but cannot start. Later checks still run and the suite returns behavior exit 1.
 Version 1.0.5 rejects malformed UTF-8 in JSON assertion output before parsing;
 valid Unicode, literal U+FFFD, and human-output previews remain compatible.
+Version 1.0.6 requires the actual integer `1` for `schema_version`. Boolean
+`true`, float `1.0`, and string `"1"` declarations fail with setup exit 2
+before any artifact build/install/case execution. Valid v1 contracts and
+numeric JSON assertion comparisons are unchanged.
 
 Create a contract using the [product example](../products/wheelcontract/README.md#contract),
 then name your existing wheel:
@@ -226,7 +231,7 @@ proofrun --help
 ```
 
 ```sh
-pipx install --python python3.11 "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@73a5e143cf4f2a1840f40a55912afea866b8fdd6#subdirectory=products/wheelcontract"
+pipx install --python python3.11 "wheelcontract-cli @ git+https://github.com/sampeng2017/agent-product-lab.git@18a6492fd55d66f77095d95475fbb8f6789fd291#subdirectory=products/wheelcontract"
 wheelcontract --version
 ```
 
@@ -307,11 +312,11 @@ python -m pip install ./products/proofrun
 ```
 
 That revision is the tested source for ProofRun and the other tools except
-WheelContract. For WheelContract 1.0.5, select its correction revision before
+WheelContract. For WheelContract 1.0.6, select its correction revision before
 installing; merely changing the product directory above would install 1.0.0:
 
 ```sh
-git checkout 73a5e143cf4f2a1840f40a55912afea866b8fdd6
+git checkout 18a6492fd55d66f77095d95475fbb8f6789fd291
 python -m pip install ./products/wheelcontract
 wheelcontract --version
 ```

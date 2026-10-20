@@ -35,7 +35,8 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 - Added boolean/float fixtures to the existing installed self-contract. Their
   invalid artifact paths must not be reached by the packaged checker.
 - Updated runtime/package version, product/current release claims, root README
-  and product index. Consumer pins await exact public-source installation.
+  and product index. Public exact-source installation passed; install, pipx,
+  checkout, and external-CI consumer pins now select correction revision 18a6492.
 
 ## Changes since the prior run
 
@@ -57,9 +58,9 @@ existing behavior, and invalid declarations receive an actionable setup error.
 - Target dependencies remain unresolved; checker/project/target environments
   remain separate. Existing process and output bounds stay unchanged.
 - Local focused evidence is Python 3.11/3.14 and Python 3.10 grammar. Hosted
-  interpreter coverage must still be checked before publishing final claims.
-- Consumer pins remain at the previous tested revision until exact-source
-  public installation acceptance; no package-index release is advertised.
+  interpreter evidence is Ubuntu-only and does not establish Windows coverage.
+- Consumer pins select the tested correction source, not build-dependency locks
+  or a package-index release. Other five source selections remain unchanged.
 
 ## Decisions
 
@@ -76,12 +77,19 @@ existing behavior, and invalid declarations receive an actionable setup error.
   revalidation passed 141 product tests (one expected optional skip), twelve
   reproducible builds, six installs, five installed self-contract cases,
   AgentScope behavior, release claims, and complete wheel integrity.
-- Exact public-source installation and consumer-pin acceptance remain before
-  final publication. Other products' runtime sources are unchanged.
+- Exact public-source identity/version and invalid/valid CLI acceptance passed,
+  including both prebuilt and disposable-archive five-case self-contracts.
+  Other products' runtime sources are unchanged.
+- Scoped pipx installation of the same revision passed version and all five
+  installed self-contract cases. Correction CI 39449248459 passed Python 3.10–3.15.
+- All 71 local links/anchors and current pip/pipx/template pin checks passed.
+- Final consumer-state warning-strict portfolio validation passed the same
+  141 tests and all existing artifact/behavior/release checks. The original
+  missing-command replay passed with the pinned installed 1.0.6 checker.
 
 ## Recommended next steps
 
-1. Complete exact-source installation and consumer-pin acceptance for 1.0.6.
+1. Keep exact-source install/CI consumer pins aligned with demonstrated fixes.
 2. Reproduce similar discriminator issues independently before changing another
    frozen product; do not infer correctness from this patch.
 3. Retain the November 5 platform-policy review.
