@@ -60,8 +60,9 @@ successful demonstration, a real first attempt, and self-reported later use.
   self-report, not telemetry or independently verified retention.
 - Local guide acceptance used macOS/Python 3.11 and disposable fixtures, not
   external-user or Windows sessions. Existing runtime/platform limits remain.
-- Form structure is checked against the documented GitHub fields; hosted form
-  rendering still needs observation after publication. Do not post a test issue.
+- The public guide rendered without signing in. The draft URL correctly reached
+  GitHub sign-in; signed-in form rendering was not observed in the unauthenticated
+  browser. No login/account creation or test issue submission was attempted.
 
 ## Decisions
 
@@ -76,6 +77,9 @@ successful demonstration, a real first attempt, and self-reported later use.
 
 - Installed pinned ProofRun passed read-only preview, detected/explicit init,
   actual test execution, VALID/STALE/VALID, audit, and existing-manifest preservation.
+- An archived actual ResidueCheck project passed the guide's explicit src-layout
+  route with eight real tests and a normal-edit stale/reverify sequence. This is
+  internal acceptance, not an outside participant or retention observation.
 - Ruby's safe YAML parser accepted the issue form; checked required keys, unique
   field IDs, supported types, distinct choices, and no preselected defaults or
   assignments. This is not a claim of GitHub's hosted schema validation.
@@ -83,6 +87,8 @@ successful demonstration, a real first attempt, and self-reported later use.
   skip), twelve reproducible builds, six installs, release/behavior contracts,
   and complete wheel integrity. All 78 local links/anchors and the feedback
   URL's template-file mapping passed. Runtime sources and fixture stayed unchanged.
+- Published form blob matched the local file. Publication CI 39536550733 passed
+  all Python 3.10–3.15 jobs; public guide rendering and sign-in boundary were observed.
 
 ## Recommended next steps
 

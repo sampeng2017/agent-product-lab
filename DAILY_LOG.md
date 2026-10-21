@@ -3295,3 +3295,17 @@ Post-change warning-strict revalidation passed 141 tests (one expected optional
 skip), twelve reproducible builds, six installs, release/behavior contracts,
 and complete wheel integrity. All 78 local links/anchors and the feedback URL's
 template-file mapping passed. No runtime source or checked-in fixture changed.
+
+Published d108299 normally. Public form blob matches local source. In a hidden
+temporary browser tab, the guide rendered on GitHub without signing in, including
+the existing-config guard, command blocks, and feedback link. The draft URL
+redirected to GitHub sign-in with the correct return target. Signed-in form
+rendering is unverified; no credentials were entered, account created, field
+filled, or issue submitted. Temporary browser tabs were closed.
+
+Also exercised the guide against a disposable Git archive of the actual
+ResidueCheck product, not only the small demo: explicit env/PYTHONPATH src-layout
+command, eight real tests, first VALID, ordinary source-edit STALE, reverify
+VALID, and audit passed. This remains internal mechanical acceptance and is
+not counted as a user attempt or repeat use. Publication CI 39536550733 passed
+every Python 3.10–3.15 job. No outside adoption evidence was collected.
