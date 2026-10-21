@@ -91,6 +91,9 @@ The [stale-proof worked example](../examples/proofrun-stale-proof/README.md)
 provides a replayable project and explains the expected exit-1 result before
 fresh verification restores the status gate.
 
+For an evaluation on real work, [try your own project](TRY_PROOFRUN.md) and
+optionally report the result, setup friction, or later repeat use.
+
 For missing/rejected/stale evidence, the [recovery guide](PROOFRUN_TROUBLESHOOTING.md)
 separates command failures, changes during a check, later drift, and safe exports.
 

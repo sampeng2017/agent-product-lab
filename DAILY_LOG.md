@@ -3223,3 +3223,75 @@ files remain unchanged. No new external-template execution claim is inferred.
 
 Next: assess concrete adopter friction, keep environment/evidence boundaries
 explicit, and retain the separate November 5 platform review.
+
+## 2026-10-20 19:55 PDT — own-project ProofRun trial and voluntary feedback
+
+Started clean at synchronized e72de77. Inspected memory, Git/history,
+root/product docs, tests/implementation, active To-Sam, workflow/validator,
+and public GitHub. No active Sam note; MIT detected, issues enabled, and public
+baseline 39450093017 green. Restricted-network reads were retried with approved
+network access. Full warning-strict baseline passed 141 product tests with one
+optional skip, twelve reproducible builds, six installs, all contracts/integrity.
+
+Sam's preceding value challenge exposed the more important gap: engineering
+evidence exists, but verified outside adoption was not established. Compared
+another schema-edge correction, a new runtime feature, and a self-service
+real-work evaluation route. Selected the latter within existing onboarding scope.
+This is not approval of an outreach/recruitment plan and not proof of demand.
+
+Added docs/TRY_PROOFRUN.md: an existing Git project and trusted command, preview,
+safe named-check setup, first VALID, ordinary-edit stale gate, fresh verification,
+and an optional feedback handoff. Ten minutes includes installation/setup and
+is a budget rather than a performance promise. Existing configuration is kept;
+no force/reset/clean, lab clone, fake bug, or automatic sharing is required.
+
+Added .github/ISSUE_TEMPLATE/proofrun-first-use.yml with workflow, stage, elapsed
+time, outcome/friction, actual later use, optional environment, and public-data
+review. No preselected positive option, assignments, labels, telemetry, or issue
+auto-submission. Negative/blocked outcomes and existing alternatives are welcome.
+The same issue can be updated after a later real task; merely completing the
+guide or saying one intends to return is not repeat-use evidence.
+
+Linked the path from root/product README and installation guidance. All frozen
+runtime versions, schemas, source pins, product tests, active workflow, and
+mandatory gates are unchanged. No participants were contacted or recruited;
+no test/user issue was submitted. This run collected no adoption/retention data.
+
+Installed the existing public ProofRun 1.8.1 source pin in an owned temporary
+Python 3.11 environment. In disposable copies of the existing fixture, detected
+and explicit-command routes passed preview no-write checks, named init, actual
+unittest execution, VALID/STALE/VALID, and audit. An existing-manifest route
+verified its own check without rewriting configuration. Space-containing paths
+passed. These are mechanical acceptance tests, not external users.
+
+Ruby's safe YAML parser accepted the form. Checked required root keys, supported
+field types, unique IDs, distinct dropdown choices without defaults, and no
+automatic assignment/label/project side effects. GitHub's hosted rendering is
+not inferred from local YAML parsing; inspect after publication without posting.
+
+Commands include:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh run list --repo sampeng2017/agent-product-lab --limit 1 --json databaseId,headSha,status,conclusion,url
+proofrun init --dry-run --check-name trial
+proofrun init --check-name trial
+proofrun verify trial
+proofrun status --require-valid trial
+proofrun audit
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Sources: [GitHub issue form syntax](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms)
+and [field schema](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema).
+
+Next: inspect genuine feedback if any, address observed blockers/alternatives,
+and obtain explicit human authorization before any outreach. No participant or
+retention claim should be manufactured from this preparation work.
+
+Post-change warning-strict revalidation passed 141 tests (one expected optional
+skip), twelve reproducible builds, six installs, release/behavior contracts,
+and complete wheel integrity. All 78 local links/anchors and the feedback URL's
+template-file mapping passed. No runtime source or checked-in fixture changed.

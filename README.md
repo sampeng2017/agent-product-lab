@@ -10,6 +10,10 @@ For a new environment, choose an upstream-maintained Python release; see the
 
 ## Get started
 
+Want to evaluate one tool on real work? [Try ProofRun on your own project](docs/TRY_PROOFRUN.md)
+with a ten-minute trial budget, then tell us whether it helped, blocked you, or
+added unnecessary steps. No lab checkout is required; feedback is voluntary.
+
 [Choose and install a tool](docs/INSTALLATION.md) for your task. The guide
 includes commands for all six maintained tools, environment setup on
 macOS/Linux and Windows, and examples that run outside this repository.

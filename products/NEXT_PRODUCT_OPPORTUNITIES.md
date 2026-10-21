@@ -947,3 +947,28 @@ installation before updating pins. Other products need their own reproduction
 before reopening frozen contracts. No dependency or separate gate is added.
 
 Reference: [TOML types](https://toml.io/en/v1.0.0#integer).
+
+## Make a real-work attempt reportable — 2026-10-20 evening
+
+Sam challenged whether the work justified continuation. The codebase has useful
+mechanics but no verified external adoption evidence was established. Another
+small edge check would not answer that challenge. Existing demos also did not
+provide a structured path from an own-project attempt to candid user feedback.
+
+Selected a bounded ProofRun trial guide plus native voluntary GitHub form over
+another runtime feature or unsolicited recruitment. This reuses the frozen tool,
+its current pin, existing Git/test workflows, and GitHub issues rather than adding
+an installer, telemetry, feedback service, or mandatory validation gate.
+
+The guide uses a real existing task, budgets ten minutes including installation,
+and permits stopping. The form asks about prior workflow, elapsed time, blockers,
+unnecessary work, and actual later use without preselected praise. Public-data
+review and redaction guidance are explicit. A submitted claim remains self-report.
+
+Retention for this implementation requires installed command-path acceptance,
+safe existing-configuration behavior, valid form structure/links, and unchanged
+portfolio checks. That only establishes readiness to learn. It does not satisfy
+the separate demand question; automated trials and intent are not repeat use.
+No participants were recruited or contacted and no feedback issue was posted.
+
+Reference: [GitHub native issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms).

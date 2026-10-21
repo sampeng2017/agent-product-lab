@@ -1,0 +1,67 @@
+name: ProofRun first-use feedback
+description: Share a real attempt, a setup blocker, or a reason not to keep using ProofRun.
+title: "[ProofRun first use] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is voluntary feedback, not a request for a positive review.
+        Try https://github.com/sampeng2017/agent-product-lab/blob/main/docs/TRY_PROOFRUN.md first, or report where you stopped.
+        Submitted issues are public. Do not include credentials, private source, repository names, local paths, commands containing secrets, receipt stores, full reports, or environment values.
+  - type: textarea
+    id: workflow
+    attributes:
+      label: What were you trying to verify?
+      description: Describe the task and your existing workflow. No project link or private details are needed.
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: How far did you get?
+      options:
+        - Stopped before or during installation
+        - Installed but could not configure a useful check
+        - Configured but could not get valid evidence
+        - Got valid evidence but have not checked it after a normal edit
+        - Checked evidence after a normal edit
+    validations:
+      required: true
+  - type: input
+    id: elapsed
+    attributes:
+      label: Minutes to first VALID, or to stopping
+      description: Include installation and setup. An estimate or unknown is fine; this is not a speed contest.
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What helped, failed, or added unnecessary work?
+      description: Say what happened and what you would use instead. A short redacted error is enough; do not paste full logs or receipts.
+    validations:
+      required: true
+  - type: dropdown
+    id: return_use
+    attributes:
+      label: Have you actually used it again on another real task?
+      description: Choose what happened, not what you intend to do. You can update this issue later.
+      options:
+        - First attempt only; no later real task yet
+        - Used it again on a later real task because it was useful
+        - Used it again only to finish or test this trial
+        - Had another task but chose not to use it again
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment, if relevant
+      description: OS, Python/test runner, and installation route/version if known. Do not include machine names, paths, or environment variables.
+  - type: checkboxes
+    id: public_review
+    attributes:
+      label: Public feedback review
+      options:
+        - label: I understand this issue is public and have removed sensitive details.
+          required: true
