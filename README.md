@@ -27,7 +27,7 @@ For example, install ProofRun from a tested public revision:
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
-python -m pip install "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@84e76faa7f837a858fe6b6efdea9da8c24856b99#subdirectory=products/proofrun"
+python -m pip install "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@ea5d89859ffc4718e1d1b6ff1ee3b8849f8d54c3#subdirectory=products/proofrun"
 proofrun --help
 ```
 

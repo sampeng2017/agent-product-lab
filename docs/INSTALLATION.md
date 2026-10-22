@@ -54,22 +54,32 @@ are measuring, or ignore/exclude it in your project as appropriate.
 | Find files a command creates, modifies, or removes, including ignored files | [ResidueCheck](../products/residuecheck/README.md) | `residuecheck` |
 | Check an existing wheel's metadata, exact payload, and internal integrity | [WheelFact](../products/wheelfact/README.md) | `wheelfact` |
 
-Run only the install command for the tool you choose. Most commands pin source
+Run only the install command for the tool you choose. Four tools pin source
 to public commit `84e76faa7f837a858fe6b6efdea9da8c24856b99`, whose portfolio CI
 passed Python 3.10–3.14 when selected. Current compatibility coverage extends
-through 3.15, with unchanged runtime/build definitions at the pins below. The
-full revision keeps the source selection stable as
+through 3.15. The full revision keeps the source selection stable as
 `main` evolves; it is not a release tag or a pin of pip's build dependencies.
+ProofRun uses the validated v1.8.2 correction revision
+`ea5d89859ffc4718e1d1b6ff1ee3b8849f8d54c3` to reject valid-proof claims when
+recorded or current Git context is unavailable.
 WheelContract instead uses the validated v1.0.6 revision
 `18a6492fd55d66f77095d95475fbb8f6789fd291` to include its assertion,
 launch-error, and schema-version type fixes.
 
-### ProofRun 1.8.1
+<a id="proofrun-181"></a>
+
+### ProofRun 1.8.2
 
 ```sh
-python -m pip install "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@84e76faa7f837a858fe6b6efdea9da8c24856b99#subdirectory=products/proofrun"
+python -m pip install "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@ea5d89859ffc4718e1d1b6ff1ee3b8849f8d54c3#subdirectory=products/proofrun"
 proofrun --help
 ```
+
+For an older pip environment, add `--upgrade` when rerunning that requirement.
+For pipx, use the explicit source-replacement procedure below. Version 1.8.2
+requires available recorded and current Git snapshots for a valid status gate.
+Old unbound receipts remain readable/auditable but need fresh Git-backed
+verification; no receipt migration or deletion is required.
 
 In your own Git repository, preview the detected test command before creating
 a manifest. `init` refuses to overwrite existing files by default:
@@ -229,7 +239,7 @@ entire quoted source requirement from the chosen tool's section. For example,
 choose either of these, not a same-named package from an index:
 
 ```sh
-pipx install --python python3.11 "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@84e76faa7f837a858fe6b6efdea9da8c24856b99#subdirectory=products/proofrun"
+pipx install --python python3.11 "proofrun @ git+https://github.com/sampeng2017/agent-product-lab.git@ea5d89859ffc4718e1d1b6ff1ee3b8849f8d54c3#subdirectory=products/proofrun"
 proofrun --help
 ```
 
@@ -310,13 +320,12 @@ Clone the repository, select a revision, then install one product directory:
 ```sh
 git clone https://github.com/sampeng2017/agent-product-lab.git
 cd agent-product-lab
-git checkout 84e76faa7f837a858fe6b6efdea9da8c24856b99
+git checkout ea5d89859ffc4718e1d1b6ff1ee3b8849f8d54c3
 python -m pip install ./products/proofrun
 ```
 
-That revision is the tested source for ProofRun and the other tools except
-WheelContract. For WheelContract 1.0.6, select its correction revision before
-installing; merely changing the product directory above would install 1.0.0:
+That revision selects ProofRun 1.8.2. For WheelContract 1.0.6, select its
+independently tested correction revision before installing:
 
 ```sh
 git checkout 18a6492fd55d66f77095d95475fbb8f6789fd291
@@ -324,8 +333,15 @@ python -m pip install ./products/wheelcontract
 wheelcontract --version
 ```
 
-For the other tools, retain the first revision and replace `proofrun` with the
-chosen product directory. For development, use
+For AgentScope, ReleaseFact, ResidueCheck, or WheelFact, select their original
+tested revision before choosing the product directory:
+
+```sh
+git checkout 84e76faa7f837a858fe6b6efdea9da8c24856b99
+python -m pip install ./products/agentscope
+```
+
+Replace `agentscope` with the selected product directory. For development, use
 `python -m pip install -e ./products/proofrun` and follow its focused test
 instructions. Installing from the repository root fails because the root is a
 portfolio, not a Python package.

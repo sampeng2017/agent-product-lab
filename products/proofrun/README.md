@@ -20,7 +20,7 @@ For a bounded evaluation rather than a lab demo,
 [try ProofRun on your own project](../../docs/TRY_PROOFRUN.md).
 Report a useful result, a blocker, or a reason to stay with your existing workflow.
 
-Install it using the [tested Git installation guide](../../docs/INSTALLATION.md#proofrun-181).
+Install it using the [tested Git installation guide](../../docs/INSTALLATION.md#proofrun-182).
 The optional [pipx route](../../docs/INSTALLATION.md#install-cli-apps-with-pipx)
 keeps the tool outside your repositories; verification still uses your project's
 chosen command and environment.

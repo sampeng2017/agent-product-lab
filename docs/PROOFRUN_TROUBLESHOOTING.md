@@ -5,7 +5,7 @@ reject a successful command if it changes Git-visible inputs, or mark an earlier
 passing result stale after an edit, commit, or age limit. Diagnose the reason
 before rerunning, changing exclusions, or changing the age policy.
 
-These commands use installed [ProofRun 1.8.1](INSTALLATION.md#proofrun-181),
+These commands use installed [ProofRun 1.8.2](INSTALLATION.md#proofrun-182),
 the default store, and a check named `unit`. Run them from the same project
 directory as verification. Substitute your check name; `init` names its default
 check `test`. For a custom store, put `--store PATH` before each subcommand.
@@ -41,7 +41,8 @@ Starting in 1.8.2, both recorded and current Git state must be available for
 valid evidence. A command may still succeed and be recorded without Git, but
 its status gate fails. Use the intended Git project and verify again; do not
 delete receipts or initialize a different repository to hide this reason.
-An unborn Git repository is supported: no first commit alone is not this error.
+An unborn Git repository is supported; a missing first commit alone does not
+cause this error.
 
 ## Tests passed, but the check changed files
 

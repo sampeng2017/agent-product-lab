@@ -77,6 +77,8 @@ and current Git state were unavailable. Require both contexts for valid evidence
 preserve schema-v5 bytes/hashes, command-result recording, audit, and unborn
 repositories. Unbound old receipts need fresh Git-backed verification, not
 deletion or store rewriting. No external feedback had been submitted.
+Exact public-source acceptance passed; ProofRun consumers select correction
+revision ea5d898. The other five product source selections remain unchanged.
 
 ## Required starting inspection
 

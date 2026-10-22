@@ -3361,3 +3361,33 @@ one expected optional skip. Modified source/tests parse with Python 3.10 grammar
 Full warning-strict portfolio passed 143 tests (one expected skip), twelve
 reproducible builds, six installs, all release/behavior contracts and wheel
 integrity. New current-release selectors remain the same three narrow claims.
+
+Published correction ea5d898 and installed its exact public Git revision in a
+fresh disposable environment; distribution version/direct_url commit identity
+matched. Real CLI rejected unbound proof before/after an edit and after Git init,
+kept history byte-for-byte, and accepted fresh verification in the unborn Git
+context. An actual sealed 1.8.1 receipt generated from the archived old code
+remained valid and byte-identical under 1.8.2. Temporarily moving only the owned
+test project's Git metadata rejected current proof; restoring it recovered
+validity without a store rewrite. Both original stale-proof replay modes passed.
+
+Correction CI 39715136927 passed every Python 3.10–3.15 job. Refreshed only
+ProofRun pip/pipx/checkout/README requirements to ea5d898 and kept the old section
+anchor. Clarified checkout source choices and corrected replay provenance now
+that the new pin includes the example. Other five source pins are unchanged.
+
+Scoped pipx 1.7.1 / Python 3.11 installation of the same correction also passed
+all public-version/source-identity, unavailable-context, old sealed receipt,
+Git recovery, and history-preservation cases. All app/cache/XDG paths were owned
+temporary locations; no ensurepath, global app, or user configuration change.
+
+Also reproduced the same false pass inside an actual Git project by supplying
+an invalid-format index only through the owned test process's GIT_INDEX_FILE.
+Old 1.8.1 verify/status falsely passed with unavailable snapshots; installed
+1.8.2 rejected the gate. Removing that test override and recording fresh proof
+recovered validity/audit. No real index or user repository metadata was changed.
+
+Final consumer-state warning-strict portfolio passed 143 tests with one optional
+skip and all builds/installs/contracts/integrity. All 78 links/anchors, consumer
+pin identity checks, and diff checks passed. The other five runtime sources
+remain unchanged. Internal correctness evidence is not counted as adoption.

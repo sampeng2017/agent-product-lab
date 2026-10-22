@@ -12,7 +12,7 @@ the tool takes longer. No lab checkout is needed.
 ## Before you run anything
 
 - Choose an existing Git project and a test/check command you already trust.
-- Use the [pinned installation guide](INSTALLATION.md#proofrun-181).
+- Use the [pinned installation guide](INSTALLATION.md#proofrun-182).
   The [pipx route](INSTALLATION.md#install-cli-apps-with-pipx) keeps the tool
   outside your project; it does not supply project test dependencies.
 - Activate your project's test environment if its command uses `python`,

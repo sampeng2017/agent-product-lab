@@ -10,7 +10,7 @@ evidence is stale; it does not mean that ProofRun found a code defect.
 
 ## Replay the example
 
-[Install ProofRun](../../docs/INSTALLATION.md#proofrun-181) and use that Python
+[Install ProofRun](../../docs/INSTALLATION.md#proofrun-182) and use that Python
 environment. You also need Git on PATH and a checkout of this repository for
 the example files. From the lab root:
 
@@ -50,9 +50,9 @@ cd agent-product-lab
 python examples/proofrun-stale-proof/demo.py
 ```
 
-The example files are on current `main`; the older installation revision in
-the install guide predates this example. Cloning the lab does not change the
-installed ProofRun version used by the replay.
+The pinned ProofRun correction revision includes these example files; current
+`main` carries the latest guide. Cloning the lab does not change the installed
+ProofRun version used by the replay.
 
 The script copies the small project into a temporary directory, initializes
 Git there, and runs installed ProofRun. It never edits your checkout, commits

@@ -32,7 +32,8 @@ ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
   audit, sealed history, fresh-bound supersession, and unborn repositories.
 - Updated package/runtime version, neutral current-release selectors, root/index,
   and recovery/trial guidance. Original August v1.8.1 dates stay historical.
-- Consumer pins await exact public-source acceptance before being refreshed.
+- Exact public-source acceptance passed; ProofRun pip/pipx/checkout/README
+  consumers now select correction ea5d898. Other source selections are unchanged.
 
 ## Changes since the prior run
 
@@ -55,7 +56,7 @@ restore the intended Git context, and record fresh applicable evidence.
   receipt repair, signing, or filesystem sandboxing was added.
 - Ignored/transient mutation and audit-authentication limits remain unchanged.
 - Existing platform and voluntary-feedback rendering limitations still apply.
-- New consumer revision selection awaits public-source installation.
+- Source pins select code, not build-dependency locks or package-index releases.
 
 ## Decisions
 
@@ -73,11 +74,23 @@ restore the intended Git context, and record fresh applicable evidence.
   Python 3.11 and 3.14 (one optional pytest skip per run); Python 3.10 grammar passed.
 - Post-fix warning-strict portfolio passed 143 tests (one optional skip), twelve
   reproducible builds, six installs, release/behavior contracts and wheel integrity.
-  Exact public-source installation and consumer-pin acceptance follow publication.
+- Public installed 1.8.2 rejected unbound evidence before/after edits and Git
+  initialization, preserved old receipt bytes, and recovered with fresh bound
+  verification. A real sealed 1.8.1 receipt stayed byte-identical and valid;
+  current Git access loss failed closed and restoring it recovered validity.
+- Both existing replay modes passed with installed 1.8.2; correction CI
+  39715136927 passed Python 3.10–3.15. This is internal correctness, not adoption.
+- Scoped pipx installation passed the same public-version/source-identity,
+  missing-context, old sealed receipt, recovery, and history-preservation cases.
+- A real Git-status failure inside an actual Git project also falsely passed
+  1.8.1; installed 1.8.2 rejected it and fresh verification recovered normally.
+- Final consumer-state warning-strict portfolio passed 143 tests (one optional
+  skip) and all artifact/behavior/release checks. All 78 links/anchors and
+  ProofRun pin checks passed; other five runtime sources remain unchanged.
 
 ## Recommended next steps
 
-1. Complete exact-public-source acceptance and update only ProofRun consumers.
+1. Preserve fail-closed Git evidence and assess genuine first-use feedback.
 2. Continue reading genuine feedback; obtain authorization before any outreach.
    Do not substitute internal checks for demand evidence.
 3. Retain the November 5 platform-policy review.
