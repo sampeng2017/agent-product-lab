@@ -3309,3 +3309,55 @@ command, eight real tests, first VALID, ordinary source-edit STALE, reverify
 VALID, and audit passed. This remains internal mechanical acceptance and is
 not counted as a user attempt or repeat use. Publication CI 39536550733 passed
 every Python 3.10–3.15 job. No outside adoption evidence was collected.
+
+## 2026-10-21 19:59 PDT — reject valid evidence without Git context
+
+Started clean at synchronized 1098b92. Inspected Git/history, memory, README,
+status/log/handoffs, product docs/tests/implementation, active To-Sam, workflow,
+and public GitHub. MIT detected, issues enabled, baseline 39536878147 green;
+all-state issue query returned no submissions. No active Sam message or outreach
+authorization. Baseline warning-strict portfolio passed 141 tests with one
+optional skip, twelve reproducible builds, six installs, contracts/integrity.
+
+Reproduced a first-use correctness defect rather than adding more preparation:
+in an owned non-Git directory, init and verify passed, status --require-valid
+returned VALID/exit 0, and adding a file after verification still returned VALID.
+Both receipt and current Git snapshots were unavailable, so drift assessment
+skipped the comparison needed to invalidate that evidence. This is an internal
+safety reproduction, not an external user report or demand measurement.
+
+Added two failing regressions, then required available recorded and current Git
+state in assessment. Missing context adds repository state unavailable;
+status --require-valid exits 1. Preserve informational status exit 0, run/verify
+command recording/results, consistent audit, schema 5, receipt hashes, original
+history, fresh-bound supersession, and unborn Git repositories. Temporary loss
+of access to an unchanged bound context can recover without rewriting history.
+
+Promoted ProofRun to 1.8.2. Its three release selectors now use neutral current
+release wording so original August v1.8.1 dates remain historical, not backdated.
+Added recovery/trial guidance and root/index release surfaces. Other five
+runtimes, schemas, dependencies, pins, and active workflow are unchanged.
+No new mandatory gate or automatic repository initialization.
+
+Commands:
+
+```sh
+git status --short --branch
+git log -4 --oneline
+gh issue list --repo sampeng2017/agent-product-lab --state all --limit 30 --json number,title,body,state,createdAt,url
+PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error PYTHONPATH=products/proofrun/src python3.11 -m unittest discover -s products/proofrun/tests -v
+PYTHONDONTWRITEBYTECODE=1 PYTHONWARNINGS=error PYTHONPATH=products/proofrun/src python3.14 -m unittest discover -s products/proofrun/tests -v
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+The 55-test source suite passed on Python 3.11 after the correction (one expected
+optional pytest skip). Post-fix portfolio/public-source acceptance and consumer
+pin refresh follow. Keep feedback/privacy/outreach boundaries and the separate
+November 5 platform review. No outside adoption claim is made.
+
+Post-fix full ProofRun suites passed on Python 3.11 and 3.14: 55 tests each,
+one expected optional skip. Modified source/tests parse with Python 3.10 grammar.
+Full warning-strict portfolio passed 143 tests (one expected skip), twelve
+reproducible builds, six installs, all release/behavior contracts and wheel
+integrity. New current-release selectors remain the same three narrow claims.

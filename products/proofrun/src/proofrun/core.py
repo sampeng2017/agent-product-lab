@@ -614,6 +614,8 @@ def assess_receipts(
 
         recorded = receipt.get("git", {})
         working_tree_paths = {"tracked": [], "untracked": []}
+        if not current.available or recorded.get("available") is not True:
+            reasons.append("repository state unavailable")
         if recorded.get("available") != current.available:
             reasons.append("repository changed")
         elif current.available:

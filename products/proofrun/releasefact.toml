@@ -12,9 +12,9 @@ template = "__version__ = \"{version}\""
 [[claim]]
 name = "readme release"
 file = "README.md"
-template = "> **Portfolio status:** ProofRun v{version} is a frozen, completed local MVP. It was"
+template = "> **Portfolio status:** ProofRun v{version} is the current frozen local MVP."
 
 [[claim]]
 name = "status release"
 file = "STATUS.md"
-template = "> Frozen on 2026-08-20 as a completed v{version} local MVP. This file preserves the"
+template = "> Current frozen release: ProofRun v{version}."

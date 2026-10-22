@@ -72,6 +72,12 @@ trial and voluntary first-use GitHub form. This prepares real-work feedback;
 no participants, adoption, retention, or outreach authorization are inferred.
 The ten-minute budget includes installation; it is not a timing claim.
 
+On October 21, ProofRun 1.8.2 fixed a reproduced false-valid gate when recorded
+and current Git state were unavailable. Require both contexts for valid evidence;
+preserve schema-v5 bytes/hashes, command-result recording, audit, and unborn
+repositories. Unbound old receipts need fresh Git-backed verification, not
+deletion or store rewriting. No external feedback had been submitted.
+
 ## Required starting inspection
 
 Read root `README.md`, `STATUS.md`, `DAILY_LOG.md`, this file, active `To-Sam/`

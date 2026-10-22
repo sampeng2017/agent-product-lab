@@ -1,8 +1,26 @@
 # ProofRun status
 
-> Frozen on 2026-08-20 as a completed v1.8.1 local MVP. This file preserves the
-> final product-specific status; active portfolio direction lives in the root
-> `STATUS.md`.
+> Current frozen release: ProofRun v1.8.2.
+> The original v1.8.1 MVP was frozen on 2026-08-20. Active portfolio direction
+> lives in the root `STATUS.md`.
+
+## Correctness patch on 2026-10-21
+
+- Reproduced run/verify followed by a false VALID gate in a non-Git directory,
+  including after a file edit. Both unavailable snapshots bypassed drift checks.
+- Assessment now requires available recorded and current Git state. Unbound
+  or currently unavailable evidence is stale; --require-valid exits 1.
+- Preserve command-result recording, default informational status exit 0,
+  schema-v5 receipts and hashes, consistent audit, and unborn Git repositories.
+- A fresh Git-bound receipt can supersede an unbound one without deleting
+  history. Temporary loss of Git access does not rewrite a bound receipt.
+- Added non-Git CLI/JSON/report/history-preservation and availability-recovery
+  regressions. Promoted only this correctness patch to 1.8.2.
+
+## Original frozen-product snapshot (2026-08-20)
+
+The sections below preserve the original release record, including deployment
+notes superseded by the root README and current installation guide.
 
 ## Current product idea
 

@@ -972,3 +972,18 @@ the separate demand question; automated trials and intent are not repeat use.
 No participants were recruited or contacted and no feedback issue was posted.
 
 Reference: [GitHub native issue forms](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-issue-forms).
+
+## No unavailable snapshot can establish current evidence — 2026-10-21
+
+The feedback query was empty. Rather than invent demand, reproduced a concrete
+gate defect: a non-Git directory produced VALID proof even after an edit because
+both unavailable snapshots skipped Git drift checks. A successful command alone
+cannot support evidence applicability to current Git state.
+
+Selected an assessment guard over forbidding command history outside Git,
+silently initializing a repository, or changing receipt serialization. Require
+recorded and current availability, leave unbound evidence stale, and recover
+through fresh Git-backed verification. Keep original schema/hashes, informational
+status, command recording, and unborn repositories. Reuse existing unit and
+portfolio coverage rather than add a gate. Refresh only ProofRun's consumer pin
+after exact-source public acceptance. This is correctness, not outside adoption.

@@ -81,6 +81,62 @@ class ProofRunTests(unittest.TestCase):
         )
         self.assertEqual(assessed[0]["state"], "valid")
 
+    def test_unbound_receipt_never_becomes_valid_without_fresh_git_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            outside = Path(directory)
+            store = outside / ".proofrun" / "receipts.jsonl"
+            source = outside / "input.py"
+            source.write_text("before\n", encoding="utf-8")
+            exit_code, receipt = run_check(
+                name="unit", command=[sys.executable, "-c", "pass"],
+                cwd=outside, store=store,
+            )
+            self.assertEqual(exit_code, 0)
+            self.assertFalse(receipt["git"]["available"])
+            source.write_text("changed after verification\n", encoding="utf-8")
+            output = io.StringIO()
+            with patch("proofrun.cli.Path.cwd", return_value=outside), redirect_stdout(output):
+                self.assertEqual(main([
+                    "--store", str(store), "status", "--require-valid", "--json", "unit",
+                ]), 1)
+            item = json.loads(output.getvalue())[0]
+            self.assertEqual(item["state"], "stale")
+            self.assertIn("repository state unavailable", item["reasons"])
+            self.assertEqual(item["receipt"]["command_exit_code"], 0)
+            self.assertIn("repository state unavailable", render_markdown_report(
+                [receipt], current=git_state(outside), max_age_hours=24,
+            ))
+            with patch("proofrun.cli.Path.cwd", return_value=outside), redirect_stdout(io.StringIO()):
+                self.assertEqual(main(["--store", str(store), "status", "unit"]), 0)
+                self.assertEqual(main(["--store", str(store), "audit"]), 0)
+
+            current = git_state(self.root)
+            self.assertTrue(current.available)
+            self.assertEqual(assess_receipts([receipt], current=current, max_age_hours=24)[0]["state"], "stale")
+            # A fresh bound receipt can supersede the unbound one without
+            # deleting history or changing its sealed schema.
+            exit_code, bound = run_check(
+                name="unit", command=[sys.executable, "-c", "pass"],
+                cwd=self.root, store=store,
+            )
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(assess_receipts([receipt, bound], current=git_state(self.root), max_age_hours=24)[0]["state"], "valid")
+
+    def test_current_git_unavailability_rejects_bound_proof_until_recovery(self) -> None:
+        _, receipt = run_check(
+            name="unit", command=[sys.executable, "-c", "pass"],
+            cwd=self.root, store=self.root / ".proofrun" / "receipts.jsonl",
+        )
+        unavailable = proofrun.core.GitState(False, None, None, False, None, {}, {})
+        assessed = assess_receipts([receipt], current=unavailable, max_age_hours=24)[0]
+        self.assertEqual(assessed["state"], "stale")
+        self.assertIn("repository state unavailable", assessed["reasons"])
+        # Unborn repositories are still valid Git contexts. Restoring access
+        # to the unchanged context does not mutate or invalidate its receipt.
+        current = git_state(self.root)
+        self.assertIsNone(current.head)
+        self.assertEqual(assess_receipts([receipt], current=current, max_age_hours=24)[0]["state"], "valid")
+
     def test_git_state_uses_one_status_scan_for_untracked_files(self) -> None:
         tracked = self.root / "tracked.py"
         tracked.write_text("committed\n", encoding="utf-8")

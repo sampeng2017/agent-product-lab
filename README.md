@@ -65,8 +65,9 @@ to setuptools CLIs without runtime dependencies.
 ## Portfolio
 
 - [ProofRun](products/proofrun/README.md) — local-first verification receipts
-  for agent-assisted development. The v1.8.1 local MVP was completed and frozen
-  on 2026-08-19.
+  for agent-assisted development. The original local MVP was frozen on
+  2026-08-19; v1.8.2 rejects valid-proof claims when recorded or current Git
+  state is unavailable.
 - [AgentScope](products/agentscope/README.md) — local instruction-scope debugger
   for coding-agent repositories. The v1.0.0 local MVP compares named client
   profiles, models explicit Copilot CLI session, target, and additional-directory

@@ -1,8 +1,8 @@
 # ProofRun
 
-> **Portfolio status:** ProofRun v1.8.1 is a frozen, completed local MVP. It was
-> moved into this product folder on 2026-08-20 when the repository pivoted to a
-> new idea. Development commands below should be run from this directory.
+> **Portfolio status:** ProofRun v1.8.2 is the current frozen local MVP.
+> The original v1.8.1 MVP moved into this product folder on 2026-08-20.
+> Development commands below should be run from this directory.
 
 ProofRun is a local-first verification receipt tool for developers working with
 AI coding agents. It runs a check, records the result together with the current
@@ -83,9 +83,19 @@ PYTHONPATH=src python3 -m proofrun status --require-valid unit
 `status` marks a successful receipt as `valid` only while all of these remain
 true:
 
+- Git state is available both in the receipt and for the current directory;
 - the receipt is newer than the selected maximum age;
 - the Git commit is unchanged;
 - tracked changes and untracked file contents are unchanged.
+
+Version 1.8.2 fixes a false-valid gate outside Git repositories. If either
+snapshot is unavailable, status reports `repository state unavailable` and
+`--require-valid` exits 1. `run`/`verify` can still record a command result,
+but that result alone is not Git-bound evidence. Enter the intended accessible
+Git project and verify again; making Git available later cannot bind an old
+unbound receipt retroactively. Unborn Git repositories remain supported.
+The receipt schema, hashes, audit consistency, and informational status exit
+are unchanged. A successful audit does not make unavailable Git evidence valid.
 
 Repository metadata and changed-path discovery use one NUL-safe Git status
 snapshot. Untracked contents are still hashed exactly, in bounded-memory
@@ -256,7 +266,7 @@ ProofRun is published at a particular location:
 ```bash
 proofrun init \
   --github-actions \
-  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@v1.8.1"
+  --ci-install "proofrun @ git+https://github.com/YOUR_ORG/proofrun.git@YOUR_TESTED_REVISION"
 ```
 
 ProofRun validates the command choice and every selected destination before it

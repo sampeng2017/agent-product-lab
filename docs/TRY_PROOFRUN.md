@@ -68,6 +68,8 @@ effects, so review it first.
 Record elapsed minutes to your first `VALID`, or to the point where you stopped.
 Existing uncommitted changes are allowed: evidence covers that current state.
 `VALID` does not establish test completeness, code correctness, or a signature.
+ProofRun 1.8.2 rejects a validity claim when recorded or current Git state is
+unavailable. A passing command outside Git is not evidence for your project.
 If tests fail or proof is rejected, use the
 [recovery guide](PROOFRUN_TROUBLESHOOTING.md); a blocked result is useful feedback.
 

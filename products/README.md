@@ -1,6 +1,6 @@
 # Products
 
-- `proofrun/` — completed ProofRun v1.8.1 local MVP.
+- `proofrun/` — completed ProofRun v1.8.2 local MVP.
 - `agentscope/` — completed AgentScope v1.0.0 instruction-scope debugger.
 - `wheelcontract/` — completed WheelContract v1.0.6 installed-artifact behavior
   contract local MVP.

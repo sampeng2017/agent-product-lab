@@ -27,6 +27,7 @@ check the diagnostic, working directory, store, and check name first.
 | --- | --- |
 | `no receipt` / `MISSING` | Check the name and store. Run the intended check; status itself does not verify. |
 | `failed` | Read the test/command failure and `receipt.command_exit_code`. Fix it, then verify again. |
+| `repository state unavailable` (1.8.2+) | Check `git status` in the intended project. Restore Git access and verify again; an old receipt with `receipt.git.available = false` cannot prove the current code. |
 | `repository changed during check` | Inspect the receipt's mutation paths. Move intentional edits before verification. |
 | `working tree changed` or `commit changed` | Review the edits or new commit, then verify the intended current state. A clean Git status alone does not restore old evidence. |
 | `expired` | Run fresh verification. Change the age policy only if that is the policy you intend to enforce. |
@@ -35,6 +36,12 @@ check the diagnostic, working directory, store, and check name first.
 Multiple reasons can apply at once. `proofrun audit` checks receipt hashes and
 links, not whether old evidence applies to today's code. Conversely, a clean
 audit does not fix a failed test or stale proof.
+
+Starting in 1.8.2, both recorded and current Git state must be available for
+valid evidence. A command may still succeed and be recorded without Git, but
+its status gate fails. Use the intended Git project and verify again; do not
+delete receipts or initialize a different repository to hide this reason.
+An unborn Git repository is supported: no first commit alone is not this error.
 
 ## Tests passed, but the check changed files
 
