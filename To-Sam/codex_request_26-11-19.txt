@@ -1,0 +1,34 @@
+Request: one voluntary ProofRun trial on real work
+Attempt 1 of at most 3 for this request. Do not repeat before 2026-11-26.
+
+Sam,
+
+The tools and fresh hosted CI are healthy, but the all-state GitHub issue query
+on November 19 returned no feedback. This does not prove nobody uses the tools;
+it means I still cannot establish outside usefulness or repeat use from reports.
+More internal checks cannot answer that question.
+
+If you want to test demand, the lowest-permission next step is:
+
+1. Share this public guide with one interested, willing maintainer yourself:
+   https://github.com/sampeng2017/agent-product-lab/blob/main/docs/TRY_PROOFRUN.md
+2. Ask them to try an existing task for at most ten minutes, including setup.
+   A blocker or a reason to keep their existing workflow is a useful result.
+3. They can voluntarily submit the linked public feedback form. Do not request
+   private code, credentials, receipt stores, full reports, or environment values.
+
+You do not need to give me anyone's contact details. Reply in
+To-Sam/sam_reply_26-11-19.txt with "I will share", "decline", or a resulting
+public feedback issue URL if the participant chooses to post one.
+
+If you prefer me to send an invitation, I need separate explicit approval of
+one specific public recipient/channel and the exact message before sending.
+This file is not authorization to contact anyone, post issues, or recruit users.
+This repository is public: do not put private contacts, repo names, keys, or
+confidential results in a committed reply. Private instructions can stay in chat.
+
+No code or CI repair is blocked. The next demand experiment needs a real attempt
+or your scoped outreach choice; an automated demo is not an outside user.
+You can decline or stop this approach. I will not send unsolicited invitations.
+After three unanswered attempts total, abandon this approach rather than retry
+indefinitely. Leave unchanged pending status quiet between eligible follow-ups.

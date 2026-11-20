@@ -3391,3 +3391,70 @@ Final consumer-state warning-strict portfolio passed 143 tests with one optional
 skip and all builds/installs/contracts/integrity. All 78 links/anchors, consumer
 pin identity checks, and diff checks passed. The other five runtime sources
 remain unchanged. Internal correctness evidence is not counted as adoption.
+
+## 2026-11-19 19:59 PST — platform review and one real-trial request
+
+Started clean at synchronized dcf8dd6. Inspected memory, Git/history,
+README/status/log/handoff, product docs/tests/implementation, active To-Sam,
+workflow/validator, and public GitHub. MIT detected, no active Sam note;
+all-state issues returned no reports. The last recorded release CI was healthy.
+No participant, outside use, or retention result is inferred from that absence.
+
+Completed the overdue November 5 platform checkpoint on November 19; did not
+backdate it. The official runner catalog snapshot fbb26cb still lists explicit
+Ubuntu 24.04 and Ubuntu 26.04. It associates ubuntu-latest with 24.04 while the
+open migration announcement targets a 26.04 rollout ending November 19. That
+schedule/catalog wording is not proof of an individual runner's actual image.
+Python's lifecycle table still distinguishes maintained 3.11–3.15 from EOL 3.10.
+
+Retained explicit ubuntu-24.04 and existing interpreter coverage. No demonstrated
+need required an OS-series change, and no 26.04 compatibility claim or trial was
+added. Used the existing workflow_dispatch trigger, not a new gate/workflow, to
+refresh the full six-version matrix on unchanged source dcf8dd6. Hosted run
+44671600749 passed all jobs. Setup logs showed Ubuntu 24.04.5 for every job but
+three different image revisions: 20261111.127.1, 20261111.370.1, 20261116.133.1.
+Recorded each job's actual Python/image mapping in the public platform policy.
+This illustrates rolling images; reproducibility remains a pair within each
+job, not a claim of identical wheels across images/interpreters.
+
+Local warning-strict portfolio also passed 143 tests (one expected optional
+skip), twelve reproducible builds, six installs, all release/behavior contracts
+and wheel integrity. No product source, schema, version, source pin, active
+workflow, external starter, or required gate changed. Updated the policy and
+handoff; next platform review is December 19 or an earlier release/deprecation
+trigger. Healthy routine maintenance alone is not a notification reason.
+
+The unmet demand question does need a human choice. Added the first request,
+To-Sam/codex_request_26-11-19.txt, asking Sam to share the existing guide with one
+willing maintainer, decline, or separately authorize one exact invitation.
+No contact details need to be handed over; committed replies must stay public-safe.
+No outreach, issue submission, contact lookup, or invitation was performed.
+Attempt 1/3; do not repeat before November 26, keep unchanged pending status
+quiet, and abandon that approach after three unanswered attempts total.
+This is not a code/CI blocker and not an adoption claim.
+
+Inspection/run commands included:
+
+```sh
+git status --short --branch
+git log -5 --oneline
+gh issue list --repo sampeng2017/agent-product-lab --state all --limit 30 --json number,title,body,state,createdAt,url
+gh workflow run portfolio-ci.yml --repo sampeng2017/agent-product-lab --ref main
+gh run view 44671600749 --repo sampeng2017/agent-product-lab --log
+PYTHON_BIN=python3.11 PYTHONWARNINGS=error ./scripts/validate-portfolio.sh
+git diff --check
+```
+
+Log inspection used an owned temporary CLI-cache directory and extracted only
+public tool/image facts. Sources: [reviewed runner catalog](https://github.com/actions/runner-images/blob/fbb26cb01c3651ea3a0347e54bfa2ef83d740d49/README.md#available-images),
+[migration announcement](https://github.com/actions/runner-images/issues/14748),
+and [Python lifecycle](https://devguide.python.org/versions/).
+
+Next: read Sam's choice or genuine feedback, act on observed first-use blockers,
+and keep the verified platform stable. Do not replace demand evidence with
+another internal check or infer permission from a pending request.
+
+All 78 local links/anchors, active request path, the seven-claim portfolio
+release check, and diff checks passed before publication. Product/runtime,
+workflow, and source-pin files remain unchanged. The new human-choice request,
+not routine healthy maintenance, is the notification reason for this run.

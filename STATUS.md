@@ -2,97 +2,92 @@
 
 ## Current direction
 
-Prevent false valid-proof claims when Git state is unavailable. ProofRun 1.8.2
-requires recorded and current Git context before accepting evidence, while
-preserving command-result history. The first-use feedback path remains; no
-outside adoption evidence or outreach authorization is inferred.
+Keep the verified platform stable while awaiting genuine first-use feedback.
+The overdue platform review was completed on November 19: retain explicit
+Ubuntu 24.04, record fresh hosted evidence, and review again by December 19.
+This is routine maintenance, not a new product capability or adoption result.
 
 ## Product shape
 
 ReleaseFact v1.0.0 is the portfolio's fourth frozen local MVP.
 
 - Six maintained products; GrammarCheck remains archived.
-- ProofRun advances to 1.8.2 for a reproduced false-valid correctness defect.
-- Other five runtimes, schemas, dependencies, and source pins are unchanged.
-- Receipt schema v5, hashes, audit, existing replays, and gates remain unchanged.
-- Hosted compatibility is Python 3.10–3.15 / Ubuntu 24.04; November 5 review remains.
+- ProofRun remains 1.8.2 and WheelContract 1.0.6; other frozen versions unchanged.
+- Root CI still uses Python 3.10–3.15 on ubuntu-24.04.
+- All runtime sources, source install pins, schemas, workflows, and gates unchanged.
+- No Ubuntu 26.04 trial, platform expansion, or release claim was added.
 
-## Work today (2026-10-21, started 19:59 PDT)
+## Work today (2026-11-19, started 19:59 PST)
 
-- Started clean at synchronized 1098b92. Inspected memory, Git/history, root and
-  product docs, tests/source, active To-Sam, workflow/validator, and public GitHub.
-  MIT detected; baseline 39536878147 green. All-state issues returned no feedback.
-- Baseline warning-strict portfolio passed 141 tests (one optional skip),
-  twelve reproducible builds, six installs, all contracts and wheel integrity.
-- Reproduced init/verify/status outside Git returning VALID and gate exit 0,
-  including after an edit. Both snapshots had available=false and no fingerprint.
-- Added two failing regressions before the correction. Assessment now reports
-  repository state unavailable when recorded or current Git context is absent.
-- Keep run/verify command recording, informational status exit 0, consistent
-  audit, sealed history, fresh-bound supersession, and unborn repositories.
-- Updated package/runtime version, neutral current-release selectors, root/index,
-  and recovery/trial guidance. Original August v1.8.1 dates stay historical.
-- Exact public-source acceptance passed; ProofRun pip/pipx/checkout/README
-  consumers now select correction ea5d898. Other source selections are unchanged.
+- Started clean/synchronized at dcf8dd6. Inspected Git/history, memory,
+  README/status/log/handoffs, product documentation/tests/source, active To-Sam,
+  workflow/validator, and the public GitHub surface.
+- MIT detected; all-state issues returned no feedback and no active Sam note.
+  The last recorded release CI was green; no outside adoption is inferred.
+- Completed the documented November 5 checkpoint late, on November 19.
+  Checked official image support/migration information and Python lifecycle.
+- Upstream catalog snapshot fbb26cb still lists explicit Ubuntu 24.04 and 26.04;
+  its latest-label wording differs from the migration target. Do not infer
+  actual alias assignment or a completed cutover from a schedule alone.
+- Ran the existing hosted workflow manually on unchanged source dcf8dd6:
+  44671600749 passed the complete six-version matrix.
+- Setup logs reported Ubuntu 24.04.5 but three image revisions in that one run.
+  The policy records exact image/Python versions, not an immutable-image claim.
+- Updated the public platform policy, next-run handoff, and dated run log.
+  No code, workflow, source pin, product version, or new required check changed.
+- Left the first To-Sam request for one voluntary real-work attempt. Sam can
+  share the guide himself, decline, or explicitly approve one scoped invitation.
+  No participant was contacted and no outreach permission is inferred.
 
 ## Changes since the prior run
 
-The prior run prepared the self-service trial and voluntary feedback form.
-This run fixes a concrete internal first-use safety reproduction, not a reported
-outside-user problem or a demand result. No new preparation service was added.
+The previous run fixed ProofRun's unavailable-Git evidence gate. This run
+addresses a stale platform-review deadline after a period without recorded
+runs, using the existing validation rather than adding features or gates.
 
 ## External-user value
 
-A successful command cannot establish current Git-bound proof when snapshots
-are unavailable. Users get an explicit stale reason and can retain history,
-restore the intended Git context, and record fresh applicable evidence.
+Installation and CI users retain a currently verified baseline instead of
+receiving an untested OS switch. The public policy distinguishes a planned
+alias migration, actual runner metadata, and per-job wheel reproducibility.
 
 ## Known issues
 
-- No external feedback/adoption was collected; no outreach or issue posting.
-- This changes assessment, not run/verify command execution or command-result
-  exits. Use status --require-valid for evidence acceptance.
-- Git must be installed. No broad Git-error diagnosis, automatic initialization,
-  receipt repair, signing, or filesystem sandboxing was added.
-- Ignored/transient mutation and audit-authentication limits remain unchanged.
-- Existing platform and voluntary-feedback rendering limitations still apply.
-- Source pins select code, not build-dependency locks or package-index releases.
+- No external feedback, participants, outreach, or demand/retention evidence.
+- Ubuntu 26.04 availability is not portfolio compatibility evidence; it was not
+  trialed here. Existing Windows/free-threaded/platform limits remain.
+- Explicit OS labels still roll software/images; three image revisions appeared
+  in one matrix. Source install pins do not lock build dependencies.
+- Reproducibility checks compare two builds within each job, not across images.
+- Python 3.10 is end-of-life upstream and remains a compatibility floor only.
+- The overdue review was not backdated. Next checkpoint is December 19 or an
+  earlier platform-release/deprecation trigger.
 
 ## Decisions
 
-- Use the frozen-product correctness exception only after a real false gate.
-- Fail closed on unavailable evidence without deleting or rewriting history.
-- Old unbound receipts stay stale after Git becomes available; fresh bound
-  verification can supersede them. Existing bound proof can recover after
-  temporary access loss if the original Git state is restored unchanged.
-- Do not require a first commit: available unborn repositories remain supported.
-- No schema, hash, dependency, telemetry, outreach, or mandatory-gate expansion.
+- Retain supported ubuntu-24.04 after a fresh green matrix and no demonstrated
+  need to change OS series. Upgrade only after a separate green proposed-image trial.
+- Keep every frozen runtime, interpreter list, source pin, and existing starter.
+- Treat healthy maintenance as quiet status, not evidence that the product
+  gained users. The new human choice, not routine validation, warrants this
+  run's notification. Keep unchanged pending status quiet afterward.
 
 ## Validation
 
-- Both regressions failed before the fix. All 55 ProofRun tests passed on
-  Python 3.11 and 3.14 (one optional pytest skip per run); Python 3.10 grammar passed.
-- Post-fix warning-strict portfolio passed 143 tests (one optional skip), twelve
-  reproducible builds, six installs, release/behavior contracts and wheel integrity.
-- Public installed 1.8.2 rejected unbound evidence before/after edits and Git
-  initialization, preserved old receipt bytes, and recovered with fresh bound
-  verification. A real sealed 1.8.1 receipt stayed byte-identical and valid;
-  current Git access loss failed closed and restoring it recovered validity.
-- Both existing replay modes passed with installed 1.8.2; correction CI
-  39715136927 passed Python 3.10–3.15. This is internal correctness, not adoption.
-- Scoped pipx installation passed the same public-version/source-identity,
-  missing-context, old sealed receipt, recovery, and history-preservation cases.
-- A real Git-status failure inside an actual Git project also falsely passed
-  1.8.1; installed 1.8.2 rejected it and fresh verification recovered normally.
-- Final consumer-state warning-strict portfolio passed 143 tests (one optional
-  skip) and all artifact/behavior/release checks. All 78 links/anchors and
-  ProofRun pin checks passed; other five runtime sources remain unchanged.
+- Local warning-strict portfolio passed 143 tests (one expected optional skip),
+  twelve reproducible builds, six installs, all release/behavior contracts,
+  and complete wheel integrity.
+- Fresh hosted run 44671600749 passed Python 3.10–3.15 on the unchanged workflow.
+  Actual runner image and Python versions were read from all six job logs.
+- All 78 local documentation links/anchors and the active request path passed.
+  The seven-claim portfolio release check and diff checks passed.
 
 ## Recommended next steps
 
-1. Preserve fail-closed Git evidence and assess genuine first-use feedback.
-2. Continue reading genuine feedback; obtain authorization before any outreach.
-   Do not substitute internal checks for demand evidence.
-3. Retain the November 5 platform-policy review.
+1. Read genuine first-use feedback and investigate demonstrated blockers;
+   seek authorization before outreach. Do not count maintenance as demand.
+2. Keep the supported baseline; review by December 19 or an earlier trigger.
+3. Trial an OS-series change separately only when there is a reason to adopt it.
 
-No human input is required.
+No code/CI repair needs input. The next demand experiment needs Sam's choice:
+see To-Sam/codex_request_26-11-19.txt (attempt 1/3; no repeat before November 26).
